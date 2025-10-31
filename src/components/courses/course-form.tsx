@@ -99,10 +99,10 @@ export function CourseForm({
       <div className="space-y-3">
         <Label
           htmlFor="title"
-          className="flex items-center gap-2 text-sm font-bold text-gray-800"
+          className="text-foreground flex items-center gap-2 text-sm font-bold"
         >
-          <Sparkles className="h-4 w-4 text-purple-600" />
-          Course Title <span className="text-red-500">*</span>
+          <Sparkles className="text-primary h-4 w-4" />
+          Course Title <span className="text-destructive">*</span>
         </Label>
         <div className="relative">
           <Input
@@ -113,13 +113,13 @@ export function CourseForm({
             maxLength={100}
             className={cn(
               "input-primary text-lg font-medium transition-all duration-300",
-              title.length > 0 && "border-purple-400 ring-2 ring-purple-100",
+              title.length > 0 && "border-primary ring-primary/20 ring-2",
             )}
             disabled={isLoading}
             required
           />
           {/* Animated underline on focus */}
-          <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300 focus-within:w-full" />
+          <div className="bg-primary absolute bottom-0 left-0 h-1 w-0 transition-all duration-300 focus-within:w-full" />
         </div>
         {/* Character Counter with Visual Indicator */}
         <div className="space-y-1.5">
@@ -128,28 +128,26 @@ export function CourseForm({
               className={cn(
                 "font-medium transition-colors",
                 titlePercentage > 90
-                  ? "text-orange-600"
+                  ? "text-orange-600 dark:text-orange-500"
                   : titlePercentage > 0
-                    ? "text-purple-600"
-                    : "text-gray-500",
+                    ? "text-primary"
+                    : "text-muted-foreground",
               )}
             >
               {title.length}/100 characters
             </span>
             {titlePercentage > 90 && (
-              <span className="text-orange-600 font-semibold animate-pulse">
+              <span className="animate-pulse font-semibold text-orange-600 dark:text-orange-500">
                 {100 - title.length} left
               </span>
             )}
           </div>
           {/* Progress Bar */}
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+          <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
             <div
               className={cn(
-                "h-full transition-all duration-300 rounded-full",
-                titlePercentage > 90
-                  ? "bg-gradient-to-r from-orange-500 to-red-500"
-                  : "bg-gradient-to-r from-purple-500 to-indigo-500",
+                "h-full rounded-full transition-all duration-300",
+                titlePercentage > 90 ? "bg-orange-500" : "bg-primary",
               )}
               style={{ width: `${titlePercentage}%` }}
             />
@@ -161,10 +159,13 @@ export function CourseForm({
       <div className="space-y-3">
         <Label
           htmlFor="description"
-          className="flex items-center gap-2 text-sm font-bold text-gray-800"
+          className="text-foreground flex items-center gap-2 text-sm font-bold"
         >
-          <Book className="h-4 w-4 text-indigo-600" />
-          Description <span className="text-xs font-normal text-gray-500">(Optional)</span>
+          <Book className="text-primary h-4 w-4" />
+          Description{" "}
+          <span className="text-muted-foreground text-xs font-normal">
+            (Optional)
+          </span>
         </Label>
         <div className="relative">
           <Textarea
@@ -176,7 +177,7 @@ export function CourseForm({
             rows={4}
             className={cn(
               "input-primary resize-none transition-all duration-300",
-              description.length > 0 && "border-indigo-400 ring-2 ring-indigo-100",
+              description.length > 0 && "border-primary ring-primary/20 ring-2",
             )}
             disabled={isLoading}
           />
@@ -188,28 +189,26 @@ export function CourseForm({
               className={cn(
                 "font-medium transition-colors",
                 descriptionPercentage > 90
-                  ? "text-orange-600"
+                  ? "text-orange-600 dark:text-orange-500"
                   : descriptionPercentage > 0
-                    ? "text-indigo-600"
-                    : "text-gray-500",
+                    ? "text-primary"
+                    : "text-muted-foreground",
               )}
             >
               {description.length}/500 characters
             </span>
             {descriptionPercentage > 90 && (
-              <span className="text-orange-600 font-semibold animate-pulse">
+              <span className="animate-pulse font-semibold text-orange-600 dark:text-orange-500">
                 {500 - description.length} left
               </span>
             )}
           </div>
           {/* Progress Bar */}
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+          <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
             <div
               className={cn(
-                "h-full transition-all duration-300 rounded-full",
-                descriptionPercentage > 90
-                  ? "bg-gradient-to-r from-orange-500 to-red-500"
-                  : "bg-gradient-to-r from-indigo-500 to-purple-500",
+                "h-full rounded-full transition-all duration-300",
+                descriptionPercentage > 90 ? "bg-orange-500" : "bg-primary",
               )}
               style={{ width: `${descriptionPercentage}%` }}
             />
@@ -219,15 +218,15 @@ export function CourseForm({
 
       {/* Color Picker - Enhanced with Beautiful Swatches */}
       <div className="space-y-4">
-        <Label className="flex items-center gap-2 text-sm font-bold text-gray-800">
-          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500">
-            <div className="h-3 w-3 rounded-full bg-white" />
+        <Label className="text-foreground flex items-center gap-2 text-sm font-bold">
+          <div className="bg-primary flex h-5 w-5 items-center justify-center rounded-full">
+            <div className="bg-primary-foreground h-3 w-3 rounded-full" />
           </div>
-          Choose a Color <span className="text-red-500">*</span>
+          Choose a Color <span className="text-destructive">*</span>
         </Label>
 
         {/* Color Swatches Grid */}
-        <div className="rounded-xl border-2 border-gray-200 bg-gradient-to-br from-gray-50 to-white p-5 shadow-inner">
+        <div className="border-border bg-card rounded-xl border-2 p-5 shadow-inner">
           <div className="grid grid-cols-4 gap-4 sm:grid-cols-8">
             {courseColorOptions.map((colorHex) => {
               const colorData = getCourseColor(colorHex);
@@ -243,7 +242,7 @@ export function CourseForm({
                     "group relative aspect-square w-full rounded-xl transition-all duration-300",
                     "hover:scale-110 hover:rotate-3 focus:scale-110 focus:outline-none",
                     "hover:shadow-xl focus:shadow-xl",
-                    isSelected && "scale-110 ring-4 ring-offset-2 shadow-2xl",
+                    isSelected && "scale-110 shadow-2xl ring-4 ring-offset-2",
                     isSelected && colorData.ring,
                     "disabled:cursor-not-allowed disabled:opacity-50",
                   )}
@@ -254,9 +253,12 @@ export function CourseForm({
                 >
                   {/* Checkmark for Selected */}
                   {isSelected && (
-                    <div className="absolute inset-0 flex items-center justify-center animate-in zoom-in-50 duration-300">
+                    <div className="animate-in zoom-in-50 absolute inset-0 flex items-center justify-center duration-300">
                       <div className="glass flex h-8 w-8 items-center justify-center rounded-full shadow-2xl ring-2 ring-white/50">
-                        <Check className="h-5 w-5 text-white drop-shadow-lg font-bold" strokeWidth={3} />
+                        <Check
+                          className="h-5 w-5 font-bold text-white drop-shadow-lg"
+                          strokeWidth={3}
+                        />
                       </div>
                     </div>
                   )}
@@ -273,47 +275,47 @@ export function CourseForm({
         </div>
 
         {/* Selected Color Display */}
-        <div className="flex items-center justify-between rounded-lg bg-purple-50 px-4 py-2.5 border border-purple-200">
+        <div className="border-primary/30 bg-primary/5 flex items-center justify-between rounded-lg border px-4 py-2.5">
           <div className="flex items-center gap-3">
             <div
-              className="h-6 w-6 rounded-full shadow-md ring-2 ring-white"
+              className="ring-background h-6 w-6 rounded-full shadow-md ring-2"
               style={{ backgroundColor: selectedColor }}
             />
-            <span className="text-sm font-semibold text-gray-700">
+            <span className="text-foreground text-sm font-semibold">
               Selected Color:{" "}
-              <span className="text-purple-700">
+              <span className="text-primary">
                 {getCourseColor(selectedColor).name}
               </span>
             </span>
           </div>
-          <Sparkles className="h-4 w-4 text-purple-500" />
+          <Sparkles className="text-primary h-4 w-4" />
         </div>
       </div>
 
       {/* Live Preview Card - Matches Enhanced CourseCard Design */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Label className="flex items-center gap-2 text-sm font-bold text-gray-800">
-            <Sparkles className="h-4 w-4 text-purple-600" />
+          <Label className="text-foreground flex items-center gap-2 text-sm font-bold">
+            <Sparkles className="text-primary h-4 w-4" />
             Live Preview
           </Label>
-          <span className="text-xs font-medium text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
+          <span className="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-medium">
             Real-time
           </span>
         </div>
 
         {/* Preview Container with Animated Border */}
-        <div className="relative rounded-2xl border-2 border-dashed border-purple-300 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/50 p-6 backdrop-blur-sm">
+        <div className="border-primary/30 bg-card relative rounded-2xl border-2 border-dashed p-6 backdrop-blur-sm">
           {/* Animated Corner Accents */}
-          <div className="absolute -left-1 -top-1 h-4 w-4 rounded-tl-2xl border-l-4 border-t-4 border-purple-500 animate-pulse" />
-          <div className="absolute -right-1 -top-1 h-4 w-4 rounded-tr-2xl border-r-4 border-t-4 border-purple-500 animate-pulse" />
-          <div className="absolute -bottom-1 -left-1 h-4 w-4 rounded-bl-2xl border-b-4 border-l-4 border-purple-500 animate-pulse" />
-          <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-br-2xl border-b-4 border-r-4 border-purple-500 animate-pulse" />
+          <div className="border-primary absolute -top-1 -left-1 h-4 w-4 animate-pulse rounded-tl-2xl border-t-4 border-l-4" />
+          <div className="border-primary absolute -top-1 -right-1 h-4 w-4 animate-pulse rounded-tr-2xl border-t-4 border-r-4" />
+          <div className="border-primary absolute -bottom-1 -left-1 h-4 w-4 animate-pulse rounded-bl-2xl border-b-4 border-l-4" />
+          <div className="border-primary absolute -right-1 -bottom-1 h-4 w-4 animate-pulse rounded-br-2xl border-r-4 border-b-4" />
 
           {/* Course Card Preview */}
           <div className="mx-auto max-w-sm">
             <div className="group relative">
-              <div className="card-elevated hover-lift overflow-hidden border-2 border-gray-100 hover:border-gray-200">
+              <div className="card-elevated hover-lift border-border hover:border-primary/50 overflow-hidden border-2">
                 {/* Color Header with All Enhancements from CourseCard */}
                 <div
                   className={cn(
@@ -330,13 +332,13 @@ export function CourseForm({
 
                   {/* Floating Decorative Circles */}
                   <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 backdrop-blur-sm transition-transform duration-500 group-hover:scale-110" />
+                    <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-white/10 backdrop-blur-sm transition-transform duration-500 group-hover:scale-110" />
                     <div className="absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-white/10 backdrop-blur-sm transition-transform duration-500 group-hover:scale-110" />
-                    <div className="absolute right-1/4 top-1/3 h-16 w-16 rounded-full bg-white/5" />
+                    <div className="absolute top-1/3 right-1/4 h-16 w-16 rounded-full bg-white/5" />
                   </div>
 
                   {/* Course Icon with Glass Effect */}
-                  <div className="absolute left-5 top-5">
+                  <div className="absolute top-5 left-5">
                     <div className="glass flex h-14 w-14 items-center justify-center rounded-xl shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl">
                       <Book className="h-7 w-7 text-white drop-shadow-md" />
                     </div>
@@ -353,35 +355,37 @@ export function CourseForm({
 
                   <div className="relative">
                     {/* Title */}
-                    <h3 className="mb-2 line-clamp-1 text-xl font-bold text-gray-900 transition-all duration-300 group-hover:text-purple-600">
+                    <h3 className="text-foreground group-hover:text-primary mb-2 line-clamp-1 text-xl font-bold transition-all duration-300">
                       {title || "Your Course Title"}
                     </h3>
 
                     {/* Description */}
                     {description ? (
-                      <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-gray-600">
+                      <p className="text-muted-foreground mb-4 line-clamp-2 text-sm leading-relaxed">
                         {description}
                       </p>
                     ) : (
-                      <p className="mb-4 text-sm italic text-gray-400">
+                      <p className="text-muted-foreground/60 mb-4 text-sm italic">
                         No description provided
                       </p>
                     )}
 
                     {/* Stats Section */}
-                    <div className="flex items-center gap-5 border-t border-gray-200 pt-4 text-sm">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <div className="rounded-lg bg-purple-100 p-1.5">
-                          <Book className="h-4 w-4 text-purple-600" />
+                    <div className="border-border flex items-center gap-5 border-t pt-4 text-sm">
+                      <div className="text-muted-foreground flex items-center gap-2">
+                        <div className="bg-primary/10 rounded-lg p-1.5">
+                          <Book className="text-primary h-4 w-4" />
                         </div>
-                        <span className="font-medium text-gray-500">0 resources</span>
+                        <span className="text-muted-foreground font-medium">
+                          0 resources
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Bottom Hover Indicator */}
-                <div className="h-1 w-0 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 transition-all duration-500 group-hover:w-full" />
+                <div className="bg-primary h-1 w-0 transition-all duration-500 group-hover:w-full" />
               </div>
             </div>
           </div>
@@ -389,7 +393,7 @@ export function CourseForm({
       </div>
 
       {/* Action Buttons - Enhanced */}
-      <div className="flex items-center gap-4 border-t-2 border-gray-200 pt-6">
+      <div className="border-border flex items-center gap-4 border-t-2 pt-6">
         {onCancel && (
           <Button
             type="button"
@@ -397,11 +401,11 @@ export function CourseForm({
             onClick={onCancel}
             disabled={isLoading}
             className={cn(
-              "flex-1 h-12 text-base font-semibold",
-              "border-2 border-gray-300 hover:border-gray-400",
-              "hover:bg-gray-50 active:scale-95",
-              "transition-all duration-200 shadow-sm hover:shadow-md",
-              "focus-visible:ring-4 focus-visible:ring-gray-200",
+              "h-12 flex-1 text-base font-semibold",
+              "border-border hover:border-primary/50 border-2",
+              "hover:bg-muted active:scale-95",
+              "shadow-sm transition-all duration-200 hover:shadow-md",
+              "focus-visible:ring-primary/20 focus-visible:ring-4",
             )}
           >
             <X className="mr-2 h-5 w-5" />
@@ -412,13 +416,12 @@ export function CourseForm({
           type="submit"
           disabled={isLoading || !title.trim()}
           className={cn(
-            "flex-1 h-12 text-base font-bold",
-            "bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600",
-            "hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700",
-            "active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed",
-            "shadow-lg hover:shadow-xl transition-all duration-300",
-            "focus-visible:ring-4 focus-visible:ring-purple-200",
-            "relative overflow-hidden group",
+            "h-12 flex-1 text-base font-bold",
+            "bg-primary hover:bg-primary/90",
+            "active:scale-95 disabled:cursor-not-allowed disabled:opacity-50",
+            "shadow-lg transition-all duration-300 hover:shadow-xl",
+            "focus-visible:ring-primary/20 focus-visible:ring-4",
+            "group relative overflow-hidden",
           )}
         >
           {/* Button Shimmer Effect */}
@@ -427,8 +430,10 @@ export function CourseForm({
           <span className="relative flex items-center justify-center">
             {isLoading ? (
               <>
-                <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                {mode === "create" ? "Creating Course..." : "Updating Course..."}
+                <div className="border-primary-foreground mr-2 h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" />
+                {mode === "create"
+                  ? "Creating Course..."
+                  : "Updating Course..."}
               </>
             ) : (
               <>

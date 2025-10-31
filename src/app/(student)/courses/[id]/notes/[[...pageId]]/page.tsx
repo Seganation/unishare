@@ -76,6 +76,18 @@ export default async function NotesPage({
       icon: true,
       order: true,
       updatedAt: true,
+      parentId: true,
+      children: {
+        select: {
+          id: true,
+          title: true,
+          icon: true,
+          order: true,
+          updatedAt: true,
+          parentId: true,
+        },
+        orderBy: { order: "asc" },
+      },
     },
   });
 

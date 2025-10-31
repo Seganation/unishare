@@ -70,34 +70,34 @@ export default async function CoursesPage() {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="bg-background min-h-screen">
       {/* Hero Header with Gradient Background */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 px-4 py-12 sm:py-16">
+      <div className="bg-primary relative overflow-hidden px-4 py-12 sm:py-16">
         {/* Animated Background Pattern */}
         <div className="pattern-dots absolute inset-0 opacity-10" />
 
         {/* Floating Decorative Circles */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/5 backdrop-blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-white/5 backdrop-blur-3xl" />
-          <div className="absolute right-1/4 top-1/3 h-40 w-40 rounded-full bg-white/5" />
+          <div className="bg-primary-foreground/5 absolute -top-20 -right-20 h-64 w-64 rounded-full backdrop-blur-3xl" />
+          <div className="bg-primary-foreground/5 absolute -bottom-20 -left-20 h-80 w-80 rounded-full backdrop-blur-3xl" />
+          <div className="bg-primary-foreground/5 absolute top-1/3 right-1/4 h-40 w-40 rounded-full" />
         </div>
 
         {/* Content */}
-        <div className="container relative mx-auto max-w-7xl">
+        <div className="relative container mx-auto max-w-7xl">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             {/* Title Section */}
             <div className="flex-1">
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="h-6 w-6 animate-pulse text-yellow-300" />
-                <span className="text-sm font-semibold uppercase tracking-wider text-purple-200">
+                <span className="text-primary-foreground/70 text-sm font-semibold tracking-wider uppercase">
                   Dashboard
                 </span>
               </div>
-              <h1 className="mb-3 text-4xl font-black text-white drop-shadow-lg md:text-5xl lg:text-6xl">
+              <h1 className="text-primary-foreground mb-3 text-4xl font-black drop-shadow-lg md:text-5xl lg:text-6xl">
                 My Courses
               </h1>
-              <p className="max-w-xl text-lg text-purple-100">
+              <p className="text-primary-foreground/80 max-w-xl text-lg">
                 Organize your academic life in one place. Create, share, and
                 collaborate on course materials.
               </p>
@@ -107,10 +107,11 @@ export default async function CoursesPage() {
             <Link href="/courses/new">
               <Button
                 size="lg"
-                className="group relative h-14 overflow-hidden bg-white px-8 text-base font-bold text-purple-700 shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-purple-900/50 focus-visible:ring-4 focus-visible:ring-white/50"
+                variant="secondary"
+                className="group relative h-14 overflow-hidden px-8 text-base font-bold shadow-2xl transition-all duration-300 hover:scale-105 focus-visible:ring-4"
               >
                 {/* Button shimmer effect */}
-                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-purple-100 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <div className="via-primary/20 absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent to-transparent transition-transform duration-700 group-hover:translate-x-full" />
 
                 <span className="relative flex items-center">
                   <Plus className="mr-2 h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
@@ -131,7 +132,7 @@ export default async function CoursesPage() {
             return (
               <div
                 key={idx}
-                className="group relative overflow-hidden rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+                className="group border-border bg-card relative overflow-hidden rounded-2xl border-2 p-6 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
               >
                 {/* Background Gradient */}
                 <div
@@ -139,7 +140,7 @@ export default async function CoursesPage() {
                 />
 
                 {/* Shimmer Effect */}
-                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
+                <div className="via-primary/10 absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
 
                 {/* Content */}
                 <div className="relative">
@@ -151,10 +152,10 @@ export default async function CoursesPage() {
                     </div>
                     <TrendingUp className="h-5 w-5 text-emerald-500 opacity-0 transition-opacity group-hover:opacity-100" />
                   </div>
-                  <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                  <p className="text-muted-foreground mb-1 text-sm font-semibold tracking-wide uppercase">
                     {stat.label}
                   </p>
-                  <p className="text-4xl font-black text-gray-900">
+                  <p className="text-foreground text-4xl font-black">
                     {stat.value}
                   </p>
                 </div>
@@ -171,8 +172,8 @@ export default async function CoursesPage() {
         {/* Course List Section */}
         <div>
           <div className="mb-6 flex items-center gap-3">
-            <div className="h-1 w-12 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500" />
-            <h2 className="text-2xl font-bold text-gray-900">All Courses</h2>
+            <div className="bg-primary h-1 w-12 rounded-full" />
+            <h2 className="text-foreground text-2xl font-bold">All Courses</h2>
           </div>
           <CourseList />
         </div>

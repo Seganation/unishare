@@ -38,13 +38,13 @@ export function CourseList() {
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
-            className="animate-pulse overflow-hidden rounded-xl border border-gray-200 bg-white"
+            className="border-border bg-card animate-pulse overflow-hidden rounded-xl border"
           >
-            <div className="h-32 bg-gray-200" />
+            <div className="bg-muted h-32" />
             <div className="space-y-3 p-6">
-              <div className="h-6 w-3/4 rounded bg-gray-200" />
-              <div className="h-4 w-full rounded bg-gray-200" />
-              <div className="h-4 w-2/3 rounded bg-gray-200" />
+              <div className="bg-muted h-6 w-3/4 rounded" />
+              <div className="bg-muted h-4 w-full rounded" />
+              <div className="bg-muted h-4 w-2/3 rounded" />
             </div>
           </div>
         ))}
@@ -71,8 +71,8 @@ export function CourseList() {
         <section>
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">My Courses</h2>
-              <p className="mt-1 text-sm text-gray-500">
+              <h2 className="text-foreground text-2xl font-bold">My Courses</h2>
+              <p className="text-muted-foreground mt-1 text-sm">
                 {ownedCourses.length}{" "}
                 {ownedCourses.length === 1 ? "course" : "courses"}
               </p>
@@ -101,10 +101,10 @@ export function CourseList() {
         <section>
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-foreground text-2xl font-bold">
                 Shared With Me
               </h2>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="text-muted-foreground mt-1 text-sm">
                 {sharedCourses.length}{" "}
                 {sharedCourses.length === 1 ? "course" : "courses"}
               </p>

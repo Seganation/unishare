@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { courseId } = await request.json();
+    const { courseId, parentId } = await request.json();
 
     // Check if user has access to this course
     const course = await db.course.findUnique({
@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
         liveblockRoom: "", // Will be updated to use pageId
         order: newOrder,
         content: {},
+        ...(parentId && { parentId }), // Add parentId if provided
       },
     });
 

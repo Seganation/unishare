@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, FileText, MoreVertical, Trash2, Edit2, GripVertical } from "lucide-react";
+import { Plus, FileText, MoreVertical, Trash2, ChevronRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
@@ -19,6 +19,8 @@ interface NotePage {
   icon: string | null;
   order: number;
   updatedAt: Date;
+  parentId: string | null;
+  children?: NotePage[];
 }
 
 interface NotesSidebarProps {
@@ -37,13 +39,13 @@ export function NotesSidebar({
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
 
-  const handleCreatePage = async () => {
+  const handleCreatePage = async (parentId?: string) => {
     setIsCreating(true);
     try {
       const response = await fetch("/api/notes/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId }),
+        body: JSON.stringify({ courseId, parentId }),
       });
 
       if (response.ok) {
@@ -75,6 +77,95 @@ export function NotesSidebar({
     }
   };
 
+  // Recursive component for rendering a page and its children
+  const PageItem = ({ page, depth = 0 }: { page: NotePage; depth?: number }) => {
+    const [isExpanded, setIsExpanded] = useState(true);
+    const hasChildren = page.children && page.children.length > 0;
+
+    return (
+      <div key={page.id}>
+        <div
+          className={cn(
+            "group relative flex items-center gap-2 rounded-lg py-2 text-sm transition-colors",
+            currentPageId === page.id
+              ? "bg-purple-50 text-purple-700"
+              : "hover:bg-gray-100 text-gray-700",
+          )}
+          style={{ paddingLeft: `${12 + depth * 16}px` }}
+        >
+          {/* Expand/Collapse Button */}
+          {hasChildren ? (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex-shrink-0"
+            >
+              {isExpanded ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </button>
+          ) : (
+            <div className="w-4" />
+          )}
+
+          <Link
+            href={`/courses/${courseId}/notes/${page.id}`}
+            className="flex flex-1 items-center gap-2 overflow-hidden"
+          >
+            {page.icon ? (
+              <span className="text-base">{page.icon}</span>
+            ) : (
+              <FileText className="h-4 w-4 flex-shrink-0" />
+            )}
+            <span className="truncate font-medium">{page.title}</span>
+          </Link>
+
+          {canEdit && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                >
+                  <MoreVertical className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => handleCreatePage(page.id)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add sub-page
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleDeletePage(page.id)}
+                  className="text-red-600"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+
+        {/* Render children */}
+        {hasChildren && isExpanded && (
+          <div>
+            {page.children!.map((child) => (
+              <PageItem key={child.id} page={child} depth={depth + 1} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Filter to show only top-level pages (no parent)
+  const topLevelPages = pages.filter((page) => !page.parentId);
+
   return (
     <div className="flex h-full w-64 flex-col border-r border-gray-200 bg-white">
       {/* Header */}
@@ -84,7 +175,7 @@ export function NotesSidebar({
           <Button
             size="sm"
             variant="ghost"
-            onClick={handleCreatePage}
+            onClick={() => handleCreatePage()}
             disabled={isCreating}
             className="h-8 w-8 p-0"
           >
@@ -95,7 +186,7 @@ export function NotesSidebar({
 
       {/* Pages List */}
       <div className="flex-1 overflow-y-auto p-2">
-        {pages.length === 0 ? (
+        {topLevelPages.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center">
             <FileText className="mb-2 h-12 w-12 text-gray-300" />
             <p className="text-sm text-gray-500">No pages yet</p>
@@ -107,51 +198,8 @@ export function NotesSidebar({
           </div>
         ) : (
           <div className="space-y-1">
-            {pages.map((page) => (
-              <div
-                key={page.id}
-                className={cn(
-                  "group relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
-                  currentPageId === page.id
-                    ? "bg-purple-50 text-purple-700"
-                    : "hover:bg-gray-100 text-gray-700",
-                )}
-              >
-                <Link
-                  href={`/courses/${courseId}/notes/${page.id}`}
-                  className="flex flex-1 items-center gap-2 overflow-hidden"
-                >
-                  {page.icon ? (
-                    <span className="text-base">{page.icon}</span>
-                  ) : (
-                    <FileText className="h-4 w-4 flex-shrink-0" />
-                  )}
-                  <span className="truncate font-medium">{page.title}</span>
-                </Link>
-
-                {canEdit && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                      >
-                        <MoreVertical className="h-3 w-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleDeletePage(page.id)}
-                        className="text-red-600"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
+            {topLevelPages.map((page) => (
+              <PageItem key={page.id} page={page} depth={0} />
             ))}
           </div>
         )}

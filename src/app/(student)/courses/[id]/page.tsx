@@ -60,11 +60,11 @@ export default function CourseDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
+      <div className="bg-background min-h-screen">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Header Skeleton */}
           <Skeleton className="mb-6 h-10 w-32" />
-          <div className="mb-8 rounded-2xl border border-gray-200 bg-white p-8">
+          <div className="border-border bg-card mb-8 rounded-2xl border p-8">
             <Skeleton className="mb-4 h-8 w-64" />
             <Skeleton className="mb-2 h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
@@ -83,9 +83,9 @@ export default function CourseDetailPage() {
 
   if (!course) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-white to-indigo-50">
+      <div className="bg-background flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h1 className="mb-4 text-2xl font-bold text-gray-900">
+          <h1 className="text-foreground mb-4 text-2xl font-bold">
             Course Not Found
           </h1>
           <Button onClick={() => router.push("/courses")}>
@@ -102,20 +102,20 @@ export default function CourseDetailPage() {
   const isOwner = userRole === "OWNER";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
+    <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Button
           variant="ghost"
           onClick={() => router.push("/courses")}
-          className="mb-6 hover:bg-white"
+          className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Courses
         </Button>
 
         {/* Course Header */}
-        <div className="mb-8 rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+        <div className="border-border bg-card mb-8 rounded-2xl border p-8 shadow-sm">
           <div className="mb-6 flex items-start justify-between">
             {/* Title & Info */}
             <div className="flex-1">
@@ -125,7 +125,7 @@ export default function CourseDetailPage() {
                   className="h-3 w-3 rounded-full"
                   style={{ backgroundColor: course.color }}
                 />
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-foreground text-3xl font-bold">
                   {course.title}
                 </h1>
                 {course.isFavorite && (
@@ -134,13 +134,13 @@ export default function CourseDetailPage() {
               </div>
 
               {course.description && (
-                <p className="mb-4 max-w-3xl text-gray-600">
+                <p className="text-muted-foreground mb-4 max-w-3xl">
                   {course.description}
                 </p>
               )}
 
               {/* Stats */}
-              <div className="flex items-center gap-6 text-sm text-gray-500">
+              <div className="text-muted-foreground flex items-center gap-6 text-sm">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   <span>{course._count.collaborators} members</span>
@@ -197,23 +197,23 @@ export default function CourseDetailPage() {
 
           {/* Collaborators Preview */}
           {course.collaborators.length > 0 && (
-            <div className="border-t border-gray-100 pt-6">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">
+            <div className="border-border border-t pt-6">
+              <h3 className="text-foreground mb-3 text-sm font-medium">
                 Collaborators
               </h3>
               <div className="flex items-center gap-2">
                 {course.collaborators.slice(0, 8).map((collab) => (
                   <Avatar
                     key={collab.id}
-                    className="h-8 w-8 border-2 border-white"
+                    className="border-border h-8 w-8 border-2"
                   >
-                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-indigo-500 text-xs text-white">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                       {collab.user.name?.[0]?.toUpperCase() ?? "U"}
                     </AvatarFallback>
                   </Avatar>
                 ))}
                 {course.collaborators.length > 8 && (
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gray-100 text-xs font-medium text-gray-600">
+                  <div className="border-border bg-muted text-muted-foreground flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-medium">
                     +{course.collaborators.length - 8}
                   </div>
                 )}
@@ -224,7 +224,7 @@ export default function CourseDetailPage() {
 
         {/* Resources Section */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Resources</h2>
+          <h2 className="text-foreground text-2xl font-bold">Resources</h2>
           {canEdit && (
             <Button onClick={() => setShowResourceForm(true)}>
               <Plus className="mr-2 h-4 w-4" />
@@ -269,8 +269,8 @@ export default function CourseDetailPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-gray-200 bg-white py-16 text-center">
-            <p className="text-gray-500">No resources yet</p>
+          <div className="border-border bg-card rounded-2xl border py-16 text-center">
+            <p className="text-muted-foreground">No resources yet</p>
             {canEdit && (
               <Button
                 variant="outline"
