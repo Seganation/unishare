@@ -7,7 +7,7 @@ import { auth } from "~/server/auth";
  *
  * Role-based redirects:
  * - PENDING users → /waiting-approval
- * - Non-ADMIN users accessing /admin → /dashboard
+ * - Non-ADMIN users accessing /admin → /courses
  * - Unauthenticated users → /login
  */
 export default auth((req) => {

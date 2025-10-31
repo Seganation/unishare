@@ -105,7 +105,7 @@ export const adminRouter = createTRPCRouter({
 
       // Send approval email
       try {
-        const dashboardUrl = `${env.NEXT_PUBLIC_APP_URL}/dashboard`;
+        const dashboardUrl = `${env.NEXT_PUBLIC_APP_URL}/courses`;
         await sendApprovalEmail(user.email, user.name, dashboardUrl);
       } catch (error) {
         console.error("Failed to send approval email:", error);
