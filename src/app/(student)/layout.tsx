@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "~/server/auth";
 import Link from "next/link";
-import { Book, Calendar, FileText, LogOut, Settings, User } from "lucide-react";
+import { Book, Calendar, FileText, Settings, User, Edit3 } from "lucide-react";
 import { ThemeToggle } from "~/components/theme-toggle";
+import { LogoutButton } from "~/components/logout-button";
 
 export default async function StudentLayout({
   children,
@@ -21,7 +22,7 @@ export default async function StudentLayout({
   }
 
   if (session.user.role === "ADMIN") {
-    redirect("/admin");
+    redirect("/admin/approvals");
   }
 
   return (
@@ -48,6 +49,9 @@ export default async function StudentLayout({
               </NavLink>
               <NavLink href="/articles" icon={FileText}>
                 Articles
+              </NavLink>
+              <NavLink href="/my-articles" icon={Edit3}>
+                My Articles
               </NavLink>
             </div>
 
@@ -78,15 +82,7 @@ export default async function StudentLayout({
               >
                 <Settings className="h-5 w-5" />
               </Link>
-              <form action="/api/auth/signout" method="POST">
-                <button
-                  type="submit"
-                  className="text-muted-foreground rounded-lg p-2 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/50"
-                  aria-label="Sign out"
-                >
-                  <LogOut className="h-5 w-5" />
-                </button>
-              </form>
+              <LogoutButton />
             </div>
           </div>
         </div>
@@ -94,7 +90,7 @@ export default async function StudentLayout({
 
       {/* Mobile Navigation */}
       <div className="border-border bg-card fixed right-0 bottom-0 left-0 z-40 border-t md:hidden">
-        <div className="grid grid-cols-4 gap-1 p-2">
+        <div className="grid grid-cols-5 gap-1 p-2">
           <MobileNavLink href="/courses" icon={Book}>
             Courses
           </MobileNavLink>
@@ -103,6 +99,9 @@ export default async function StudentLayout({
           </MobileNavLink>
           <MobileNavLink href="/articles" icon={FileText}>
             Articles
+          </MobileNavLink>
+          <MobileNavLink href="/my-articles" icon={Edit3}>
+            My Articles
           </MobileNavLink>
           <MobileNavLink href="/settings" icon={User}>
             Profile

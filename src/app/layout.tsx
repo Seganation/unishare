@@ -5,6 +5,9 @@ import { Knewave } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "~/components/theme-provider";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
+import { extractRouterConfig } from "uploadthing/server";
+import { ourFileRouter } from "~/app/api/uploadthing/core";
 
 export const metadata: Metadata = {
   title: "UNIShare - Collaborative Learning Platform",
@@ -24,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={knewave.className} suppressHydrationWarning>
       <body suppressHydrationWarning>
+        <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

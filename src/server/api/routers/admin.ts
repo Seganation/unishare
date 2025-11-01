@@ -95,7 +95,7 @@ export const adminRouter = createTRPCRouter({
       }
 
       // Update user role to APPROVED
-      const updatedUser = await ctx.db.user.update({
+      await ctx.db.user.update({
         where: { id: input.userId },
         data: {
           role: "APPROVED",

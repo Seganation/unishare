@@ -38,7 +38,7 @@ export default auth((req) => {
     if (
       path.startsWith("/courses") ||
       path.startsWith("/timetable") ||
-      path.startsWith("/articles/new")
+      path.startsWith("/my-articles")
     ) {
       // PENDING users should wait for approval
       if (session.user.role === "PENDING") {

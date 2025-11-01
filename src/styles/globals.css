@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
+@import "uploadthing/tw/v4";
 /* Path to installed @blocknote/shadcn package for Tailwind class generation */
 @source "../node_modules/@blocknote/shadcn";
 

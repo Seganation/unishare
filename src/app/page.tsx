@@ -14,7 +14,7 @@ export default async function Home() {
           Student-driven academic organization platform for universities
         </p>
 
-        <div className="flex gap-4">
+        <div className="flex flex-wrap justify-center gap-4">
           {session?.user ? (
             <>
               {session.user.role === "ADMIN" ? (
@@ -25,12 +25,20 @@ export default async function Home() {
                   Admin Dashboard
                 </Link>
               ) : session.user.role === "APPROVED" ? (
-                <Link
-                  href="/courses"
-                  className="rounded-lg bg-purple-600 px-8 py-3 font-semibold transition hover:bg-purple-500"
-                >
-                  My Courses
-                </Link>
+                <>
+                  <Link
+                    href="/courses"
+                    className="rounded-lg bg-purple-600 px-8 py-3 font-semibold transition hover:bg-purple-500"
+                  >
+                    My Courses
+                  </Link>
+                  <Link
+                    href="/articles"
+                    className="rounded-lg border-2 border-purple-600 px-8 py-3 font-semibold transition hover:bg-purple-600/20"
+                  >
+                    Browse Articles
+                  </Link>
+                </>
               ) : (
                 <Link
                   href="/waiting-approval"
@@ -54,6 +62,12 @@ export default async function Home() {
               >
                 Sign Up
               </Link>
+              <Link
+                href="/articles"
+                className="rounded-lg border-2 border-gray-400 px-8 py-3 font-semibold transition hover:bg-gray-400/20"
+              >
+                Browse Articles
+              </Link>
             </>
           )}
         </div>
@@ -61,7 +75,7 @@ export default async function Home() {
         <div className="mt-8 text-center text-sm text-gray-400">
           <p>
             Organize courses • Share resources • Collaborate on notes • Manage
-            your timetable
+            your timetable • Share articles
           </p>
         </div>
       </div>

@@ -37,6 +37,9 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
+  // Trust host for NextAuth v5 (required for production and local development)
+  trustHost: true,
+
   // Use JWT strategy instead of database sessions for credentials provider
   session: {
     strategy: "jwt",

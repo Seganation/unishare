@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Mail,
@@ -14,7 +13,6 @@ import {
 } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,9 +39,13 @@ export default function LoginPage() {
         return;
       }
 
-      // Successful login - redirect to courses
-      router.push("/courses");
-      router.refresh();
+      if (result?.ok) {
+        // Successful login - use window.location to ensure proper session refresh
+        window.location.href = "/courses";
+      } else {
+        setError("An unexpected error occurred");
+        setIsLoading(false);
+      }
     } catch (error) {
       setError("An unexpected error occurred");
       setIsLoading(false);
@@ -191,7 +193,7 @@ export default function LoginPage() {
             {/* Sign Up Link */}
             <div className="mt-8 text-center">
               <p className="text-sm text-purple-100">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/signup"
                   className="font-bold text-white underline decoration-2 underline-offset-4 transition-all hover:text-yellow-300 hover:decoration-yellow-300"
