@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { CourseList } from "~/components/courses/course-list";
+import { TimetableInvitations } from "~/components/timetable/timetable-invitations";
 import { api } from "~/trpc/server";
 
 export default async function CoursesPage() {
@@ -168,6 +169,9 @@ export default async function CoursesPage() {
             );
           })}
         </div>
+
+        {/* Timetable Invitations */}
+        <TimetableInvitations />
 
         {/* Course List Section */}
         <div>

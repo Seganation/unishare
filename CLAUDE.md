@@ -141,3 +141,41 @@ export const myRouter = createTRPCRouter({
 - Use `protectedProcedure` for authenticated-only endpoints
 - Access user info via `ctx.session.user` (guaranteed non-null in protected procedures)
 - For conditional auth, use `publicProcedure` and check `ctx.session?.user`
+
+### Timetable System (Shareable Schedules)
+
+The timetable feature allows students to create, share, and collaborate on class schedules.
+
+**Architecture:**
+```
+Timetable (container for a semester's schedule)
+  ├─ name: "Fall 2024 Schedule"
+  ├─ createdBy: userId (owner)
+  └─ events: Event[] (individual classes)
+
+TimetableCollaborator (sharing system)
+  ├─ role: CollaboratorRole (reuses course enum: VIEWER | CONTRIBUTOR)
+  ├─ status: CollaboratorStatus (reuses: PENDING | ACCEPTED | REJECTED)
+
+Event (scheduled class)
+  ├─ timetableId: links to Timetable
+  ├─ courseId: links to Course (must be favorited)
+  ├─ dayOfWeek: 0-6 (Sunday-Saturday)
+  ├─ startTime: "09:00"
+  ├─ endTime: "11:00"
+```
+
+**Key Features:**
+1. **Favorite Course Filtering**: Students can only add courses they've favorited to their timetable
+2. **Sharing with Roles**:
+   - VIEWER: Can see the schedule but not edit
+   - CONTRIBUTOR: Can add/edit/delete events
+3. **Invitation System**: Search for users by email/name, invite them, they accept/reject
+4. **Weekly Recurring**: Events repeat every week (typical university schedule)
+
+**UI Library**: Uses `react-big-calendar` with `date-fns` localizer for calendar display
+
+**Important Models:**
+- `Timetable`: The schedule container
+- `TimetableCollaborator`: Tracks who has access and their role
+- `Event`: Individual class time slots linked to both Timetable and Course

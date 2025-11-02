@@ -413,13 +413,54 @@ async function main() {
 
   console.log(`✅ Created ${await prisma.note.count()} note documents\n`)
 
+  // ==================== TIMETABLES ====================
+  console.log('📅 Creating timetables...')
+
+  // Sarah's Fall 2024 Timetable
+  const sarahTimetable = await prisma.timetable.create({
+    data: {
+      name: 'Fall 2024 Schedule',
+      description: 'My class schedule for Fall 2024 semester',
+      createdBy: sarah.id,
+    },
+  })
+
+  // John's Fall 2024 Timetable
+  const johnTimetable = await prisma.timetable.create({
+    data: {
+      name: 'Fall 2024 Schedule',
+      description: 'My class schedule for Fall 2024 semester',
+      createdBy: john.id,
+    },
+  })
+
+  console.log(`✅ Created ${await prisma.timetable.count()} timetables\n`)
+
+  // ==================== TIMETABLE COLLABORATORS ====================
+  console.log('🤝 Creating timetable collaborations...')
+
+  // John is a VIEWER on Sarah's timetable
+  await prisma.timetableCollaborator.create({
+    data: {
+      timetableId: sarahTimetable.id,
+      userId: john.id,
+      role: 'VIEWER',
+      status: 'ACCEPTED',
+      acceptedAt: new Date(),
+    },
+  })
+
+  console.log(`✅ Created ${await prisma.timetableCollaborator.count()} timetable collaborations\n`)
+
   // ==================== EVENTS (TIMETABLE) ====================
   console.log('📅 Creating timetable events...')
 
+  // Sarah's events
   await prisma.event.createMany({
     data: [
       {
         title: 'DSA Lecture',
+        timetableId: sarahTimetable.id,
         courseId: dataStructures.id,
         dayOfWeek: 1, // Monday
         startTime: '09:00',
@@ -430,6 +471,7 @@ async function main() {
       },
       {
         title: 'DSA Tutorial',
+        timetableId: sarahTimetable.id,
         courseId: dataStructures.id,
         dayOfWeek: 3, // Wednesday
         startTime: '14:00',
@@ -440,6 +482,7 @@ async function main() {
       },
       {
         title: 'Web Dev Lab',
+        timetableId: sarahTimetable.id,
         courseId: webDev.id,
         dayOfWeek: 2, // Tuesday
         startTime: '10:00',
@@ -448,8 +491,15 @@ async function main() {
         recurring: true,
         createdBy: sarah.id,
       },
+    ],
+  })
+
+  // John's events
+  await prisma.event.createMany({
+    data: [
       {
         title: 'ML Lecture',
+        timetableId: johnTimetable.id,
         courseId: machineLearning.id,
         dayOfWeek: 4, // Thursday
         startTime: '09:00',
@@ -460,6 +510,7 @@ async function main() {
       },
       {
         title: 'Database Lecture',
+        timetableId: johnTimetable.id,
         courseId: databases.id,
         dayOfWeek: 5, // Friday
         startTime: '14:00',
@@ -640,6 +691,8 @@ async function main() {
   console.log(`   • ${await prisma.courseCollaborator.count()} collaborations`)
   console.log(`   • ${await prisma.favorite.count()} favorites`)
   console.log(`   • ${await prisma.note.count()} note documents`)
+  console.log(`   • ${await prisma.timetable.count()} timetables`)
+  console.log(`   • ${await prisma.timetableCollaborator.count()} timetable collaborations`)
   console.log(`   • ${await prisma.event.count()} timetable events`)
   console.log(`   • ${await prisma.tag.count()} tags`)
   console.log(`   • ${await prisma.article.count()} articles`)

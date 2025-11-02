@@ -376,6 +376,9 @@ export const courseRouter = createTRPCRouter({
     const ownedCourses = await ctx.db.course.findMany({
       where: { createdBy: userId },
       include: {
+        favorites: {
+          where: { userId: userId },
+        },
         _count: {
           select: {
             resources: true,
@@ -411,6 +414,9 @@ export const courseRouter = createTRPCRouter({
             role: true,
           },
         },
+        favorites: {
+          where: { userId: userId },
+        },
         _count: {
           select: {
             resources: true,
@@ -421,15 +427,17 @@ export const courseRouter = createTRPCRouter({
       orderBy: { createdAt: "desc" },
     });
 
-    // Combine and add role information
+    // Combine and add role information + isFavorited flag
     const allCourses = [
       ...ownedCourses.map((course) => ({
         ...course,
         role: "OWNER" as const,
+        isFavorited: course.favorites.length > 0,
       })),
       ...sharedCourses.map((course) => ({
         ...course,
         role: course.collaborators[0]?.role ?? ("VIEWER" as const),
+        isFavorited: course.favorites.length > 0,
       })),
     ];
 

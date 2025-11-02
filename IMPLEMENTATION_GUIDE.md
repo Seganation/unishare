@@ -223,18 +223,30 @@ const editor = useCreateBlockNoteWithLiveblocks({ ... });
 
 ---
 
-### 4. Timetable
-**Status:** ✅ Complete
+### 4. Timetable (Shareable Schedules)
+**Status:** ⚠️ Needs Testing
 
 **Features:**
-- Weekly recurring events
-- Day/time scheduling (0=Sunday, 6=Saturday)
-- Location tracking
-- Course-linked events
+- Create multiple timetables (e.g., Fall 2024, Spring 2025)
+- Share timetables with other students (VIEWER/CONTRIBUTOR roles)
+- Invitation system (accept/reject)
+- Add events with **favorite course filtering** (only favorited courses can be added)
+- Weekly recurring class schedule with react-big-calendar
+- Collaboration: VIEWER (read-only) vs CONTRIBUTOR (can edit)
+- User search (min 3 characters)
+
+**Schema:**
+- `Timetable` - Schedule container (name, description, owner)
+- `TimetableCollaborator` - Sharing system (reuses `CollaboratorRole` enum)
+- `Event` - Class time slots (linked to Timetable + Course)
 
 **Key Files:**
-- `/src/app/(student)/timetable/page.tsx`
-- `/src/server/api/routers/event.ts`
+- `/src/server/api/routers/timetable.ts` - 13 tRPC procedures
+- `/src/app/(student)/timetable/page.tsx` - Main calendar page
+- `/src/components/timetable/timetable-invitations.tsx` - Notification component
+- Modals: create-timetable, create-event, share-timetable
+
+**Test:** Login as Sarah → see timetable with 3 classes → share with John → John accepts
 
 ---
 
@@ -248,9 +260,11 @@ const editor = useCreateBlockNoteWithLiveblocks({ ... });
 - `CourseCollaborator` - Collaboration invites/roles
 - `Resource` - Course resources
 - `Note` - Collaborative pages with nested structure
-- `Event` - Timetable events
+- `Timetable` - Schedule containers (shareable)
+- `TimetableCollaborator` - Timetable sharing with roles
+- `Event` - Class time slots (linked to Timetable + Course)
 - `Favorite` - Starred courses
-- `Article`, `Tag` - Public articles (partial)
+- `Article`, `Tag` - Public articles
 
 **Nested Pages Schema:**
 ```prisma

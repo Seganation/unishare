@@ -35,6 +35,8 @@ model User {
   // UNIShare relations
   courses              Course[]
   courseCollaborations CourseCollaborator[]
+  timetables           Timetable[]
+  timetableCollaborations TimetableCollaborator[]
   events               Event[]
   articles             Article[]
   favorites            Favorite[]
@@ -220,23 +222,57 @@ model Note {
   @@index([courseId, order]) // For efficient ordering queries
   @@index([parentId]) // For efficient nested queries
 }
-
 // ==================== TIMETABLE ====================
 
-model Event {
-  id        String   @id @default(cuid())
-  title     String
-  courseId  String
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  dayOfWeek Int      // 0=Sunday, 6=Saturday
-  startTime String   // "09:00"
-  endTime   String   // "10:30"
-  location  String?
-  recurring Boolean  @default(true)
-  createdBy String
-  creator   User     @relation(fields: [createdBy], references: [id])
-  createdAt DateTime @default(now())
+model Timetable {
+  id          String                  @id @default(cuid())
+  name        String                  // "Fall 2024 Schedule"re
+  description String?
+  createdBy   String
+  creator     User                    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  events      Event[]
+  collaborators TimetableCollaborator[]
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
 
+  @@index([createdBy])
+}
+
+model TimetableCollaborator {
+  id          String              @id @default(cuid())
+  timetableId String
+  timetable   Timetable           @relation(fields: [timetableId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        CollaboratorRole    @default(VIEWER)
+  status      CollaboratorStatus  @default(PENDING)
+  invitedAt   DateTime            @default(now())
+  acceptedAt  DateTime?
+
+  @@unique([timetableId, userId])
+  @@index([userId])
+  @@index([timetableId])
+  @@index([status])
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  timetableId String
+  timetable   Timetable @relation(fields: [timetableId], references: [id], onDelete: Cascade)
+  courseId    String
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int       // 0=Sunday, 6=Saturday
+  startTime   String    // "09:00"
+  endTime     String    // "10:30"
+  location    String?
+  recurring   Boolean   @default(true)
+  createdBy   String
+  creator     User      @relation(fields: [createdBy], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([timetableId])
   @@index([createdBy])
   @@index([courseId])
 }
