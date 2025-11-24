@@ -29,6 +29,7 @@ import {
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import { ArticleViewer } from "~/components/articles/article-viewer";
+import { ArticleNav } from "~/components/articles/article-nav";
 import { toast } from "sonner";
 
 export default function ArticleDetailPage() {
@@ -108,6 +109,7 @@ export default function ArticleDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      <ArticleNav />
       {/* Cover Image */}
       {article.coverImage && (
         <div className="relative h-[400px] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">

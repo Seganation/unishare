@@ -16,6 +16,7 @@ import {
 } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
 import { Skeleton } from "~/components/ui/skeleton";
+import { ArticleNav } from "~/components/articles/article-nav";
 
 function ArticlesContent() {
   const router = useRouter();
@@ -96,6 +97,7 @@ function ArticlesContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      <ArticleNav />
       {/* Hero Header */}
       <div className="border-b bg-white dark:bg-gray-900">
         <div className="container mx-auto max-w-7xl px-4 py-12 sm:py-16">

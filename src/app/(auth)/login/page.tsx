@@ -86,7 +86,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Card with Glassmorphism */}
-        <div className="glass group relative overflow-hidden rounded-3xl border-2 border-white/30 p-8 shadow-2xl backdrop-blur-xl">
+        <div className="glass group relative overflow-hidden rounded-3xl border-2 border-white/30 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
           {/* Shimmer Effect */}
           <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
 

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { UploadButton } from "~/lib/uploadthing";
+import { UploadDropzone } from "~/lib/uploadthing";
 import { api } from "~/trpc/react";
 
 export default function SignupPage() {
@@ -291,7 +291,7 @@ export default function SignupPage() {
               </p>
               <div className="mt-2">
                 {!studentIdUrl ? (
-                  <UploadButton
+                  <UploadDropzone
                     endpoint="studentIdUploader"
                     onClientUploadComplete={(res) => {
                       if (res?.[0]?.url) {
@@ -300,6 +300,15 @@ export default function SignupPage() {
                     }}
                     onUploadError={(error: Error) => {
                       setError(`Upload failed: ${error.message}`);
+                    }}
+                    appearance={{
+                      container:
+                        "border-2 border-dashed border-gray-300 bg-gray-50 hover:border-blue-500 hover:bg-blue-50 transition-colors",
+                      uploadIcon: "text-gray-400",
+                      label: "text-gray-700 font-medium",
+                      allowedContent: "text-gray-500 text-sm",
+                      button:
+                        "bg-blue-600 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-700 ut-ready:bg-blue-600 ut-uploading:bg-blue-400",
                     }}
                   />
                 ) : (
