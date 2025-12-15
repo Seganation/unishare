@@ -4,6 +4,7 @@ import { courseRouter } from "~/server/api/routers/course";
 import { resourceRouter } from "~/server/api/routers/resource";
 import { articleRouter } from "~/server/api/routers/article";
 import { timetableRouter } from "~/server/api/routers/timetable";
+import { aiRouter } from "~/server/api/routers/ai";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   resource: resourceRouter,
   article: articleRouter,
   timetable: timetableRouter,
+  ai: aiRouter,
 });
 
 // export type definition of API

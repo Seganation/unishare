@@ -33,7 +33,11 @@ export const env = createEnv({
     // Email (Nodemailer with Gmail)
     EMAIL_USER: z.string().email(),
     EMAIL_APP_PASSWORD: z.string(),
-    
+
+    // AI (Ollama - Local Development Only)
+    OLLAMA_BASE_URL: z.string().url().default("http://localhost:11434"),
+    OLLAMA_MODEL: z.string().default("phi3:3.8b"),
+
     // Environment
     NODE_ENV: z
       .enum(["development", "test", "production"])
@@ -80,10 +84,14 @@ export const env = createEnv({
     // Email
     EMAIL_USER: process.env.EMAIL_USER,
     EMAIL_APP_PASSWORD: process.env.EMAIL_APP_PASSWORD,
-    
+
+    // AI (Ollama)
+    OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
+    OLLAMA_MODEL: process.env.OLLAMA_MODEL,
+
     // Application URL
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    
+
     // Environment
     NODE_ENV: process.env.NODE_ENV,
   },

@@ -9,6 +9,14 @@ import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { ResourceCard } from "~/components/resources/resource-card";
 import { ResourceForm } from "~/components/resources/resource-form";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { QuizList } from "~/components/ai/quiz-list";
+import { QuizTaker } from "~/components/ai/quiz-taker";
+import { QuizResults } from "~/components/ai/quiz-results";
+import { QuizGeneratorForm } from "~/components/ai/quiz-generator-form";
+import { StudyPlanList } from "~/components/ai/study-plan-list";
+import { StudyPlanViewer } from "~/components/ai/study-plan-viewer";
+import { StudyPlanGeneratorForm } from "~/components/ai/study-plan-generator-form";
 import {
   ArrowLeft,
   Plus,
@@ -16,6 +24,9 @@ import {
   Star,
   Settings,
   MoreVertical,
+  FileText,
+  FileQuestion,
+  Calendar,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { toast } from "sonner";
@@ -27,11 +38,33 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 
+type View =
+  | "resources"
+  | "quizzes"
+  | "quiz-generator"
+  | "quiz-taker"
+  | "quiz-results"
+  | "study-plans"
+  | "study-plan-generator"
+  | "study-plan-viewer";
+
 export default function CourseDetailPage() {
   const params = useParams();
   const router = useRouter();
   const courseId = params.id as string;
   const [showResourceForm, setShowResourceForm] = useState(false);
+  const [view, setView] = useState<View>("resources");
+  const [activeTab, setActiveTab] = useState<
+    "resources" | "quizzes" | "study-plans"
+  >("resources");
+  const [selectedQuizId, setSelectedQuizId] = useState<string | undefined>();
+  const [selectedAttemptId, setSelectedAttemptId] = useState<
+    string | undefined
+  >();
+  const [quizIdForResults, setQuizIdForResults] = useState<
+    string | undefined
+  >();
+  const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>();
 
   const utils = api.useUtils();
 
@@ -100,6 +133,22 @@ export default function CourseDetailPage() {
   const userRole = course.userRole;
   const canEdit = userRole === "OWNER" || userRole === "CONTRIBUTOR";
   const isOwner = userRole === "OWNER";
+
+  const handleQuizSelect = (quizId: string) => {
+    setSelectedQuizId(quizId);
+    setView("quiz-taker");
+  };
+
+  const handleQuizComplete = (attemptId: string) => {
+    setSelectedAttemptId(attemptId);
+    setQuizIdForResults(selectedQuizId);
+    setView("quiz-results");
+  };
+
+  const handlePlanSelect = (planId: string) => {
+    setSelectedPlanId(planId);
+    setView("study-plan-viewer");
+  };
 
   return (
     <div className="bg-background min-h-screen">
@@ -222,67 +271,176 @@ export default function CourseDetailPage() {
           )}
         </div>
 
-        {/* Resources Section */}
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-foreground text-2xl font-bold">Resources</h2>
-          {canEdit && (
-            <Button onClick={() => setShowResourceForm(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Custom Resource
-            </Button>
-          )}
-        </div>
+        {/* Tabs for Resources, Quizzes, and Study Plans */}
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => {
+            setActiveTab(v as typeof activeTab);
+            if (v === "resources") setView("resources");
+            else if (v === "quizzes") setView("quizzes");
+            else if (v === "study-plans") setView("study-plans");
+          }}
+        >
+          <TabsList className="mb-6 grid w-full grid-cols-3">
+            <TabsTrigger value="resources" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Resources
+            </TabsTrigger>
+            <TabsTrigger value="quizzes" className="flex items-center gap-2">
+              <FileQuestion className="h-4 w-4" />
+              Quizzes
+            </TabsTrigger>
+            <TabsTrigger
+              value="study-plans"
+              className="flex items-center gap-2"
+            >
+              <Calendar className="h-4 w-4" />
+              Study Plans
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Resources Grid */}
-        {course.resources.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {course.resources.map((resource) => (
-              <ResourceCard
-                key={resource.id}
-                id={resource.id}
-                title={resource.title}
-                type={resource.type}
-                description={resource.description}
-                deadline={resource.deadline}
-                fileUrls={resource.fileUrls}
-                allowFiles={resource.allowFiles}
-                userRole={userRole}
-                courseId={courseId}
-                onAddFile={() => {
-                  toast.info("File upload coming soon!");
-                  // TODO: Implement file upload modal
-                }}
-                onDelete={
-                  isOwner && resource.type === "CUSTOM"
-                    ? () => {
-                        if (
-                          confirm(
-                            "Are you sure you want to delete this resource?",
-                          )
-                        ) {
-                          deleteResource.mutate({ id: resource.id });
-                        }
-                      }
-                    : undefined
-                }
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="border-border bg-card rounded-2xl border py-16 text-center">
-            <p className="text-muted-foreground">No resources yet</p>
-            {canEdit && (
-              <Button
-                variant="outline"
-                className="mt-4"
-                onClick={() => setShowResourceForm(true)}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Create First Resource
-              </Button>
+          {/* Resources Tab */}
+          <TabsContent value="resources" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-foreground text-2xl font-bold">Resources</h2>
+              {canEdit && (
+                <Button onClick={() => setShowResourceForm(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Custom Resource
+                </Button>
+              )}
+            </div>
+
+            {/* Resources Grid */}
+            {course.resources.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {course.resources.map((resource) => (
+                  <ResourceCard
+                    key={resource.id}
+                    id={resource.id}
+                    title={resource.title}
+                    type={resource.type}
+                    description={resource.description}
+                    deadline={resource.deadline}
+                    fileUrls={resource.fileUrls}
+                    allowFiles={resource.allowFiles}
+                    userRole={userRole}
+                    courseId={courseId}
+                    onAddFile={() => {
+                      toast.info("File upload coming soon!");
+                      // TODO: Implement file upload modal
+                    }}
+                    onDelete={
+                      isOwner && resource.type === "CUSTOM"
+                        ? () => {
+                            if (
+                              confirm(
+                                "Are you sure you want to delete this resource?",
+                              )
+                            ) {
+                              deleteResource.mutate({ id: resource.id });
+                            }
+                          }
+                        : undefined
+                    }
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="border-border bg-card rounded-2xl border py-16 text-center">
+                <p className="text-muted-foreground">No resources yet</p>
+                {canEdit && (
+                  <Button
+                    variant="outline"
+                    className="mt-4"
+                    onClick={() => setShowResourceForm(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create First Resource
+                  </Button>
+                )}
+              </div>
             )}
-          </div>
-        )}
+          </TabsContent>
+
+          {/* Quizzes Tab */}
+          <TabsContent value="quizzes" className="space-y-4">
+            {view === "quizzes" && (
+              <>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">Course Quizzes</h2>
+                  <Button onClick={() => setView("quiz-generator")}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Generate Quiz
+                  </Button>
+                </div>
+                <QuizList courseId={courseId} onSelectQuiz={handleQuizSelect} />
+              </>
+            )}
+            {view === "quiz-generator" && (
+              <QuizGeneratorForm
+                courseId={courseId}
+                onSuccess={(quizId) => {
+                  setSelectedQuizId(quizId);
+                  setView("quiz-taker");
+                }}
+                onCancel={() => setView("quizzes")}
+              />
+            )}
+            {view === "quiz-taker" && selectedQuizId && (
+              <QuizTaker
+                quizId={selectedQuizId}
+                onBack={() => setView("quizzes")}
+                onComplete={handleQuizComplete}
+              />
+            )}
+            {view === "quiz-results" &&
+              selectedAttemptId &&
+              quizIdForResults && (
+                <QuizResults
+                  quizId={quizIdForResults}
+                  attemptId={selectedAttemptId}
+                  onBack={() => setView("quizzes")}
+                  onRetake={() => setView("quiz-taker")}
+                />
+              )}
+          </TabsContent>
+
+          {/* Study Plans Tab */}
+          <TabsContent value="study-plans" className="space-y-4">
+            {view === "study-plans" && (
+              <>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">Study Plans</h2>
+                  <Button onClick={() => setView("study-plan-generator")}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Generate Plan
+                  </Button>
+                </div>
+                <StudyPlanList
+                  courseId={courseId}
+                  onSelectPlan={handlePlanSelect}
+                />
+              </>
+            )}
+            {view === "study-plan-generator" && (
+              <StudyPlanGeneratorForm
+                courseId={courseId}
+                onSuccess={(planId) => {
+                  setSelectedPlanId(planId);
+                  setView("study-plan-viewer");
+                }}
+                onCancel={() => setView("study-plans")}
+              />
+            )}
+            {view === "study-plan-viewer" && selectedPlanId && (
+              <StudyPlanViewer
+                planId={selectedPlanId}
+                onBack={() => setView("study-plans")}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
 
         {/* Resource Form Modal */}
         <ResourceForm

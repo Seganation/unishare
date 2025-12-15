@@ -4,7 +4,8 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { X, Search, Loader2, UserPlus, Users } from "lucide-react";
+import { X, Search, UserPlus, Users } from "lucide-react";
+import { Loader } from "~/components/ai-elements/loader";
 
 interface ShareTimetableModalProps {
   open: boolean;
@@ -20,12 +21,15 @@ export function ShareTimetableModal({
   timetableName,
 }: ShareTimetableModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"VIEWER" | "CONTRIBUTOR">("VIEWER");
-
-  const { data: searchResults, isLoading: isSearching } = api.timetable.searchUsers.useQuery(
-    { query: searchQuery, timetableId },
-    { enabled: searchQuery.length >= 3 },
+  const [selectedRole, setSelectedRole] = useState<"VIEWER" | "CONTRIBUTOR">(
+    "VIEWER",
   );
+
+  const { data: searchResults, isLoading: isSearching } =
+    api.timetable.searchUsers.useQuery(
+      { query: searchQuery, timetableId },
+      { enabled: searchQuery.length >= 3 },
+    );
 
   const inviteMutation = api.timetable.inviteCollaborator.useMutation({
     onSuccess: () => {
@@ -48,12 +52,14 @@ export function ShareTimetableModal({
       <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Share Timetable</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Share Timetable
+            </h2>
             <p className="text-sm text-gray-600">{timetableName}</p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-2 hover:bg-gray-100 transition-colors"
+            className="rounded-full p-2 transition-colors hover:bg-gray-100"
           >
             <X className="h-5 w-5 text-gray-500" />
           </button>
@@ -86,7 +92,9 @@ export function ShareTimetableModal({
                 }`}
               >
                 <div className="font-semibold text-gray-900">Contributor</div>
-                <div className="mt-1 text-xs text-gray-600">Can edit events</div>
+                <div className="mt-1 text-xs text-gray-600">
+                  Can edit events
+                </div>
               </button>
             </div>
           </div>
@@ -97,7 +105,7 @@ export function ShareTimetableModal({
               Search for students
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -116,7 +124,7 @@ export function ShareTimetableModal({
           <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200">
             {isSearching && searchQuery.length >= 3 && (
               <div className="flex items-center justify-center p-8">
-                <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+                <Loader />
               </div>
             )}
 
@@ -142,13 +150,17 @@ export function ShareTimetableModal({
                               className="h-10 w-10 rounded-full"
                             />
                           ) : (
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-semibold">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-700">
                               {user.name.charAt(0).toUpperCase()}
                             </div>
                           )}
                           <div>
-                            <p className="font-semibold text-gray-900">{user.name}</p>
-                            <p className="text-sm text-gray-600">{user.email}</p>
+                            <p className="font-semibold text-gray-900">
+                              {user.name}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {user.email}
+                            </p>
                           </div>
                         </div>
                         <Button

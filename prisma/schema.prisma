@@ -41,6 +41,13 @@ model User {
   articles             Article[]
   favorites            Favorite[]
 
+  // AI relations
+  aiConversations      AiConversation[]
+  aiGeneratedNotes     AiGeneratedNote[]
+  aiQuizzes            AiQuiz[]
+  aiQuizAttempts       AiQuizAttempt[]
+  aiStudyPlans         AiStudyPlan[]
+
   @@index([email])
   @@index([role])
   @@index([facultyId])
@@ -129,6 +136,11 @@ model Course {
   events        Event[]
   favorites     Favorite[]
 
+  // AI relations
+  aiConversations AiConversation[]
+  aiQuizzes       AiQuiz[]
+  aiStudyPlans    AiStudyPlan[]
+
   @@index([createdBy])
 }
 
@@ -214,6 +226,11 @@ model Note {
   parentId      String?  // Parent page ID for nested pages
   parent        Note?    @relation("NestedPages", fields: [parentId], references: [id], onDelete: Cascade)
   children      Note[]   @relation("NestedPages")
+
+  // AI relations
+  aiConversations  AiConversation[]
+  aiGeneratedNotes AiGeneratedNote[]
+  aiQuizzes        AiQuiz[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -314,4 +331,242 @@ model Tag {
   slug      String    @unique
   articles  Article[] @relation("ArticleTags")
   createdAt DateTime  @default(now())
+}
+
+// ==================== AI INTEGRATION (LOCAL OLLAMA) ====================
+
+model AiConversation {
+  id          String      @id @default(cuid())
+  title       String      @default("New Conversation")
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Optional: Link to a course or note for context
+  courseId    String?
+  course      Course?     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  noteId      String?
+  note        Note?       @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  // Model configuration
+  model       String      @default("phi3:3.8b")
+  temperature Float       @default(0.7)
+
+  messages    AiMessage[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([noteId])
+}
+
+model AiMessage {
+  id             String         @id @default(cuid())
+  conversationId String
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role           AiMessageRole
+  content        String
+  tokensUsed     Int?           // Track token usage for analytics
+
+  createdAt      DateTime       @default(now())
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+enum AiMessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+model AiGeneratedNote {
+  id          String   @id @default(cuid())
+
+  // Link to the note that was generated/improved
+  noteId      String
+  note        Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  // User who requested the generation
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Generation details
+  prompt      String   // The prompt used to generate
+  model       String   // Model used (e.g., "phi3:3.8b")
+  tokensUsed  Int?     // Track token usage
+
+  // Before/after snapshots for history
+  contentBefore Json?
+  contentAfter  Json
+
+  // Generation type
+  type        AiGenerationType
+
+  createdAt   DateTime @default(now())
+
+  @@index([noteId])
+  @@index([userId])
+  @@index([type])
+}
+
+enum AiGenerationType {
+  GENERATE    // Generated from scratch
+  IMPROVE     // Improved existing content
+  SUMMARIZE   // Summarized existing content
+  EXPAND      // Expanded existing content
+}
+
+// ==================== AI QUIZ GENERATION ====================
+
+model AiQuiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+
+  // Link to course or note
+  courseId    String?
+  course      Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  noteId      String?
+  note        Note?    @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  // Creator
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Generation details
+  prompt      String   // What user asked to generate quiz about
+  model       String   @default("phi3:3.8b")
+  tokensUsed  Int?
+
+  // Quiz content
+  questions   AiQuizQuestion[]
+  attempts    AiQuizAttempt[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([noteId])
+}
+
+model AiQuizQuestion {
+  id            String              @id @default(cuid())
+  quizId        String
+  quiz          AiQuiz              @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  question      String
+  type          QuizQuestionType
+  options       Json?               // For multiple choice: ["A", "B", "C", "D"]
+  correctAnswer String              // For MC: "A", for True/False: "true"/"false", for short: expected answer
+  explanation   String?             // AI-generated explanation
+
+  order         Int                 @default(0)
+  answers       AiQuizAnswer[]
+
+  @@index([quizId])
+}
+
+enum QuizQuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+}
+
+model AiQuizAttempt {
+  id          String         @id @default(cuid())
+  quizId      String
+  quiz        AiQuiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  score       Float          // Percentage (0-100)
+  answers     AiQuizAnswer[]
+
+  startedAt   DateTime       @default(now())
+  completedAt DateTime?
+
+  @@index([quizId])
+  @@index([userId])
+}
+
+model AiQuizAnswer {
+  id          String         @id @default(cuid())
+  attemptId   String
+  attempt     AiQuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId  String
+  question    AiQuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  userAnswer  String
+  isCorrect   Boolean
+
+  @@index([attemptId])
+  @@index([questionId])
+}
+
+// ==================== AI STUDY PLANS ====================
+
+model AiStudyPlan {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+
+  // Link to course
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Creator
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Generation details
+  prompt      String   // e.g., "Create 4-week study plan for final exam"
+  model       String   @default("phi3:3.8b")
+  tokensUsed  Int?
+
+  // Study plan content
+  weeks       AiStudyPlanWeek[]
+
+  // Metadata
+  startDate   DateTime?
+  endDate     DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([courseId])
+}
+
+model AiStudyPlanWeek {
+  id          String        @id @default(cuid())
+  studyPlanId String
+  studyPlan   AiStudyPlan   @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+
+  weekNumber  Int           // 1, 2, 3, 4...
+  title       String        // "Week 1: Introduction to Databases"
+  description String?
+  goals       String[]      // Array of learning goals
+
+  tasks       AiStudyPlanTask[]
+
+  @@index([studyPlanId])
+}
+
+model AiStudyPlanTask {
+  id          String          @id @default(cuid())
+  weekId      String
+  week        AiStudyPlanWeek @relation(fields: [weekId], references: [id], onDelete: Cascade)
+
+  title       String          // "Review Chapter 3"
+  description String?
+  estimatedMinutes Int?       // Time to complete
+  isCompleted Boolean         @default(false)
+  completedAt DateTime?
+
+  order       Int             @default(0)
+
+  @@index([weekId])
 }

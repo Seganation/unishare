@@ -3,15 +3,25 @@
 import { useState } from "react";
 import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
 import type { View } from "react-big-calendar";
-import { format, parse, startOfWeek, getDay, addDays, setHours, setMinutes, startOfDay } from "date-fns";
+import {
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  addDays,
+  setHours,
+  setMinutes,
+  startOfDay,
+} from "date-fns";
 import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
-import { Plus, Calendar as CalendarIcon, Share2, Settings, Loader2 } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, Share2, Settings } from "lucide-react";
 import { CreateTimetableModal } from "~/components/timetable/create-timetable-modal";
 import { CreateEventModal } from "~/components/timetable/create-event-modal";
 import { ShareTimetableModal } from "~/components/timetable/share-timetable-modal";
+import { Loader } from "~/components/ai-elements/loader";
 import type { Event as PrismaEvent, Course } from "@prisma/client";
 
 // Setup date-fns localizer for react-big-calendar
@@ -39,12 +49,18 @@ type CalendarEvent = {
 export default function TimetablePage() {
   const [view, setView] = useState<View>("week");
   const [date, setDate] = useState(new Date());
-  const [selectedTimetableId, setSelectedTimetableId] = useState<string | null>(null);
+  const [selectedTimetableId, setSelectedTimetableId] = useState<string | null>(
+    null,
+  );
   const [showCreateTimetable, setShowCreateTimetable] = useState(false);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
-  const { data: timetables, isLoading, refetch } = api.timetable.getUserTimetables.useQuery();
+  const {
+    data: timetables,
+    isLoading,
+    refetch,
+  } = api.timetable.getUserTimetables.useQuery();
 
   // Select first timetable by default
   const selectedTimetable = selectedTimetableId
@@ -71,7 +87,7 @@ export default function TimetablePage() {
         const currentDay = getDay(today);
         const targetDay = event.dayOfWeek;
         const daysUntilTarget = (targetDay - currentDay + 7) % 7;
-        const baseDate = addDays(today, daysUntilTarget + (week * 7));
+        const baseDate = addDays(today, daysUntilTarget + week * 7);
 
         const start = setMinutes(setHours(baseDate, startHour!), startMinute!);
         const end = setMinutes(setHours(baseDate, endHour!), endMinute!);
@@ -98,15 +114,18 @@ export default function TimetablePage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader size={64} />
       </div>
     );
   }
 
-  const allTimetables = [...(timetables?.owned ?? []), ...(timetables?.shared ?? [])];
+  const allTimetables = [
+    ...(timetables?.owned ?? []),
+    ...(timetables?.shared ?? []),
+  ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       {/* Header */}
       <div className="bg-primary relative overflow-hidden px-4 py-12">
         <div className="pattern-dots absolute inset-0 opacity-10" />
@@ -120,7 +139,7 @@ export default function TimetablePage() {
             <div>
               <div className="mb-3 flex items-center gap-2">
                 <CalendarIcon className="h-6 w-6 text-yellow-300" />
-                <span className="text-primary-foreground/70 text-sm font-semibold uppercase tracking-wider">
+                <span className="text-primary-foreground/70 text-sm font-semibold tracking-wider uppercase">
                   Schedule
                 </span>
               </div>
@@ -150,7 +169,9 @@ export default function TimetablePage() {
         {allTimetables.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center">
             <CalendarIcon className="mb-4 h-16 w-16 text-gray-400" />
-            <h3 className="mb-2 text-2xl font-bold text-gray-900">No Timetables Yet</h3>
+            <h3 className="mb-2 text-2xl font-bold text-gray-900">
+              No Timetables Yet
+            </h3>
             <p className="mb-6 text-gray-600">
               Create your first timetable to start managing your class schedule
             </p>
@@ -166,7 +187,7 @@ export default function TimetablePage() {
               <select
                 value={selectedTimetable?.id ?? ""}
                 onChange={(e) => setSelectedTimetableId(e.target.value)}
-                className="rounded-lg border-2 border-gray-300 bg-white px-4 py-2 font-semibold text-gray-900 shadow-sm transition-all hover:border-indigo-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="rounded-lg border-2 border-gray-300 bg-white px-4 py-2 font-semibold text-gray-900 shadow-sm transition-all hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none"
               >
                 {timetables?.owned && timetables.owned.length > 0 && (
                   <optgroup label="My Timetables">
@@ -181,7 +202,8 @@ export default function TimetablePage() {
                   <optgroup label="Shared with Me">
                     {timetables.shared.map((t) => (
                       <option key={t.id} value={t.id}>
-                        {t.name} - by {t.creator.name} ({t.events.length} classes)
+                        {t.name} - by {t.creator.name} ({t.events.length}{" "}
+                        classes)
                       </option>
                     ))}
                   </optgroup>
@@ -190,13 +212,20 @@ export default function TimetablePage() {
 
               <div className="flex gap-2">
                 {canEdit && (
-                  <Button onClick={() => setShowCreateEvent(true)} variant="default">
+                  <Button
+                    onClick={() => setShowCreateEvent(true)}
+                    variant="default"
+                  >
                     <Plus className="mr-2 h-4 w-4" />
                     Add Class
                   </Button>
                 )}
-                {selectedTimetable?.createdBy === selectedTimetable?.creator.id && (
-                  <Button onClick={() => setShowShareModal(true)} variant="outline">
+                {selectedTimetable?.createdBy ===
+                  selectedTimetable?.creator.id && (
+                  <Button
+                    onClick={() => setShowShareModal(true)}
+                    variant="outline"
+                  >
                     <Share2 className="mr-2 h-4 w-4" />
                     Share
                   </Button>
@@ -249,7 +278,9 @@ export default function TimetablePage() {
             {/* Legend */}
             {selectedTimetable && selectedTimetable.events.length > 0 && (
               <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4">
-                <h4 className="mb-3 font-semibold text-gray-900">Course Colors</h4>
+                <h4 className="mb-3 font-semibold text-gray-900">
+                  Course Colors
+                </h4>
                 <div className="flex flex-wrap gap-3">
                   {Array.from(
                     new Set(selectedTimetable.events.map((e) => e.course.id)),
@@ -264,7 +295,9 @@ export default function TimetablePage() {
                           className="h-4 w-4 rounded"
                           style={{ backgroundColor: event.course.color }}
                         />
-                        <span className="text-sm text-gray-700">{event.course.title}</span>
+                        <span className="text-sm text-gray-700">
+                          {event.course.title}
+                        </span>
                       </div>
                     );
                   })}
