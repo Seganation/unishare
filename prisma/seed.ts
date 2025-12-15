@@ -355,60 +355,80 @@ async function main() {
   // ==================== NOTES ====================
   console.log('📝 Creating collaborative notes...')
 
-  await prisma.note.createMany({
-    data: [
-      {
-        courseId: dataStructures.id,
-        content: JSON.stringify({
-          type: 'doc',
-          content: [
-            {
-              type: 'heading',
-              attrs: { level: 1 },
-              content: [{ type: 'text', text: 'Data Structures Notes' }],
-            },
-            {
-              type: 'paragraph',
-              content: [
-                {
-                  type: 'text',
-                  text: 'Welcome to our collaborative notes! Feel free to add your insights.',
-                },
-              ],
-            },
-          ],
-        }),
-        liveblockRoom: `course-${dataStructures.id}`,
-      },
-      {
-        courseId: webDev.id,
-        content: JSON.stringify({
-          type: 'doc',
-          content: [
-            {
-              type: 'heading',
-              attrs: { level: 1 },
-              content: [{ type: 'text', text: 'Web Development Notes' }],
-            },
-          ],
-        }),
-        liveblockRoom: `course-${webDev.id}`,
-      },
-      {
-        courseId: machineLearning.id,
-        content: JSON.stringify({
-          type: 'doc',
-          content: [
-            {
-              type: 'heading',
-              attrs: { level: 1 },
-              content: [{ type: 'text', text: 'Machine Learning Notes' }],
-            },
-          ],
-        }),
-        liveblockRoom: `course-${machineLearning.id}`,
-      },
-    ],
+  // Create notes individually so we can set liveblockRoom to the note's own ID
+  const dataStructuresNote = await prisma.note.create({
+    data: {
+      courseId: dataStructures.id,
+      content: JSON.stringify({
+        type: 'doc',
+        content: [
+          {
+            type: 'heading',
+            attrs: { level: 1 },
+            content: [{ type: 'text', text: 'Data Structures Notes' }],
+          },
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'Welcome to our collaborative notes! Feel free to add your insights.',
+              },
+            ],
+          },
+        ],
+      }),
+      liveblockRoom: '', // Will be updated to note ID
+    },
+  })
+
+  await prisma.note.update({
+    where: { id: dataStructuresNote.id },
+    data: { liveblockRoom: dataStructuresNote.id },
+  })
+
+  const webDevNote = await prisma.note.create({
+    data: {
+      courseId: webDev.id,
+      content: JSON.stringify({
+        type: 'doc',
+        content: [
+          {
+            type: 'heading',
+            attrs: { level: 1 },
+            content: [{ type: 'text', text: 'Web Development Notes' }],
+          },
+        ],
+      }),
+      liveblockRoom: '', // Will be updated to note ID
+    },
+  })
+
+  await prisma.note.update({
+    where: { id: webDevNote.id },
+    data: { liveblockRoom: webDevNote.id },
+  })
+
+  const machineLearningNote = await prisma.note.create({
+    data: {
+      courseId: machineLearning.id,
+      content: JSON.stringify({
+        type: 'doc',
+        content: [
+          {
+            type: 'heading',
+            attrs: { level: 1 },
+            content: [{ type: 'text', text: 'Machine Learning Notes' }],
+          },
+        ],
+      }),
+      liveblockRoom: '', // Will be updated to note ID
+    },
+  })
+
+  await prisma.note.update({
+    where: { id: machineLearningNote.id },
+    data: { liveblockRoom: machineLearningNote.id },
   })
 
   console.log(`✅ Created ${await prisma.note.count()} note documents\n`)
