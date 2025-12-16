@@ -13,7 +13,6 @@ handling are managed by the platform, enterprise customers can configure certain
 behaviors related to data storage, retention, and region enforcement. This
 document outlines what data Liveblocks stores, where it is stored, and how
 deletion is handled.
-
 <Banner title="Trust center">
 
 Visit our [trust center](https://liveblocks.safebase.us/) to download security
