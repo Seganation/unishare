@@ -435,7 +435,6 @@ export const aiRouter = createTRPCRouter({
         } else if (input.type === "EXPAND") {
           fullPrompt = `Expand on the following topic with more details and examples: ${input.prompt}`;
         }
-
         // Generate content
         const result = await generateText({
           prompt: fullPrompt,
