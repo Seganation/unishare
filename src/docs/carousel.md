@@ -291,7 +291,6 @@ export function Example() {
   )
 }
 ```
-
 <ComponentPreview
   name="carousel-plugin"
   title="Carousel"
