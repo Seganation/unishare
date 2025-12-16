@@ -296,4 +296,5 @@ export function Example() {
   title="Carousel"
   description="A carousel with the autoplay plugin."
 />
+
 See the [Embla Carousel docs](https://www.embla-carousel.com/api/plugins/) for more information on using plugins.
