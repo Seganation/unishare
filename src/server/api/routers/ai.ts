@@ -441,7 +441,6 @@ export const aiRouter = createTRPCRouter({
           prompt: fullPrompt,
           systemPrompt,
         });
-
         // Save the generated content to database
         const aiGeneratedNote = await ctx.db.aiGeneratedNote.create({
           data: {
