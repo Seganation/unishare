@@ -327,7 +327,7 @@ export const aiRouter = createTRPCRouter({
               role: "assistant",
               parts: [{ type: "text", text: response.text }],
             },
-            tokensUsed: response.usage?.total_tokens,
+            tokensUsed: response.tokensUsed,
           },
         });
 
