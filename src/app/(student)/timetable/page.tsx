@@ -167,12 +167,12 @@ export default function TimetablePage() {
       {/* Main Content */}
       <div className="container mx-auto max-w-7xl px-4 py-8">
         {allTimetables.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center">
-            <CalendarIcon className="mb-4 h-16 w-16 text-gray-400" />
-            <h3 className="mb-2 text-2xl font-bold text-gray-900">
+          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center dark:border-gray-700 dark:bg-gray-800/50">
+            <CalendarIcon className="mb-4 h-16 w-16 text-gray-400 dark:text-gray-500" />
+            <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
               No Timetables Yet
             </h3>
-            <p className="mb-6 text-gray-600">
+            <p className="mb-6 text-gray-600 dark:text-gray-400">
               Create your first timetable to start managing your class schedule
             </p>
             <Button onClick={() => setShowCreateTimetable(true)} size="lg">
@@ -182,12 +182,42 @@ export default function TimetablePage() {
           </div>
         ) : (
           <>
+            {/* Course Colors Legend - Simple & Clean */}
+            {selectedTimetable && selectedTimetable.events.length > 0 && (
+              <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+                <h4 className="mb-3 text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Course Colors
+                </h4>
+                <div className="flex flex-wrap gap-3">
+                  {Array.from(
+                    new Set(selectedTimetable.events.map((e) => e.course.id)),
+                  ).map((courseId) => {
+                    const event = selectedTimetable.events.find(
+                      (e) => e.course.id === courseId,
+                    );
+                    if (!event) return null;
+                    return (
+                      <div key={courseId} className="flex items-center gap-2">
+                        <div
+                          className="h-3 w-3 rounded-sm"
+                          style={{ backgroundColor: event.course.color }}
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                          {event.course.title}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Timetable Selector & Actions */}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <select
                 value={selectedTimetable?.id ?? ""}
                 onChange={(e) => setSelectedTimetableId(e.target.value)}
-                className="rounded-lg border-2 border-gray-300 bg-white px-4 py-2 font-semibold text-gray-900 shadow-sm transition-all hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none"
+                className="rounded-lg border-2 border-gray-300 bg-white px-4 py-2 font-semibold text-gray-900 shadow-sm transition-all hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800"
               >
                 {timetables?.owned && timetables.owned.length > 0 && (
                   <optgroup label="My Timetables">
@@ -234,7 +264,7 @@ export default function TimetablePage() {
             </div>
 
             {/* Calendar */}
-            <div className="rounded-xl border-2 border-gray-200 bg-white p-6 shadow-lg">
+            <div className="rounded-xl border-2 border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900">
               <BigCalendar
                 localizer={localizer}
                 events={calendarEvents}
@@ -274,36 +304,6 @@ export default function TimetablePage() {
                 }}
               />
             </div>
-
-            {/* Legend */}
-            {selectedTimetable && selectedTimetable.events.length > 0 && (
-              <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4">
-                <h4 className="mb-3 font-semibold text-gray-900">
-                  Course Colors
-                </h4>
-                <div className="flex flex-wrap gap-3">
-                  {Array.from(
-                    new Set(selectedTimetable.events.map((e) => e.course.id)),
-                  ).map((courseId) => {
-                    const event = selectedTimetable.events.find(
-                      (e) => e.course.id === courseId,
-                    );
-                    if (!event) return null;
-                    return (
-                      <div key={courseId} className="flex items-center gap-2">
-                        <div
-                          className="h-4 w-4 rounded"
-                          style={{ backgroundColor: event.course.color }}
-                        />
-                        <span className="text-sm text-gray-700">
-                          {event.course.title}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </>
         )}
       </div>

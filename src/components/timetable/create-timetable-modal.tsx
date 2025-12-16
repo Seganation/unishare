@@ -38,20 +38,22 @@ export function CreateTimetableModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-900">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Create Timetable</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            Create Timetable
+          </h2>
           <button
             onClick={onClose}
-            className="rounded-full p-2 hover:bg-gray-100 transition-colors"
+            className="rounded-full p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-semibold text-gray-700">
+            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
               Timetable Name <span className="text-red-500">*</span>
             </label>
             <Input
@@ -64,7 +66,7 @@ export function CreateTimetableModal({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-semibold text-gray-700">
+            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
               Description (Optional)
             </label>
             <Textarea

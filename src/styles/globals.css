@@ -468,3 +468,141 @@
     scroll-behavior: smooth;
   }
 }
+
+/* ========================================
+   📅 React Big Calendar Dark Mode
+   ======================================== */
+
+/* Light Mode Calendar Styles */
+.rbc-calendar {
+  @apply bg-white dark:bg-gray-900;
+}
+
+.rbc-header {
+  @apply border-gray-200 bg-gray-50 text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100;
+}
+
+.rbc-today {
+  @apply bg-blue-50 dark:bg-blue-900/20;
+}
+
+.rbc-off-range-bg {
+  @apply bg-gray-50 dark:bg-gray-800/50;
+}
+
+.rbc-time-slot {
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+.rbc-day-slot .rbc-time-slot {
+  @apply border-gray-100 dark:border-gray-800;
+}
+
+.rbc-time-content {
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+.rbc-time-header-content {
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+.rbc-time-header-gutter {
+  @apply bg-gray-50 dark:bg-gray-800;
+}
+
+.rbc-timeslot-group {
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+.rbc-time-gutter {
+  @apply text-gray-600 dark:text-gray-400;
+}
+
+.rbc-label {
+  @apply text-gray-600 dark:text-gray-400;
+}
+
+.rbc-toolbar {
+  @apply text-gray-900 dark:text-gray-100;
+}
+
+.rbc-toolbar button {
+  @apply border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800;
+}
+
+.rbc-toolbar button:active,
+.rbc-toolbar button.rbc-active {
+  @apply border-blue-500 bg-blue-500 text-white dark:border-blue-600 dark:bg-blue-600;
+}
+
+.rbc-toolbar button:focus {
+  @apply ring-2 ring-blue-500 dark:ring-blue-400;
+}
+
+.rbc-current-time-indicator {
+  @apply bg-red-500 dark:bg-red-400;
+}
+
+.rbc-day-slot .rbc-events-container {
+  @apply bg-transparent;
+}
+
+.rbc-allday-cell {
+  @apply bg-gray-50 dark:bg-gray-800;
+}
+
+.rbc-row-bg {
+  @apply bg-white dark:bg-gray-900;
+}
+
+.rbc-selected-cell {
+  @apply bg-blue-100 dark:bg-blue-900/30;
+}
+
+.rbc-show-more {
+  @apply text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20;
+}
+
+.rbc-overlay {
+  @apply border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800;
+}
+
+.rbc-overlay-header {
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+.rbc-date-cell {
+  @apply text-gray-700 dark:text-gray-300;
+}
+
+.rbc-date-cell.rbc-now {
+  @apply font-bold text-blue-600 dark:text-blue-400;
+}
+
+.rbc-month-view {
+  @apply border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900;
+}
+
+.rbc-month-row {
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+.rbc-day-bg {
+  @apply border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900;
+}
+
+.rbc-day-bg.rbc-today {
+  @apply bg-blue-50 dark:bg-blue-900/10;
+}
+
+.rbc-event {
+  @apply text-white;
+}
+
+.rbc-event:focus {
+  @apply ring-2 ring-white ring-offset-2 outline-none dark:ring-gray-900;
+}
+
+.rbc-event-label {
+  @apply text-white;
+}
