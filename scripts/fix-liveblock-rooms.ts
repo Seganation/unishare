@@ -10,7 +10,6 @@ async function main() {
   const notes = await prisma.note.findMany();
 
   console.log(`Found ${notes.length} notes to update`);
-
   // Update each note to use its ID as the liveblockRoom
   for (const note of notes) {
     await prisma.note.update({
