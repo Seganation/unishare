@@ -10,7 +10,6 @@ Basic button → confetti
 "use client";
 
 import confetti from "canvas-confetti";
-
 export default function ConfettiButton() {
 const fire = () => {
 confetti({
@@ -58,3 +57,4 @@ scalar: 0.75,
 shapes: ["circle"],
 });
 };
+ where are we going to use this??
