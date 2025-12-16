@@ -104,7 +104,7 @@ function ArticlesContent() {
           <div className="flex flex-col items-center text-center">
             <div className="mb-4 flex items-center gap-2">
               <BookOpen className="h-8 w-8 text-purple-600" />
-              <h1 className="text-4xl font-black text-gray-900 dark:text-white md:text-5xl">
+              <h1 className="text-4xl font-black text-gray-900 md:text-5xl dark:text-white">
                 UNIShare Articles
               </h1>
             </div>
@@ -118,7 +118,7 @@ function ArticlesContent() {
             {/* Search Bar */}
             <form onSubmit={handleSearch} className="flex flex-1 gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
                   type="text"
                   placeholder="Search articles..."
@@ -131,10 +131,7 @@ function ArticlesContent() {
             </form>
 
             {/* Tag Filter */}
-            <Select
-              value={currentTag ?? "all"}
-              onValueChange={handleTagFilter}
-            >
+            <Select value={currentTag ?? "all"} onValueChange={handleTagFilter}>
               <SelectTrigger className="w-full sm:w-[200px]">
                 <SelectValue placeholder="Filter by tag" />
               </SelectTrigger>
@@ -228,7 +225,11 @@ function ArticlesContent() {
                     {article.tags.length > 0 && (
                       <div className="mb-4 flex flex-wrap gap-2">
                         {article.tags.slice(0, 3).map((tag) => (
-                          <Badge key={tag.id} variant="outline" className="text-xs">
+                          <Badge
+                            key={tag.id}
+                            variant="outline"
+                            className="text-xs"
+                          >
                             <Tag className="mr-1 h-3 w-3" />
                             {tag.name}
                           </Badge>

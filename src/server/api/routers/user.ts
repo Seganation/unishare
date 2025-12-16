@@ -23,12 +23,12 @@ export const userRouter = createTRPCRouter({
           .min(8, "Password must be at least 8 characters")
           .regex(
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-            "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+            "Password must contain at least one uppercase letter, one lowercase letter, and one number",
           ),
         universityId: z.string().min(1, "University is required"),
         facultyId: z.string().min(1, "Faculty is required"),
         studentIdUrl: z.string().url("Invalid student ID URL"),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Check if user already exists
@@ -124,15 +124,15 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().min(2).optional(),
-        profileImage: z.string().url().optional(),
-      })
+        avatarIndex: z.number().min(0).max(7).optional(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const user = await ctx.db.user.update({
         where: { id: ctx.session.user.id },
         data: {
           name: input.name,
-          profileImage: input.profileImage,
+          avatarIndex: input.avatarIndex,
         },
       });
 

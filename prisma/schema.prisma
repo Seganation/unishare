@@ -18,6 +18,7 @@ model User {
   email        String    @unique
   password     String
   profileImage String?
+  avatarIndex  Int       @default(0)
   role         Role      @default(PENDING)
   universityId String
   university   University @relation(fields: [universityId], references: [id])

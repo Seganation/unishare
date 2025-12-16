@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 const LOGO_GIFS = [
   "/loading/loader-1.gif",
@@ -11,14 +11,18 @@ const LOGO_GIFS = [
 ];
 
 export function RandomLogo() {
-  const randomLogo = useMemo(
-    () => LOGO_GIFS[Math.floor(Math.random() * LOGO_GIFS.length)],
-    [],
-  );
+  // Use a stable initial value so server-rendered HTML matches
+  // the client's initial render. Then pick a random image on mount.
+  const [src, setSrc] = useState(LOGO_GIFS[0]);
+
+  useEffect(() => {
+    const pick = LOGO_GIFS[Math.floor(Math.random() * LOGO_GIFS.length)];
+    setSrc(pick);
+  }, []);
 
   return (
     <img
-      src={randomLogo}
+      src={src}
       alt="UNIShare Logo"
       className="h-full w-full object-contain"
     />

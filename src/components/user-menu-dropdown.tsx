@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { Settings, LogOut, ChevronDown } from "lucide-react";
 import type { Session } from "next-auth";
+import { AVATAR_COLORS } from "~/app/(student)/settings/page";
 
 interface UserMenuDropdownProps {
   session: Session;
@@ -14,6 +15,9 @@ export function UserMenuDropdown({ session }: UserMenuDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Get avatar color based on user's avatarIndex (default to 0 if not set)
+  const avatarColor = AVATAR_COLORS[session.user?.avatarIndex ?? 0];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -58,7 +62,9 @@ export function UserMenuDropdown({ session }: UserMenuDropdownProps) {
         aria-label="User menu"
         aria-expanded={isOpen}
       >
-        <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
+        <div
+          className={`${avatarColor.bg} flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white`}
+        >
           {session.user?.name?.charAt(0).toUpperCase()}
         </div>
         <span className="text-foreground hidden text-sm font-semibold sm:inline">

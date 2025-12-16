@@ -86,6 +86,32 @@ export const ourFileRouter = {
 
       return { uploadedBy: metadata.userId, fileUrl: file.url };
     }),
+
+  /**
+   * Profile Image Uploader
+   * For user profile images
+   * - Images only
+   * - Max size: 4MB
+   * - Requires authentication
+   */
+  profileUploader: f({
+    image: { maxFileSize: "4MB", maxFileCount: 1 },
+  })
+    .middleware(async () => {
+      const session = await auth();
+
+      if (!session?.user) {
+        throw new UploadThingError("Unauthorized");
+      }
+
+      return { userId: session.user.id };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      console.log("Profile image upload complete");
+      console.log("File URL:", file.url);
+
+      return { uploadedBy: metadata.userId, fileUrl: file.url };
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

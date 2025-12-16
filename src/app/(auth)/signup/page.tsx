@@ -209,8 +209,8 @@ export default function SignupPage() {
               </div>
             )}
 
-            {/* Form Grid */}
-            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
+            {/* Form Grid (responsive) */}
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Name - Col 1 */}
               <div className="space-y-1">
                 <label
@@ -460,6 +460,5 @@ export default function SignupPage() {
           © {new Date().getFullYear()} UNIShare. All rights reserved.
         </p>
       </div>
-    </div>
   );
 }
