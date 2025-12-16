@@ -83,7 +83,7 @@ export async function POST(req: Request) {
             select: {
               id: true,
               role: true,
-              content: true,
+              data: true,
             },
           },
           note: {
@@ -100,18 +100,21 @@ export async function POST(req: Request) {
         },
       });
 
-      // Convert database messages to UIMessage format
+      // Load messages in UIMessage format (recommended by AI SDK)
       if (conversation?.messages) {
-        previousMessages = conversation.messages.map((msg) => ({
-          id: msg.id,
-          role: msg.role.toLowerCase() as "user" | "assistant",
-          parts: [
-            {
-              type: "text" as const,
-              text: msg.content,
-            },
-          ],
-        }));
+        previousMessages = conversation.messages.map((msg) => {
+          const uiMessage = msg.data as UIMessage;
+          // Ensure message has required fields
+          return {
+            id: uiMessage.id || msg.id,
+            role: uiMessage.role,
+            parts: uiMessage.parts,
+            ...(uiMessage.createdAt && {
+              createdAt: new Date(uiMessage.createdAt),
+            }),
+            ...(uiMessage.metadata && { metadata: uiMessage.metadata }),
+          };
+        });
       }
 
       // If doesn't exist, create it with the client-provided ID
@@ -166,7 +169,7 @@ export async function POST(req: Request) {
               select: {
                 id: true,
                 role: true,
-                content: true,
+                data: true,
               },
             },
             note: {
@@ -205,55 +208,67 @@ export async function POST(req: Request) {
     // Combine previous messages with the new message
     const allMessages = [...previousMessages, message];
 
+    // Variable to capture token usage from streamText
+    let tokenUsage: number | undefined;
+
     // Create streaming response
     const result = streamText({
       model: ollama(model) as never,
       messages: convertToModelMessages(allMessages),
       system: systemMessage,
       temperature,
-      async onFinish({ text, usage }) {
-        // Save messages to database after streaming completes
-        // Extract text from the new user message
-        const textParts = message.parts.filter((p) => p.type === "text");
-        const userContent = textParts.map((p) => p.text).join(" ");
+      async onFinish({ usage }) {
+        // Capture token usage for saving later
+        tokenUsage = usage.totalTokens;
+      },
+    });
 
+    // Convert to UI message stream response with server-side message ID generation
+    // This ensures consistent IDs across sessions (important for persistence)
+    // Using toUIMessageStreamResponse() for compatibility with DefaultChatTransport
+    return result.toUIMessageStreamResponse({
+      originalMessages: allMessages,
+      generateMessageId: createIdGenerator({
+        prefix: "msg",
+        size: 16,
+      }),
+      async onFinish({ messages }) {
+        // Save ALL messages (recommended by AI SDK)
+        // The messages parameter contains the complete conversation (previous + new)
         try {
-          // Save user and assistant messages
-          await db.aiMessage.create({
-            data: {
-              conversationId: activeConversationId!,
-              role: "USER",
-              content: userContent,
-            },
-          });
+          // Get only the NEW messages that aren't in the database yet
+          const existingMessageIds = new Set(previousMessages.map((m) => m.id));
+          const newMessages = messages.filter(
+            (msg) => !existingMessageIds.has(msg.id),
+          );
 
-          await db.aiMessage.create({
-            data: {
-              conversationId: activeConversationId!,
-              role: "ASSISTANT",
-              content: text,
-              tokensUsed: usage.totalTokens,
-            },
-          });
+          console.log(
+            `💾 Saving ${newMessages.length} new messages out of ${messages.length} total`,
+          );
+
+          for (const msg of newMessages) {
+            await db.aiMessage.create({
+              data: {
+                id: msg.id,
+                conversationId: activeConversationId!,
+                role: msg.role.toUpperCase() as "USER" | "ASSISTANT" | "SYSTEM",
+                data: msg, // Store complete UIMessage object
+                tokensUsed: msg.role === "assistant" ? tokenUsage : undefined,
+              },
+            });
+          }
 
           // Update conversation timestamp
           await db.aiConversation.update({
             where: { id: activeConversationId! },
             data: { updatedAt: new Date() },
           });
+
+          console.log("✅ Saved messages successfully");
         } catch (error) {
-          console.error("Error saving messages:", error);
+          console.error("❌ Error saving messages:", error);
         }
       },
-    });
-
-    // Convert to text stream response with server-side message ID generation
-    // This ensures consistent IDs across sessions (important for persistence)
-    return result.toTextStreamResponse({
-      generateMessageId: createIdGenerator({
-        prefix: "msg",
-        size: 16,
-      }),
     });
   } catch (error) {
     console.error("AI Chat Error:", error);

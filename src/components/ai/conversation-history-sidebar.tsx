@@ -5,6 +5,7 @@ import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { MessageSquare, Trash2, Plus } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ChatHistorySidebarProps {
   selectedConversationId?: string;
@@ -19,6 +20,7 @@ export function ChatHistorySidebar({
 }: ChatHistorySidebarProps) {
   const [limit, setLimit] = useState(5);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data, refetch, isFetching } = api.ai.getConversations.useQuery(
     { limit },
@@ -35,7 +37,10 @@ export function ChatHistorySidebar({
 
   const deleteConversation = api.ai.deleteConversation.useMutation({
     onSuccess: () => {
-      refetch();
+      // Invalidate to refresh after delete
+      queryClient.invalidateQueries({
+        queryKey: [["ai", "getConversations"]],
+      });
       if (selectedConversationId) {
         onSelectConversation(undefined);
       }
@@ -51,7 +56,8 @@ export function ChatHistorySidebar({
 
   const handleLoadMore = async () => {
     setIsLoadingMore(true);
-    setLimit((prev) => prev + 10);
+    const newLimit = limit + 10;
+    setLimit(newLimit);
     await refetch();
     setIsLoadingMore(false);
   };

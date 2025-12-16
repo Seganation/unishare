@@ -1,17 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "~/server/auth";
 import Link from "next/link";
-import {
-  Book,
-  Calendar,
-  FileText,
-  Settings,
-  User,
-  Edit3,
-  Sparkles,
-} from "lucide-react";
+import { Book, Calendar, FileText, User, Edit3, Sparkles } from "lucide-react";
 import { ThemeToggle } from "~/components/theme-toggle";
-import { LogoutButton } from "~/components/logout-button";
+import { UserMenuDropdown } from "~/components/user-menu-dropdown";
 import { RandomLogo } from "~/components/random-logo";
 
 export default async function StudentLayout({
@@ -72,29 +64,8 @@ export default async function StudentLayout({
               {/* Theme Toggle */}
               <ThemeToggle />
 
-              <div className="bg-muted hidden items-center gap-3 rounded-lg px-4 py-2 md:flex">
-                <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
-                  {session.user.name?.charAt(0).toUpperCase()}
-                </div>
-                <div className="text-sm">
-                  <p className="text-foreground font-semibold">
-                    {session.user.name}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {session.user.email}
-                  </p>
-                </div>
-              </div>
-
-              {/* Settings & Logout */}
-              <Link
-                href="/settings"
-                className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg p-2 transition-colors"
-                aria-label="Settings"
-              >
-                <Settings className="h-5 w-5" />
-              </Link>
-              <LogoutButton />
+              {/* User Dropdown */}
+              <UserMenuDropdown session={session} />
             </div>
           </div>
         </div>

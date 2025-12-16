@@ -1,20 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import {
-  Mail,
-  Lock,
-  ArrowRight,
-  Sparkles,
-  AlertCircle,
-  BookOpen,
-} from "lucide-react";
+import { Mail, Lock, ArrowRight, Sparkles, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const LOGO_GIFS = [
+    "/loading/loader-1.gif",
+    "/loading/loader-2.gif",
+    "/loading/loader-3.gif",
+    "/loading/loader-4.gif",
+    "/loading/loader-5.gif",
+  ];
+
+  const randomLogo = useMemo(
+    () => LOGO_GIFS[Math.floor(Math.random() * LOGO_GIFS.length)],
+    [],
+  );
 
   const [formData, setFormData] = useState({
     email: "",
@@ -62,24 +68,26 @@ export default function LoginPage() {
 
       {/* Floating Decorative Circles */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="float absolute -right-32 -top-32 h-96 w-96 rounded-full bg-purple-500/20 blur-3xl" />
-        <div className="float absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl animation-delay-2000" />
-        <div className="float absolute right-1/4 top-1/4 h-64 w-64 rounded-full bg-violet-500/10 blur-2xl animation-delay-4000" />
+        <div className="float absolute -top-32 -right-32 h-96 w-96 rounded-full bg-purple-500/20 blur-3xl" />
+        <div className="float animation-delay-2000 absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="float animation-delay-4000 absolute top-1/4 right-1/4 h-64 w-64 rounded-full bg-violet-500/10 blur-2xl" />
       </div>
 
       {/* Main Content */}
       <div className="relative w-full max-w-md space-y-8">
-        {/* Header with Logo PLACEHOLDER */}
+        {/* Header with Logo */}
         <div className="text-center">
-          {/* Logo Placeholder - BRANDING ASSET: logo-main.svg */}
-          <div className="mb-4 flex justify-center">
-            <div className="glass flex h-20 w-20 items-center justify-center rounded-2xl shadow-2xl ring-4 ring-white/50">
-              <BookOpen className="h-10 w-10 text-purple-600" />
-            </div>
+          {/* Logo GIF with UNIShare text */}
+          <div className="mb-4 flex items-center justify-center gap-3">
+            <img
+              src={randomLogo}
+              alt="UNIShare Logo"
+              className="h-14 w-14 object-contain"
+            />
+            <h1 className="text-5xl font-black text-white drop-shadow-lg">
+              UNIShare
+            </h1>
           </div>
-          <h1 className="mb-2 text-5xl font-black text-white drop-shadow-lg">
-            UNIShare
-          </h1>
           <p className="text-lg font-medium text-purple-100">
             Student-driven academic organization platform
           </p>
@@ -95,7 +103,7 @@ export default function LoginPage() {
             <div className="mb-8">
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="h-5 w-5 animate-pulse text-yellow-400" />
-                <span className="text-sm font-semibold uppercase tracking-wider text-purple-200">
+                <span className="text-sm font-semibold tracking-wider text-purple-200 uppercase">
                   Authentication
                 </span>
               </div>
@@ -107,7 +115,7 @@ export default function LoginPage() {
 
             {/* Error Alert */}
             {error && (
-              <div className="mb-6 flex items-start gap-3 rounded-xl border-2 border-red-400 bg-red-100/90 p-4 backdrop-blur-sm animate-in slide-in-from-top-2">
+              <div className="animate-in slide-in-from-top-2 mb-6 flex items-start gap-3 rounded-xl border-2 border-red-400 bg-red-100/90 p-4 backdrop-blur-sm">
                 <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-600" />
                 <p className="text-sm font-medium text-red-800">{error}</p>
               </div>

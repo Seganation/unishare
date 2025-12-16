@@ -19,6 +19,9 @@ export default function AIPage() {
     string | undefined
   >(conversationIdFromUrl);
 
+  // Track new chat sessions with a unique key to force remount
+  const [newChatKey, setNewChatKey] = useState(0);
+
   // Sync state with URL params when URL changes
   useEffect(() => {
     setSelectedConversationId(conversationIdFromUrl);
@@ -26,13 +29,15 @@ export default function AIPage() {
 
   const handleNewChat = useCallback(() => {
     setSelectedConversationId(undefined);
+    setNewChatKey((prev) => prev + 1); // Increment to force remount
     router.push("/ai");
   }, [router]);
 
   const handleSelectConversation = useCallback(
     (conversationId: string | undefined) => {
+      console.log("📌 Selecting conversation:", conversationId);
       setSelectedConversationId(conversationId);
-      // Update URL when selecting a conversation
+      // Use router.push for sidebar clicks - we want proper navigation here
       if (conversationId) {
         router.push(`/ai/${conversationId}`);
       } else {
@@ -42,18 +47,16 @@ export default function AIPage() {
     [router],
   );
 
-  const handleConversationCreated = useCallback(
-    (conversationId: string) => {
-      console.log("🎉 New conversation created:", conversationId);
-      // Update selected conversation ID and URL
-      setSelectedConversationId(conversationId);
-      router.push(`/ai/${conversationId}`);
-    },
-    [router],
-  );
+  const handleConversationCreated = useCallback((conversationId: string) => {
+    console.log("🎉 New conversation created:", conversationId);
+    // Update selected conversation ID
+    setSelectedConversationId(conversationId);
+    // Use window.history to update URL without navigation/remount
+    window.history.replaceState(null, "", `/ai/${conversationId}`);
+  }, []);
 
   return (
-    <div className="fixed inset-0 top-16 flex overflow-hidden">
+    <div className="fixed inset-0 top-16 flex overflow-hidden font-sans">
       {/* Chat History Sidebar */}
       <div className="hidden h-full w-[280px] shrink-0 border-r lg:block">
         <Suspense fallback={<Skeleton className="h-full w-full" />}>
@@ -65,10 +68,11 @@ export default function AIPage() {
         </Suspense>
       </div>
 
-      {/* Chat Interface - NO KEY PROP, component manages its own state */}
+      {/* Chat Interface - Uses URL-based key to control remounting */}
       <div className="flex-1 overflow-hidden">
         <Suspense fallback={<Skeleton className="h-full w-full" />}>
           <AIChatInterface
+            key={conversationIdFromUrl || `new-${newChatKey}`}
             conversationId={selectedConversationId}
             onConversationCreated={handleConversationCreated}
             suggestions={[

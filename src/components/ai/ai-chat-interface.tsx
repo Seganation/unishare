@@ -66,94 +66,98 @@ export function AIChatInterface({
   // In AI SDK 5.0, useChat no longer manages input state
   // We manage it completely outside the hook
   const [input, setInput] = useState("");
-  const [activeConversationId, setActiveConversationId] =
-    useState(conversationId);
-  const conversationIdRef = useRef(conversationId);
+
+  // Only generate a stable ID for NEW conversations (when conversationId is undefined)
+  // For existing conversations, we don't need a stable ID
+  const [stableId] = useState(() => (conversationId ? undefined : nanoid()));
+  const conversationIdRef = useRef(conversationId || stableId);
+
+  // Track if this is a newly created conversation (generated client-side)
+  const [isNewConversation, setIsNewConversation] = useState(!conversationId);
   const queryClient = useQueryClient();
 
-  // Sync ref immediately when prop changes (before render completes)
-  if (conversationIdRef.current !== conversationId) {
-    conversationIdRef.current = conversationId;
-  }
-
-  // Update active conversation ID when prop changes
+  // When switching to a different conversation (via sidebar or URL), update the ref
   useEffect(() => {
-    setActiveConversationId(conversationId);
-  }, [conversationId]);
+    if (conversationId) {
+      conversationIdRef.current = conversationId;
+      // Only clear isNewConversation if we have a stable ID and it's different
+      if (stableId && conversationId !== stableId) {
+        setIsNewConversation(false);
+      }
+    }
+  }, [conversationId, stableId]);
 
-  // Fetch conversation messages when conversationId exists
-  // BUT only if it's different from the active one (i.e., user navigated to existing conversation)
-  const shouldFetch = conversationId && conversationId !== activeConversationId;
+  // Only fetch conversation if:
+  // 1. conversationId exists (from URL or sidebar click)
+  // 2. It's NOT a newly created conversation (stableId is undefined for existing conversations)
   const { data: conversation, isLoading } = api.ai.getConversation.useQuery(
     { id: conversationId ?? "" },
-    { enabled: !!shouldFetch },
+    {
+      enabled: !!conversationId && !stableId,
+      retry: false, // Don't retry on 404 for new conversations
+    },
   );
 
-  // Convert database messages to UI messages format
+  // Messages are now stored in UIMessage format - no conversion needed
   const initialMessages: UIMessage[] =
-    conversation?.messages.map((msg) => ({
-      id: msg.id,
-      role: msg.role.toLowerCase() as "user" | "assistant",
-      parts: [
-        {
-          type: "text" as const,
-          text: msg.content,
-        },
-      ],
-    })) ?? [];
+    conversation?.messages.map((msg) => {
+      const uiMessage = msg.data as unknown as UIMessage;
+      return {
+        id: uiMessage.id || msg.id,
+        role: uiMessage.role,
+        parts: uiMessage.parts,
+      };
+    }) ?? [];
 
-  const { messages, sendMessage, status, regenerate, error, setMessages } =
-    useChat({
-      id: activeConversationId,
-      messages: initialMessages.length > 0 ? initialMessages : undefined,
-      transport: new DefaultChatTransport({
-        api: "/api/chat",
-        // Follow documentation pattern: send only the last message
-        prepareSendMessagesRequest({ messages, id }) {
-          return {
-            body: {
-              message: messages[messages.length - 1],
-              conversationId: conversationIdRef.current || id,
-              courseId,
-              noteId,
-              model,
-              temperature,
-            },
-          };
-        },
-      }),
-      onError: (error: Error) => {
-        console.error("❌ Chat error:", error);
+  const { messages, sendMessage, status, regenerate, error } = useChat({
+    // For new conversations, use stableId. For existing, use conversationId
+    id: stableId || conversationId,
+    // Pass initialMessages for existing conversations
+    messages: initialMessages.length > 0 ? initialMessages : undefined,
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+      // Follow documentation pattern: send only the last message
+      prepareSendMessagesRequest({ messages }) {
+        return {
+          body: {
+            message: messages[messages.length - 1],
+            conversationId: conversationIdRef.current,
+            courseId,
+            noteId,
+            model,
+            temperature,
+          },
+        };
       },
-      onFinish: async (options) => {
-        console.log("✅ Chat finished", options);
-        // Refresh conversation list in sidebar
-        await queryClient.invalidateQueries({
-          queryKey: [["ai", "getConversations"]],
-        });
-      },
-    });
+    }),
+    onError: (error: Error) => {
+      console.error("❌ Chat error:", error);
+    },
+    onFinish: async (options) => {
+      console.log("✅ Chat finished", options);
 
-  // Update messages when conversation changes
+      // If this was a new conversation, notify parent NOW (after stream completes)
+      if (isNewConversation && conversationIdRef.current) {
+        console.log(
+          "⚡ Notifying parent of conversation ID after stream:",
+          conversationIdRef.current,
+        );
+        onConversationCreated?.(conversationIdRef.current);
+        setIsNewConversation(false);
+      }
+
+      // Don't invalidate - just let the staleTime handle it
+      // This preserves "load more" pagination state in the sidebar
+    },
+  });
+
+  // Clear isNewConversation flag when conversation exists in DB
   useEffect(() => {
-    if (
-      conversationId &&
-      conversationId !== activeConversationId &&
-      initialMessages.length > 0
-    ) {
-      setMessages(initialMessages);
-      setActiveConversationId(conversationId);
-    } else if (!conversationId && activeConversationId) {
-      // Starting new conversation - clear messages
-      setMessages([]);
-      setActiveConversationId(undefined);
+    if (conversationId && !isNewConversation && conversation) {
+      // Conversation loaded successfully from DB
+      setIsNewConversation(false);
     }
-  }, [
-    conversationId,
-    initialMessages.length,
-    activeConversationId,
-    setMessages,
-  ]);
+  }, [conversationId, conversation, isNewConversation]);
 
   const handleSubmit = useCallback(
     async (message: PromptInputMessage) => {
@@ -164,36 +168,15 @@ export function AIChatInterface({
         return;
       }
 
-      // Generate conversation ID IMMEDIATELY if new conversation
-      if (!conversationIdRef.current) {
-        const newId = nanoid();
-        console.log("⚡ Generated conversation ID instantly:", newId);
-        conversationIdRef.current = newId;
-        setActiveConversationId(newId);
-        // Update URL IMMEDIATELY
-        onConversationCreated?.(newId);
-      }
-
       console.log(
         "📤 Sending message with conversationId:",
         conversationIdRef.current,
       );
 
-      // In AI SDK 5.0, sendMessage requires a message object with parts
-      sendMessage({
-        role: "user",
-        parts: [
-          {
-            type: "text",
-            text: message.text || "Sent with attachments",
-          },
-        ],
-      });
-
-      // Clear input after sending
+      sendMessage({ text: message.text || "Sent with attachments" });
       setInput("");
     },
-    [sendMessage, onConversationCreated],
+    [sendMessage],
   );
 
   const handleSuggestionClick = useCallback(
@@ -201,10 +184,9 @@ export function AIChatInterface({
       // Generate conversation ID IMMEDIATELY if new conversation
       if (!conversationIdRef.current) {
         const newId = nanoid();
-        console.log("⚡ Generated conversation ID instantly:", newId);
+        console.log("⚡ Generated conversation ID:", newId);
         conversationIdRef.current = newId;
-        setActiveConversationId(newId);
-        // Update URL IMMEDIATELY
+        setIsNewConversation(true);
         onConversationCreated?.(newId);
       }
 
@@ -213,23 +195,14 @@ export function AIChatInterface({
         conversationIdRef.current,
       );
 
-      // In AI SDK 5.0, sendMessage requires a message object with parts
-      sendMessage({
-        role: "user",
-        parts: [
-          {
-            type: "text",
-            text: suggestion,
-          },
-        ],
-      });
+      sendMessage({ text: suggestion });
       setInput("");
     },
     [sendMessage, onConversationCreated],
   );
 
   return (
-    <Card className="flex h-full flex-col overflow-hidden border-0 shadow-none">
+    <Card className="flex h-full w-full flex-col overflow-hidden border-0 shadow-none">
       <CardContent className="flex min-w-0 flex-1 flex-col overflow-hidden p-0">
         {error && (
           <Alert variant="destructive" className="m-4">
@@ -243,27 +216,38 @@ export function AIChatInterface({
         )}
 
         <Conversation className="min-w-0 flex-1">
-          <ConversationContent className="overflow-x-hidden">
-            {messages.length === 0 && !isLoading && suggestions && (
-              <ConversationEmptyState title={title} description={description}>
-                <Suggestions className="mt-4">
-                  {suggestions.map((suggestion, i) => (
-                    <Suggestion
-                      key={i}
-                      suggestion={suggestion}
-                      onClick={handleSuggestionClick}
-                    />
-                  ))}
-                </Suggestions>
-              </ConversationEmptyState>
-            )}
+          <ConversationContent className="w-full overflow-x-hidden">
+            {/* Show suggestions only if: no messages, not loading query, not streaming, and it's truly a new conversation */}
+            {messages.length === 0 &&
+              !isLoading &&
+              status !== "streaming" &&
+              status !== "submitted" &&
+              isNewConversation &&
+              suggestions && (
+                <ConversationEmptyState title={title} description={description}>
+                  <Suggestions className="mt-4">
+                    {suggestions.map((suggestion, i) => (
+                      <Suggestion
+                        key={i}
+                        suggestion={suggestion}
+                        onClick={handleSuggestionClick}
+                      />
+                    ))}
+                  </Suggestions>
+                </ConversationEmptyState>
+              )}
 
-            {isLoading && messages.length === 0 ? (
+            {/* Show loader when loading existing conversation OR when first message is being sent */}
+            {isLoading ||
+            (messages.length === 0 &&
+              initialMessages.length === 0 &&
+              (status === "streaming" || status === "submitted")) ? (
               <div className="flex h-full items-center justify-center">
                 <Loader />
               </div>
             ) : (
-              messages
+              // Use messages from useChat, but fallback to initialMessages if useChat hasn't populated yet
+              (messages.length > 0 ? messages : initialMessages)
                 .filter(
                   (message, index, self) =>
                     index === self.findIndex((m) => m.id === message.id),
@@ -277,8 +261,8 @@ export function AIChatInterface({
                             key={`${message.id}-${i}`}
                             from={message.role}
                           >
-                            <MessageContent className="max-w-full overflow-x-hidden">
-                              <MessageResponse className="prose prose-sm max-w-none break-words [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_pre_code]:whitespace-pre">
+                            <MessageContent className="max-w-full overflow-hidden">
+                              <MessageResponse className="prose prose-base overflow-wrap-anywhere max-w-none text-base break-words [&_code]:break-all [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_pre_code]:whitespace-pre-wrap">
                                 {part.text}
                               </MessageResponse>
                             </MessageContent>
@@ -311,7 +295,7 @@ export function AIChatInterface({
                   </div>
                 ))
             )}
-            {status === "submitted" && <Loader />}
+            {(status === "submitted" || status === "streaming") && <Loader />}
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>

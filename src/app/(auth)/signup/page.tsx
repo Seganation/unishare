@@ -5,6 +5,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { UploadDropzone } from "~/lib/uploadthing";
 import { api } from "~/trpc/react";
+import {
+  Mail,
+  Lock,
+  User,
+  Building2,
+  AlertCircle,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -12,6 +21,19 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [studentIdUrl, setStudentIdUrl] = useState("");
+
+  const LOGO_GIFS = [
+    "/loading/loader-1.gif",
+    "/loading/loader-2.gif",
+    "/loading/loader-3.gif",
+    "/loading/loader-4.gif",
+    "/loading/loader-5.gif",
+  ];
+
+  const randomLogo = useMemo(
+    () => LOGO_GIFS[Math.floor(Math.random() * LOGO_GIFS.length)],
+    [],
+  );
 
   const [formData, setFormData] = useState({
     name: "",
@@ -30,7 +52,7 @@ export default function SignupPage() {
   const faculties = useMemo(() => {
     if (!formData.universityId || !universities) return [];
     const selectedUni = universities.find(
-      (uni) => uni.id === formData.universityId
+      (uni) => uni.id === formData.universityId,
     );
     return selectedUni?.faculties ?? [];
   }, [formData.universityId, universities]);
@@ -88,101 +110,161 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-        <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-xl">
-          <div className="mb-4 text-6xl">✅</div>
-          <h2 className="mb-2 text-2xl font-bold text-gray-900">
-            Registration Successful!
-          </h2>
-          <p className="mb-4 text-gray-600">
-            Your account has been created and is pending admin approval.
-          </p>
-          <p className="text-sm text-gray-500">
-            You'll receive an email once your account is approved.
-            <br />
-            Redirecting to login...
-          </p>
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
+        {/* Animated Gradient Background */}
+        <div className="animated-gradient absolute inset-0" />
+
+        {/* Decorative Pattern Overlay */}
+        <div className="pattern-dots absolute inset-0 opacity-10" />
+
+        {/* Floating Decorative Circles */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="float absolute -top-32 -right-32 h-96 w-96 rounded-full bg-purple-500/20 blur-3xl" />
+          <div className="float animation-delay-2000 absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl" />
+          <div className="float animation-delay-4000 absolute top-1/4 right-1/4 h-64 w-64 rounded-full bg-violet-500/10 blur-2xl" />
+        </div>
+
+        <div className="relative w-full max-w-md space-y-8">
+          <div className="glass group relative overflow-hidden rounded-3xl border-2 border-white/30 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
+            <div className="relative text-center">
+              <div className="mb-4 text-6xl">✅</div>
+              <h2 className="mb-2 text-2xl font-bold text-white">
+                Registration Successful!
+              </h2>
+              <p className="mb-4 text-purple-100">
+                Your account has been created and is pending admin approval.
+              </p>
+              <p className="text-sm text-purple-200">
+                You'll receive an email once your account is approved.
+                <br />
+                Redirecting to login...
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
-      <div className="w-full max-w-2xl space-y-8">
-        {/* Header */}
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
+      {/* Animated Gradient Background */}
+      <div className="animated-gradient absolute inset-0" />
+
+      {/* Decorative Pattern Overlay */}
+      <div className="pattern-dots absolute inset-0 opacity-10" />
+
+      {/* Floating Decorative Circles */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="float absolute -top-32 -right-32 h-96 w-96 rounded-full bg-purple-500/20 blur-3xl" />
+        <div className="float animation-delay-2000 absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="float animation-delay-4000 absolute top-1/4 right-1/4 h-64 w-64 rounded-full bg-violet-500/10 blur-2xl" />
+      </div>
+
+      {/* Main Content */}
+      <div className="relative w-full max-w-6xl space-y-6">
+        {/* Header with Logo */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900">📚 UNIShare</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Join the student-driven academic organization platform
+          {/* Logo GIF with UNIShare text */}
+          <div className="mb-4 flex items-center justify-center gap-3">
+            <img
+              src={randomLogo}
+              alt="UNIShare Logo"
+              className="h-14 w-14 object-contain"
+            />
+            <h1 className="text-5xl font-black text-white drop-shadow-lg">
+              UNIShare
+            </h1>
+          </div>
+          <p className="text-lg font-medium text-purple-100">
+            Student-driven academic organization platform
           </p>
         </div>
 
-        {/* Signup Card */}
-        <div className="rounded-lg bg-white p-8 shadow-xl">
-          <h2 className="mb-6 text-2xl font-semibold text-gray-900">
-            Create your account
-          </h2>
+        {/* Signup Card with Glassmorphism */}
+        <div className="glass group relative overflow-hidden rounded-3xl border-2 border-white/30 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
+          {/* Shimmer Effect */}
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
 
-          {error && (
-            <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-800">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name */}
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Full Name *
-              </label>
-              <input
-                id="name"
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                placeholder="John Doe"
-                disabled={isLoading}
-              />
+          <div className="relative">
+            {/* Welcome Header */}
+            <div className="mb-6">
+              <div className="mb-2 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 animate-pulse text-yellow-400" />
+                <span className="text-sm font-semibold tracking-wider text-purple-200 uppercase">
+                  Create Account
+                </span>
+              </div>
+              <h2 className="text-2xl font-black text-white">Join UNIShare</h2>
+              <p className="mt-1 text-xs text-purple-200">
+                Create an account to access courses and resources
+              </p>
             </div>
 
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                University Email *
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                placeholder="you@university.edu"
-                disabled={isLoading}
-              />
-            </div>
+            {/* Error Alert */}
+            {error && (
+              <div className="animate-in slide-in-from-top-2 mb-4 flex items-start gap-3 rounded-xl border-2 border-red-400 bg-red-100/90 p-3 backdrop-blur-sm">
+                <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+                <p className="text-xs font-medium text-red-800">{error}</p>
+              </div>
+            )}
 
-            {/* Password */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
+            {/* Form Grid */}
+            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
+              {/* Name - Col 1 */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="name"
+                  className="flex items-center gap-2 text-xs font-bold text-white"
+                >
+                  <User className="h-3 w-3" />
+                  Full Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="input-primary h-9 w-full bg-white/90 text-sm backdrop-blur-sm transition-all focus:bg-white"
+                  placeholder="John Doe"
+                  disabled={isLoading}
+                />
+              </div>
+
+              {/* Email - Col 2 */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="email"
+                  className="flex items-center gap-2 text-xs font-bold text-white"
+                >
+                  <Mail className="h-3 w-3" />
+                  University Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="input-primary h-9 w-full bg-white/90 text-sm backdrop-blur-sm transition-all focus:bg-white"
+                  placeholder="you@university.edu"
+                  disabled={isLoading}
+                />
+              </div>
+
+              {/* Password - Col 1 */}
+              <div className="space-y-1">
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
+                  className="flex items-center gap-2 text-xs font-bold text-white"
                 >
-                  Password *
+                  <Lock className="h-3 w-3" />
+                  Password
                 </label>
                 <input
                   id="password"
@@ -192,18 +274,20 @@ export default function SignupPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                  className="input-primary h-9 w-full bg-white/90 text-sm backdrop-blur-sm transition-all focus:bg-white"
                   placeholder="••••••••"
                   disabled={isLoading}
                 />
               </div>
 
-              <div>
+              {/* Confirm Password - Col 2 */}
+              <div className="space-y-1">
                 <label
                   htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-gray-700"
+                  className="flex items-center gap-2 text-xs font-bold text-white"
                 >
-                  Confirm Password *
+                  <Lock className="h-3 w-3" />
+                  Confirm
                 </label>
                 <input
                   id="confirmPassword"
@@ -216,145 +300,163 @@ export default function SignupPage() {
                       confirmPassword: e.target.value,
                     })
                   }
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                  className="input-primary h-9 w-full bg-white/90 text-sm backdrop-blur-sm transition-all focus:bg-white"
                   placeholder="••••••••"
                   disabled={isLoading}
                 />
               </div>
-            </div>
 
-            {/* University */}
-            <div>
-              <label
-                htmlFor="university"
-                className="block text-sm font-medium text-gray-700"
-              >
-                University *
-              </label>
-              <select
-                id="university"
-                required
-                value={formData.universityId}
-                onChange={(e) => {
-                  setFormData({
-                    ...formData,
-                    universityId: e.target.value,
-                    facultyId: "", // Reset faculty when university changes
-                  });
-                }}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                disabled={isLoading || universitiesLoading}
-              >
-                <option value="">Select your university</option>
-                {universities?.map((uni) => (
-                  <option key={uni.id} value={uni.id}>
-                    {uni.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Faculty */}
-            <div>
-              <label
-                htmlFor="faculty"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Faculty *
-              </label>
-              <select
-                id="faculty"
-                required
-                value={formData.facultyId}
-                onChange={(e) =>
-                  setFormData({ ...formData, facultyId: e.target.value })
-                }
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                disabled={isLoading || !formData.universityId}
-              >
-                <option value="">Select your faculty</option>
-                {faculties.map((faculty) => (
-                  <option key={faculty.id} value={faculty.id}>
-                    {faculty.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Student ID Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Student ID Photo *
-              </label>
-              <p className="mt-1 text-xs text-gray-500">
-                Upload a clear photo of your student ID for verification
-              </p>
-              <div className="mt-2">
-                {!studentIdUrl ? (
-                  <UploadDropzone
-                    endpoint="studentIdUploader"
-                    onClientUploadComplete={(res) => {
-                      if (res?.[0]?.url) {
-                        setStudentIdUrl(res[0].url);
-                      }
-                    }}
-                    onUploadError={(error: Error) => {
-                      setError(`Upload failed: ${error.message}`);
-                    }}
-                    appearance={{
-                      container:
-                        "border-2 border-dashed border-gray-300 bg-gray-50 hover:border-blue-500 hover:bg-blue-50 transition-colors",
-                      uploadIcon: "text-gray-400",
-                      label: "text-gray-700 font-medium",
-                      allowedContent: "text-gray-500 text-sm",
-                      button:
-                        "bg-blue-600 text-white font-medium px-4 py-2 rounded-md hover:bg-blue-700 ut-ready:bg-blue-600 ut-uploading:bg-blue-400",
-                    }}
-                  />
-                ) : (
-                  <div className="rounded-md bg-green-50 p-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-green-800">
-                        ✓ Student ID uploaded successfully
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setStudentIdUrl("")}
-                        className="text-sm text-red-600 hover:text-red-800"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                )}
+              {/* University - Col 1 */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="university"
+                  className="flex items-center gap-2 text-xs font-bold text-white"
+                >
+                  <Building2 className="h-3 w-3" />
+                  University
+                </label>
+                <select
+                  id="university"
+                  required
+                  value={formData.universityId}
+                  onChange={(e) => {
+                    setFormData({
+                      ...formData,
+                      universityId: e.target.value,
+                      facultyId: "",
+                    });
+                  }}
+                  className="input-primary h-9 w-full bg-white/90 text-sm backdrop-blur-sm transition-all focus:bg-white"
+                  disabled={isLoading || universitiesLoading}
+                >
+                  <option value="">Select university</option>
+                  {universities?.map((uni) => (
+                    <option key={uni.id} value={uni.id}>
+                      {uni.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading || !studentIdUrl}
-              className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isLoading ? "Creating account..." : "Create account"}
-            </button>
-          </form>
+              {/* Faculty - Col 2 */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="faculty"
+                  className="flex items-center gap-2 text-xs font-bold text-white"
+                >
+                  <Building2 className="h-3 w-3" />
+                  Faculty
+                </label>
+                <select
+                  id="faculty"
+                  required
+                  value={formData.facultyId}
+                  onChange={(e) =>
+                    setFormData({ ...formData, facultyId: e.target.value })
+                  }
+                  className="input-primary h-9 w-full bg-white/90 text-sm backdrop-blur-sm transition-all focus:bg-white"
+                  disabled={isLoading || !formData.universityId}
+                >
+                  <option value="">Select faculty</option>
+                  {faculties.map((faculty) => (
+                    <option key={faculty.id} value={faculty.id}>
+                      {faculty.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="mt-6 text-center text-sm">
-            <p className="text-gray-600">
-              Already have an account?{" "}
-              <Link
-                href="/login"
-                className="font-medium text-blue-600 hover:text-blue-500"
+              {/* Student ID Upload - Full Width */}
+              <div className="col-span-2 space-y-1">
+                <label className="text-xs font-bold text-white">
+                  Student ID Photo
+                </label>
+                <p className="text-xs text-purple-200">
+                  Upload a clear photo of your student ID for verification
+                </p>
+                <div>
+                  {!studentIdUrl ? (
+                    <UploadDropzone
+                      endpoint="studentIdUploader"
+                      onClientUploadComplete={(res) => {
+                        if (res?.[0]?.url) {
+                          setStudentIdUrl(res[0].url);
+                        }
+                      }}
+                      onUploadError={(error: Error) => {
+                        setError(`Upload failed: ${error.message}`);
+                      }}
+                      appearance={{
+                        container:
+                          "border-2 border-dashed border-white/30 bg-white/5 hover:border-white/50 hover:bg-white/10 transition-colors rounded-lg",
+                        uploadIcon: "text-purple-300",
+                        label: "text-white font-medium text-sm",
+                        allowedContent: "text-purple-200 text-xs",
+                        button:
+                          "bg-white text-purple-700 font-medium px-3 py-1 text-sm rounded-md hover:bg-white/90 ut-ready:bg-white ut-uploading:bg-white/50",
+                      }}
+                    />
+                  ) : (
+                    <div className="rounded-lg border border-green-500/50 bg-green-500/20 p-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-green-200">
+                          ✓ Student ID uploaded
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setStudentIdUrl("")}
+                          className="text-xs text-red-300 hover:text-red-200"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading || !studentIdUrl}
+                className="group/btn relative col-span-2 h-10 w-full overflow-hidden rounded-lg bg-white text-sm font-bold text-purple-700 shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl focus-visible:ring-4 focus-visible:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
               >
-                Sign in
-              </Link>
-            </p>
+                {/* Button shimmer */}
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-purple-200 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
+
+                <span className="relative flex items-center justify-center">
+                  {isLoading ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-purple-700 border-t-transparent" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      Create Account
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                    </>
+                  )}
+                </span>
+              </button>
+            </form>
+
+            {/* Sign In Link */}
+            <div className="mt-4 text-center">
+              <p className="text-xs text-purple-100">
+                Already have an account?{" "}
+                <Link
+                  href="/login"
+                  className="font-bold text-white underline decoration-2 underline-offset-2 transition-all hover:text-yellow-300 hover:decoration-yellow-300"
+                >
+                  Sign In
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-gray-500">
+        <p className="text-center text-xs font-medium text-white/80">
           © {new Date().getFullYear()} UNIShare. All rights reserved.
         </p>
       </div>

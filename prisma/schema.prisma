@@ -365,8 +365,10 @@ model AiMessage {
   conversationId String
   conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
+  // Store complete UIMessage format as recommended by AI SDK docs
+  // This preserves message structure (parts, tool calls, metadata)
   role           AiMessageRole
-  content        String
+  data           Json           // Stores complete UIMessage: { id, role, parts[], createdAt?, metadata? }
   tokensUsed     Int?           // Track token usage for analytics
 
   createdAt      DateTime       @default(now())

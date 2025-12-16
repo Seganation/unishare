@@ -10,6 +10,8 @@
 
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { TRPCError } from "@trpc/server";
+import { generateId } from "ai";
 import {
   healthCheck,
   generateText,
@@ -19,7 +21,6 @@ import {
   gradeQuizAttempt,
   generateStudyPlan,
 } from "~/server/ai";
-import { TRPCError } from "@trpc/server";
 
 export const aiRouter = createTRPCRouter({
   /**
@@ -154,6 +155,12 @@ export const aiRouter = createTRPCRouter({
             orderBy: {
               createdAt: "asc",
             },
+            select: {
+              id: true,
+              role: true,
+              data: true, // Complete UIMessage format
+              createdAt: true,
+            },
           },
           course: {
             select: {
@@ -238,6 +245,11 @@ export const aiRouter = createTRPCRouter({
             orderBy: {
               createdAt: "asc",
             },
+            select: {
+              id: true,
+              role: true,
+              data: true, // Complete UIMessage format
+            },
           },
           note: {
             select: {
@@ -256,21 +268,33 @@ export const aiRouter = createTRPCRouter({
       }
 
       try {
-        // Save user message
+        // Save user message in UIMessage format
         const userMessage = await ctx.db.aiMessage.create({
           data: {
+            id: generateId(),
             conversationId: input.conversationId,
             role: "USER",
-            content: input.content,
+            data: {
+              id: generateId(),
+              role: "user",
+              parts: [{ type: "text", text: input.content }],
+            },
           },
         });
 
         // Build context from previous messages
         const messages = [
-          ...conversation.messages.map((msg) => ({
-            role: msg.role.toLowerCase() as "user" | "assistant" | "system",
-            content: msg.content,
-          })),
+          ...conversation.messages.map((msg) => {
+            const uiMsg = msg.data as {
+              role: string;
+              parts: Array<{ type: string; text: string }>;
+            };
+            const textParts = uiMsg.parts.filter((p) => p.type === "text");
+            return {
+              role: uiMsg.role.toLowerCase() as "user" | "assistant" | "system",
+              content: textParts.map((p) => p.text).join(" "),
+            };
+          }),
           {
             role: "user" as const,
             content: input.content,
@@ -292,13 +316,18 @@ export const aiRouter = createTRPCRouter({
           temperature: conversation.temperature,
         });
 
-        // Save AI response
+        // Save AI response in UIMessage format
         const assistantMessage = await ctx.db.aiMessage.create({
           data: {
+            id: generateId(),
             conversationId: input.conversationId,
             role: "ASSISTANT",
-            content: response.text,
-            tokensUsed: response.tokensUsed,
+            data: {
+              id: generateId(),
+              role: "assistant",
+              parts: [{ type: "text", text: response.text }],
+            },
+            tokensUsed: response.usage?.total_tokens,
           },
         });
 
