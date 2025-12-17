@@ -195,7 +195,6 @@ export default function SettingsPage() {
               Notifications
             </button>
           </div>
-
           {tab === "profile" && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               {/* Profile card */}

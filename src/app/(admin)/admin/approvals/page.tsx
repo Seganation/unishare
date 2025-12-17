@@ -186,11 +186,11 @@ export default function AdminApprovalsPage() {
               >
                 {/* Background Gradient */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-10 ${stat.bgColor}`}
+                  className={`absolute inset-0 bg-linear-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-10 ${stat.bgColor}`}
                 />
 
                 {/* Shimmer Effect */}
-                <div className="via-primary/10 absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
+                <div className="via-primary/10 absolute inset-0 -translate-x-full bg-linear-to-r from-transparent to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
 
                 {/* Content */}
                 <div className="relative">
@@ -212,7 +212,7 @@ export default function AdminApprovalsPage() {
 
                 {/* Bottom Accent */}
                 <div
-                  className={`absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r transition-all duration-500 group-hover:w-full ${stat.color}`}
+                  className={`absolute bottom-0 left-0 h-1 w-0 bg-linear-to-r transition-all duration-500 group-hover:w-full ${stat.color}`}
                 />
               </div>
             );
@@ -246,7 +246,7 @@ export default function AdminApprovalsPage() {
                   className="group border-border bg-card relative overflow-hidden rounded-2xl border-2 p-6 shadow-lg transition-all duration-300 hover:shadow-2xl"
                 >
                   {/* Background Shimmer */}
-                  <div className="via-primary/5 absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
+                  <div className="via-primary/5 absolute inset-0 -translate-x-full bg-linear-to-r from-transparent to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
 
                   {/* Content */}
                   <div className="relative space-y-4">
@@ -261,7 +261,7 @@ export default function AdminApprovalsPage() {
                     </div>
 
                     {/* University & Faculty */}
-                    <div className="border-border space-y-2 rounded-lg border bg-gradient-to-br from-slate-50 to-slate-100 p-3 text-sm dark:from-slate-900 dark:to-slate-800">
+                    <div className="border-border space-y-2 rounded-lg border bg-linear-to-br from-slate-50 to-slate-100 p-3 text-sm dark:from-slate-900 dark:to-slate-800">
                       <div className="flex items-start gap-2">
                         <span className="text-muted-foreground font-medium">
                           University:
@@ -319,7 +319,7 @@ export default function AdminApprovalsPage() {
                         disabled={
                           approveMutation.isPending || rejectMutation.isPending
                         }
-                        className="group/btn flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:from-emerald-700 hover:to-teal-700 focus:ring-4 focus:ring-emerald-500/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                        className="group/btn flex flex-1 items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-600 to-teal-600 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:from-emerald-700 hover:to-teal-700 focus:ring-4 focus:ring-emerald-500/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                       >
                         <CheckCircle className="h-4 w-4 transition-transform group-hover/btn:scale-110" />
                         {approveMutation.isPending && selectedUser === user.id
@@ -331,7 +331,7 @@ export default function AdminApprovalsPage() {
                         disabled={
                           approveMutation.isPending || rejectMutation.isPending
                         }
-                        className="group/btn flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:from-red-700 hover:to-rose-700 focus:ring-4 focus:ring-red-500/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                        className="group/btn flex flex-1 items-center justify-center gap-2 rounded-lg bg-linear-to-r from-red-600 to-rose-600 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:from-red-700 hover:to-rose-700 focus:ring-4 focus:ring-red-500/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                       >
                         <XCircle className="h-4 w-4 transition-transform group-hover/btn:scale-110" />
                         {rejectMutation.isPending && selectedUser === user.id
