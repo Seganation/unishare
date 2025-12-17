@@ -34,7 +34,7 @@ export default function EditArticlePage() {
     {},
     {
       select: (articles) => articles.find((a) => a.id === articleId),
-    }
+    },
   );
 
   // Update mutation
@@ -68,8 +68,11 @@ export default function EditArticlePage() {
       setExcerpt(article.excerpt ?? "");
       setCoverImage(article.coverImage ?? "");
       setTags(article.tags.map((t) => t.name).join(", "));
+      // Handle content - ensure it's always an array for BlockNote
       if (Array.isArray(article.content)) {
         setContent(article.content as Block[]);
+      } else {
+        setContent([]); // Default to empty array if content is not an array
       }
       setIsLoaded(true);
     }
@@ -88,7 +91,12 @@ export default function EditArticlePage() {
       excerpt: excerpt || undefined,
       coverImage: coverImage || undefined,
       content,
-      tags: tags.trim() ? tags.split(",").map(t => t.trim()).filter(Boolean) : undefined,
+      tags: tags.trim()
+        ? tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : undefined,
     });
   };
 
@@ -107,7 +115,12 @@ export default function EditArticlePage() {
         excerpt: excerpt || undefined,
         coverImage: coverImage || undefined,
         content,
-        tags: tags.trim() ? tags.split(",").map(t => t.trim()).filter(Boolean) : undefined,
+        tags: tags.trim()
+          ? tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : undefined,
       });
       publishMutation.mutate({ id: articleId });
     } catch (error) {
@@ -138,7 +151,7 @@ export default function EditArticlePage() {
   return (
     <div className="bg-background min-h-screen">
       {/* Header */}
-      <div className="border-border bg-card/95 sticky top-0 z-10 border-b shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/60">
+      <div className="border-border bg-card/95 supports-[backdrop-filter]:bg-card/60 sticky top-0 z-10 border-b shadow-sm backdrop-blur">
         <div className="container mx-auto max-w-5xl px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -208,7 +221,7 @@ export default function EditArticlePage() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  className="absolute right-2 top-2"
+                  className="absolute top-2 right-2"
                   onClick={() => setCoverImage("")}
                 >
                   <X className="h-4 w-4" />

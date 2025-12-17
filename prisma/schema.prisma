@@ -308,7 +308,7 @@ model Article {
   slug        String        @unique
   excerpt     String?
   coverImage  String?
-  content     Json          @default("{}")
+  content     Json          @default("[]")
   status      ArticleStatus @default(DRAFT)
   featured    Boolean       @default(false)
   views       Int           @default(0)

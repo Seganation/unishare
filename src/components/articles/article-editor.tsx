@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { BlockNoteView } from "@blocknote/shadcn";
 import { useCreateBlockNote } from "@blocknote/react";
 import type { Block } from "@blocknote/core";
+import { useTheme } from "next-themes";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/shadcn/style.css";
 
@@ -12,33 +13,33 @@ interface ArticleEditorProps {
   onChange?: (blocks: Block[]) => void;
 }
 
-export function ArticleEditor({ initialContent, onChange }: ArticleEditorProps) {
+export function ArticleEditor({
+  initialContent,
+  onChange,
+}: ArticleEditorProps) {
   const [isReady, setIsReady] = useState(false);
+  const { resolvedTheme } = useTheme();
+
+  // Normalize initial content - BlockNote expects an array of blocks
+  const normalizedContent =
+    initialContent &&
+    typeof initialContent === "object" &&
+    Array.isArray(initialContent) &&
+    initialContent.length > 0
+      ? (initialContent as any)
+      : undefined;
 
   // Create BlockNote editor
   const editor = useCreateBlockNote({
-    initialContent:
-      initialContent && typeof initialContent === "object" && Array.isArray(initialContent)
-        ? (initialContent as any)
-        : undefined,
+    initialContent: normalizedContent,
   });
 
   // Load initial content
   useEffect(() => {
-    if (editor && initialContent && !isReady) {
-      try {
-        if (Array.isArray(initialContent)) {
-          editor.replaceBlocks(editor.document, initialContent as any);
-        }
-        setIsReady(true);
-      } catch (error) {
-        console.error("Failed to load initial content:", error);
-        setIsReady(true);
-      }
-    } else if (editor && !initialContent) {
+    if (editor) {
       setIsReady(true);
     }
-  }, [editor, initialContent, isReady]);
+  }, [editor]);
 
   // Handle content changes
   useEffect(() => {
@@ -65,7 +66,7 @@ export function ArticleEditor({ initialContent, onChange }: ArticleEditorProps) 
     <div className="border-border bg-card article-editor rounded-lg border">
       <BlockNoteView
         editor={editor}
-        theme="light"
+        theme={resolvedTheme === "dark" ? "dark" : "light"}
         className="min-h-[500px] p-4"
       />
     </div>
