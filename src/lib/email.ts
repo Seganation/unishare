@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { env } from "~/env";
+import type { NotificationType } from "@prisma/client";
 
 /**
  * Email Service using Nodemailer with Gmail
@@ -85,7 +86,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
 export async function sendApprovalEmail(
   email: string,
   name: string,
-  dashboardUrl: string
+  dashboardUrl: string,
 ) {
   const mailOptions = {
     from: `"UNIShare" <${env.EMAIL_USER}>`,
@@ -159,7 +160,7 @@ export async function sendApprovalEmail(
 export async function sendRejectionEmail(
   email: string,
   name: string,
-  reason?: string
+  reason?: string,
 ) {
   const mailOptions = {
     from: `"UNIShare" <${env.EMAIL_USER}>`,
@@ -228,4 +229,412 @@ export async function sendRejectionEmail(
     console.error("Error sending rejection email:", error);
     throw new Error("Failed to send rejection email");
   }
+}
+
+/**
+ * Sends email notification based on notification type
+ * Note: Emails do NOT contain URLs (per user requirement - just alerts)
+ */
+export async function sendEmailNotification(params: {
+  email: string;
+  name: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  metadata?: Record<string, any>;
+}): Promise<void> {
+  try {
+    let htmlContent: string;
+
+    switch (params.type) {
+      case "COURSE_INVITATION":
+        htmlContent = getCourseInvitationTemplate(params);
+        break;
+      case "TIMETABLE_INVITATION":
+        htmlContent = getTimetableInvitationTemplate(params);
+        break;
+      case "INVITATION_ACCEPTED":
+        htmlContent = getInvitationAcceptedTemplate(params);
+        break;
+      case "INVITATION_REJECTED":
+        htmlContent = getInvitationRejectedTemplate(params);
+        break;
+      case "CLASS_REMINDER":
+        htmlContent = getClassReminderTemplate(params);
+        break;
+      case "AUDIT_LOG_ALERT":
+        htmlContent = getAuditLogAlertTemplate(params);
+        break;
+      case "SYSTEM_NOTIFICATION":
+        htmlContent = getSystemNotificationTemplate(params);
+        break;
+      default:
+        htmlContent = getGenericNotificationTemplate(params);
+    }
+
+    await transporter.sendMail({
+      from: `"UNIShare" <${env.EMAIL_USER}>`,
+      to: params.email,
+      subject: params.title,
+      html: htmlContent,
+    });
+  } catch (error) {
+    console.error("Error sending email notification:", error);
+    throw error;
+  }
+}
+
+// Email Templates
+
+function getCourseInvitationTemplate(params: any): string {
+  const metadata = params.metadata as {
+    courseName: string;
+    inviterName: string;
+    role: string;
+  };
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+          .highlight { background: #eef2ff; padding: 15px; border-left: 4px solid #667eea; margin: 20px 0; }
+          .role { display: inline-block; background: #667eea; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; }
+          .footer { text-align: center; color: #666; margin-top: 30px; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0;">📚 Course Invitation</h1>
+          </div>
+          <div class="content">
+            <p>Hi ${params.name},</p>
+            <p>${metadata.inviterName} has invited you to collaborate on a course!</p>
+
+            <div class="highlight">
+              <strong>Course:</strong> ${metadata.courseName}<br>
+              <strong>Your Role:</strong> <span class="role">${metadata.role}</span>
+            </div>
+
+            <p>${params.message}</p>
+
+            <p style="margin-top: 30px;">Log in to UNIShare to accept or reject this invitation.</p>
+          </div>
+          <div class="footer">
+            <p>&copy; 2025 UNIShare. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+function getTimetableInvitationTemplate(params: any): string {
+  const metadata = params.metadata as {
+    timetableName: string;
+    inviterName: string;
+    role: string;
+  };
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+          .highlight { background: #e0f2fe; padding: 15px; border-left: 4px solid #06b6d4; margin: 20px 0; }
+          .role { display: inline-block; background: #06b6d4; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; }
+          .footer { text-align: center; color: #666; margin-top: 30px; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0;">📅 Timetable Invitation</h1>
+          </div>
+          <div class="content">
+            <p>Hi ${params.name},</p>
+            <p>${metadata.inviterName} has invited you to collaborate on a timetable!</p>
+
+            <div class="highlight">
+              <strong>Timetable:</strong> ${metadata.timetableName}<br>
+              <strong>Your Role:</strong> <span class="role">${metadata.role}</span>
+            </div>
+
+            <p>${params.message}</p>
+
+            <p style="margin-top: 30px;">Log in to UNIShare to accept or reject this invitation.</p>
+          </div>
+          <div class="footer">
+            <p>&copy; 2025 UNIShare. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+function getInvitationAcceptedTemplate(params: any): string {
+  const metadata = params.metadata as {
+    resourceType: string;
+    resourceName: string;
+    acceptorName: string;
+  };
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+          .highlight { background: #d1fae5; padding: 15px; border-left: 4px solid #10b981; margin: 20px 0; }
+          .footer { text-align: center; color: #666; margin-top: 30px; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0;">✅ Invitation Accepted</h1>
+          </div>
+          <div class="content">
+            <p>Hi ${params.name},</p>
+            <p>Great news! ${metadata.acceptorName} has accepted your invitation.</p>
+
+            <div class="highlight">
+              <strong>${metadata.resourceType === "course" ? "Course" : "Timetable"}:</strong> ${metadata.resourceName}
+            </div>
+
+            <p>You can now collaborate together on this ${metadata.resourceType}!</p>
+          </div>
+          <div class="footer">
+            <p>&copy; 2025 UNIShare. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+function getInvitationRejectedTemplate(params: any): string {
+  const metadata = params.metadata as {
+    resourceType: string;
+    resourceName: string;
+    rejectorName: string;
+  };
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+          .highlight { background: #fee2e2; padding: 15px; border-left: 4px solid #ef4444; margin: 20px 0; }
+          .footer { text-align: center; color: #666; margin-top: 30px; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0;">❌ Invitation Declined</h1>
+          </div>
+          <div class="content">
+            <p>Hi ${params.name},</p>
+            <p>${metadata.rejectorName} has declined your invitation.</p>
+
+            <div class="highlight">
+              <strong>${metadata.resourceType === "course" ? "Course" : "Timetable"}:</strong> ${metadata.resourceName}
+            </div>
+
+            <p>You can invite other collaborators to work on this ${metadata.resourceType}.</p>
+          </div>
+          <div class="footer">
+            <p>&copy; 2025 UNIShare. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+function getClassReminderTemplate(params: any): string {
+  const metadata = params.metadata as {
+    courseName: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+  };
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+          .highlight { background: #fef3c7; padding: 15px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+          .time { font-size: 24px; font-weight: bold; color: #d97706; }
+          .footer { text-align: center; color: #666; margin-top: 30px; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0;">⏰ Class Reminder</h1>
+          </div>
+          <div class="content">
+            <p>Hi ${params.name},</p>
+            <p>Don't forget! Your class is starting soon.</p>
+
+            <div class="highlight">
+              <strong>Class:</strong> ${metadata.courseName}<br>
+              <strong>Location:</strong> ${metadata.location}<br>
+              <strong>Time:</strong> <span class="time">${metadata.startTime} - ${metadata.endTime}</span>
+            </div>
+
+            <p>See you there! 📚</p>
+          </div>
+          <div class="footer">
+            <p>&copy; 2025 UNIShare. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+function getAuditLogAlertTemplate(params: any): string {
+  const metadata = params.metadata as {
+    action: string;
+    resourceType: string;
+    resourceName: string;
+    performerName: string;
+  };
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+          .highlight { background: #ede9fe; padding: 15px; border-left: 4px solid #8b5cf6; margin: 20px 0; }
+          .action { display: inline-block; background: #8b5cf6; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; }
+          .footer { text-align: center; color: #666; margin-top: 30px; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0;">🔔 Activity Alert</h1>
+          </div>
+          <div class="content">
+            <p>Hi ${params.name},</p>
+            <p>A collaborator has made changes to your content.</p>
+
+            <div class="highlight">
+              <strong>Action:</strong> <span class="action">${metadata.action}</span><br>
+              <strong>Resource:</strong> ${metadata.resourceName} (${metadata.resourceType})<br>
+              <strong>By:</strong> ${metadata.performerName}
+            </div>
+
+            <p>Log in to UNIShare to view the audit log for more details.</p>
+          </div>
+          <div class="footer">
+            <p>&copy; 2025 UNIShare. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+function getSystemNotificationTemplate(params: any): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+          .message { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 20px 0; }
+          .footer { text-align: center; color: #666; margin-top: 30px; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0;">📢 System Notification</h1>
+          </div>
+          <div class="content">
+            <p>Hi ${params.name},</p>
+
+            <div class="message">
+              <p>${params.message}</p>
+            </div>
+
+            <p>This is a system notification from the UNIShare team.</p>
+          </div>
+          <div class="footer">
+            <p>&copy; 2025 UNIShare. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+function getGenericNotificationTemplate(params: any): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+          .message { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 20px 0; }
+          .footer { text-align: center; color: #666; margin-top: 30px; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0;">🔔 Notification</h1>
+          </div>
+          <div class="content">
+            <p>Hi ${params.name},</p>
+
+            <div class="message">
+              <h3>${params.title}</h3>
+              <p>${params.message}</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>&copy; 2025 UNIShare. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
 }

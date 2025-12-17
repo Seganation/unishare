@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { createNotification } from "~/lib/notifications";
 
 /**
  * Timetable tRPC Router
@@ -344,6 +345,21 @@ export const timetableRouter = createTRPCRouter({
         },
       });
 
+      // Send notification to invited user
+      await createNotification({
+        userId: input.userId,
+        type: "TIMETABLE_INVITATION",
+        title: "New timetable invitation",
+        message: `${ctx.session.user.name} invited you to collaborate on ${collaboration.timetable.name}`,
+        metadata: {
+          timetableId: collaboration.timetable.id,
+          timetableName: collaboration.timetable.name,
+          invitedBy: ctx.session.user.id,
+          inviterName: ctx.session.user.name ?? "Someone",
+          role: input.role,
+        },
+      });
+
       return collaboration;
     }),
 
@@ -367,6 +383,33 @@ export const timetableRouter = createTRPCRouter({
           status: "ACCEPTED",
           acceptedAt: new Date(),
         },
+        include: {
+          timetable: {
+            include: {
+              creator: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Notify timetable owner that invitation was accepted
+      await createNotification({
+        userId: collaboration.timetable.createdBy,
+        type: "INVITATION_ACCEPTED",
+        title: "Invitation accepted",
+        message: `${ctx.session.user.name} accepted your invitation to ${collaboration.timetable.name}`,
+        metadata: {
+          resourceType: "timetable",
+          resourceId: collaboration.timetable.id,
+          resourceName: collaboration.timetable.name,
+          acceptedBy: userId,
+          acceptorName: ctx.session.user.name ?? "Someone",
+        },
       });
 
       return collaboration;
@@ -380,7 +423,7 @@ export const timetableRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      await ctx.db.timetableCollaborator.update({
+      const collaboration = await ctx.db.timetableCollaborator.update({
         where: {
           timetableId_userId: {
             timetableId: input.timetableId,
@@ -390,6 +433,33 @@ export const timetableRouter = createTRPCRouter({
         },
         data: {
           status: "REJECTED",
+        },
+        include: {
+          timetable: {
+            include: {
+              creator: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Notify timetable owner that invitation was rejected
+      await createNotification({
+        userId: collaboration.timetable.createdBy,
+        type: "INVITATION_REJECTED",
+        title: "Invitation declined",
+        message: `${ctx.session.user.name} declined your invitation to ${collaboration.timetable.name}`,
+        metadata: {
+          resourceType: "timetable",
+          resourceId: collaboration.timetable.id,
+          resourceName: collaboration.timetable.name,
+          rejectedBy: userId,
+          rejectorName: ctx.session.user.name ?? "Someone",
         },
       });
 
@@ -446,10 +516,12 @@ export const timetableRouter = createTRPCRouter({
       const currentUserId = ctx.session.user.id;
 
       // Get existing collaborators for this timetable
-      const existingCollaborators = await ctx.db.timetableCollaborator.findMany({
-        where: { timetableId: input.timetableId },
-        select: { userId: true },
-      });
+      const existingCollaborators = await ctx.db.timetableCollaborator.findMany(
+        {
+          where: { timetableId: input.timetableId },
+          select: { userId: true },
+        },
+      );
 
       const existingUserIds = existingCollaborators.map((c) => c.userId);
 
@@ -460,7 +532,11 @@ export const timetableRouter = createTRPCRouter({
       });
 
       // Exclude owner and existing collaborators
-      const excludeIds = [...existingUserIds, timetable?.createdBy ?? "", currentUserId];
+      const excludeIds = [
+        ...existingUserIds,
+        timetable?.createdBy ?? "",
+        currentUserId,
+      ];
 
       const users = await ctx.db.user.findMany({
         where: {
@@ -497,8 +573,12 @@ export const timetableRouter = createTRPCRouter({
         courseId: z.string(),
         title: z.string().min(1).max(100),
         dayOfWeek: z.number().min(0).max(6),
-        startTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format (HH:MM)"),
-        endTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format (HH:MM)"),
+        startTime: z
+          .string()
+          .regex(/^\d{2}:\d{2}$/, "Invalid time format (HH:MM)"),
+        endTime: z
+          .string()
+          .regex(/^\d{2}:\d{2}$/, "Invalid time format (HH:MM)"),
         location: z.string().max(100).optional(),
       }),
     )
@@ -525,7 +605,8 @@ export const timetableRouter = createTRPCRouter({
       const isOwner = timetable.createdBy === userId;
       const collaboration = timetable.collaborators[0];
       const isContributor =
-        collaboration?.role === "CONTRIBUTOR" && collaboration.status === "ACCEPTED";
+        collaboration?.role === "CONTRIBUTOR" &&
+        collaboration.status === "ACCEPTED";
 
       if (!isOwner && !isContributor) {
         throw new TRPCError({
@@ -581,8 +662,14 @@ export const timetableRouter = createTRPCRouter({
         eventId: z.string(),
         title: z.string().min(1).max(100).optional(),
         dayOfWeek: z.number().min(0).max(6).optional(),
-        startTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-        endTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+        startTime: z
+          .string()
+          .regex(/^\d{2}:\d{2}$/)
+          .optional(),
+        endTime: z
+          .string()
+          .regex(/^\d{2}:\d{2}$/)
+          .optional(),
         location: z.string().max(100).optional(),
       }),
     )
@@ -613,7 +700,8 @@ export const timetableRouter = createTRPCRouter({
       const isOwner = event.timetable.createdBy === userId;
       const collaboration = event.timetable.collaborators[0];
       const isContributor =
-        collaboration?.role === "CONTRIBUTOR" && collaboration.status === "ACCEPTED";
+        collaboration?.role === "CONTRIBUTOR" &&
+        collaboration.status === "ACCEPTED";
 
       if (!isOwner && !isContributor) {
         throw new TRPCError({
@@ -671,7 +759,8 @@ export const timetableRouter = createTRPCRouter({
       const isOwner = event.timetable.createdBy === userId;
       const collaboration = event.timetable.collaborators[0];
       const isContributor =
-        collaboration?.role === "CONTRIBUTOR" && collaboration.status === "ACCEPTED";
+        collaboration?.role === "CONTRIBUTOR" &&
+        collaboration.status === "ACCEPTED";
 
       if (!isOwner && !isContributor) {
         throw new TRPCError({

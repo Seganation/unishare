@@ -1,0 +1,1 @@
+basically we need drag and drop for all events with three fucntionalities i told this to muhamad since rawa assigned him calendar geek i told him to implement three fucntionalities since the package we use has native support backend ready drag and drop for events in the timetable he saisd he will do it

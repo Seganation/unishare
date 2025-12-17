@@ -9,7 +9,7 @@ export const env = createEnv({
   server: {
     // Database
     DATABASE_URL: z.string().url(),
-    
+
     // Authentication
     AUTH_SECRET:
       process.env.NODE_ENV === "production"
@@ -17,22 +17,25 @@ export const env = createEnv({
         : z.string().optional(),
     NEXTAUTH_SECRET: z.string(),
     NEXTAUTH_URL: z.string().url(),
-    
+
     // Discord OAuth (T3 default - can remove if not using)
     AUTH_DISCORD_ID: z.string().optional(),
     AUTH_DISCORD_SECRET: z.string().optional(),
-    
+
     // File Storage (UploadThing)
     UPLOADTHING_TOKEN: z.string(),
     UPLOADTHING_SECRET: z.string(),
     UPLOADTHING_APP_ID: z.string(),
-    
+
     // Real-time Collaboration (Liveblocks)
     LIVEBLOCKS_SECRET_KEY: z.string(),
-    
+
     // Email (Nodemailer with Gmail)
     EMAIL_USER: z.string().email(),
     EMAIL_APP_PASSWORD: z.string(),
+
+    // Cron Job Authentication
+    CRON_SECRET: z.string().min(32),
 
     // AI (Ollama - Local Development Only)
     OLLAMA_BASE_URL: z.string().url().default("http://localhost:11434"),
@@ -52,7 +55,7 @@ export const env = createEnv({
   client: {
     // Liveblocks Public Key
     NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY: z.string(),
-    
+
     // Application URL
     NEXT_PUBLIC_APP_URL: z.string().url(),
   },
@@ -64,26 +67,30 @@ export const env = createEnv({
   runtimeEnv: {
     // Database
     DATABASE_URL: process.env.DATABASE_URL,
-    
+
     // Authentication
     AUTH_SECRET: process.env.AUTH_SECRET,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID,
     AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
-    
+
     // File Storage
     UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
     UPLOADTHING_SECRET: process.env.UPLOADTHING_SECRET,
     UPLOADTHING_APP_ID: process.env.UPLOADTHING_APP_ID,
-    
+
     // Real-time Collaboration
     LIVEBLOCKS_SECRET_KEY: process.env.LIVEBLOCKS_SECRET_KEY,
-    NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY: process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY,
-    
+    NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY:
+      process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY,
+
     // Email
     EMAIL_USER: process.env.EMAIL_USER,
     EMAIL_APP_PASSWORD: process.env.EMAIL_APP_PASSWORD,
+
+    // Cron Job Authentication
+    CRON_SECRET: process.env.CRON_SECRET,
 
     // AI (Ollama)
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
@@ -95,13 +102,13 @@ export const env = createEnv({
     // Environment
     NODE_ENV: process.env.NODE_ENV,
   },
-  
+
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
    * useful for Docker builds.
    */
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
-  
+
   /**
    * Makes it so that empty strings are treated as undefined. `SOME_VAR: z.string()` and
    * `SOME_VAR=''` will throw an error.

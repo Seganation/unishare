@@ -49,6 +49,10 @@ model User {
   aiQuizAttempts       AiQuizAttempt[]
   aiStudyPlans         AiStudyPlan[]
 
+  // Notification relations
+  notifications               Notification[]
+  notificationPreferences     UserNotificationPreferences?
+
   @@index([email])
   @@index([role])
   @@index([facultyId])
@@ -287,6 +291,7 @@ model Event {
   recurring   Boolean   @default(true)
   createdBy   String
   creator     User      @relation(fields: [createdBy], references: [id])
+  deletedAt   DateTime? // Soft delete support
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -573,3 +578,56 @@ model AiStudyPlanTask {
 
   @@index([weekId])
 }
+
+// ==================== NOTIFICATION SYSTEM ====================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  metadata  Json?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read, createdAt])
+  @@index([userId, createdAt])
+}
+
+enum NotificationType {
+  COURSE_INVITATION
+  TIMETABLE_INVITATION
+  INVITATION_ACCEPTED
+  INVITATION_REJECTED
+  CLASS_REMINDER
+  AUDIT_LOG_ALERT
+  SYSTEM_NOTIFICATION
+  GENERAL
+}
+
+model UserNotificationPreferences {
+  id                          String   @id @default(cuid())
+  userId                      String   @unique
+  user                        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // In-app notification toggles
+  inAppClassReminders         Boolean  @default(true)
+  inAppCollaborationInvites   Boolean  @default(true)
+  inAppAuditLogAlerts         Boolean  @default(true)
+  inAppSystemNotifications    Boolean  @default(true)
+
+  // Email notification toggles
+  emailClassReminders         Boolean  @default(true)
+  emailCollaborationInvites   Boolean  @default(true)
+  emailAuditLogAlerts         Boolean  @default(true)
+  emailSystemNotifications    Boolean  @default(true)
+
+  // Class reminder timing (minutes before class)
+  classReminderMinutes        Int      @default(10)
+
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+}
+

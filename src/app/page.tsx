@@ -1,16 +1,18 @@
 import Link from "next/link";
 import { auth } from "~/server/auth";
-import SiteHeader from "~/components/site-header";
+import { AnimatedTreeBranch } from "~/components/animated-tree-branch";
 
 export default async function Home() {
   const session = await auth();
 
   return (
     <>
-      <SiteHeader />
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-900 to-indigo-900 text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
+      <main className="relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-900 to-indigo-900 text-white">
+        {/* Tree branch GIF in bottom-right corner */}
+        <AnimatedTreeBranch />
+
+        <div className="relative z-20 container flex flex-col items-center justify-center gap-12 px-4 py-16">
+          <h1 className="font-unishare text-5xl font-extrabold tracking-tight sm:text-[5rem]">
             UNI<span className="text-purple-400">Share</span>
           </h1>
           <p className="max-w-2xl text-center text-xl text-gray-300">
@@ -30,7 +32,7 @@ export default async function Home() {
                 ) : session.user.role === "APPROVED" ? (
                   <>
                     <Link
-                      href="/courses"
+                      href="/courses?welcome=true"
                       className="rounded-lg bg-purple-600 px-8 py-3 font-semibold transition hover:bg-purple-500"
                     >
                       My Courses

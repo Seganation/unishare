@@ -140,7 +140,7 @@ export default function LoginPage() {
                 alt="UNIShare Logo"
                 className="h-14 w-14 object-contain"
               />
-              <h1 className="text-5xl font-black text-white drop-shadow-lg">
+              <h1 className="font-unishare text-5xl font-black text-white drop-shadow-lg">
                 UNIShare
               </h1>
             </div>

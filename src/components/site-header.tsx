@@ -16,7 +16,7 @@ export function SiteHeader() {
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-purple-600 font-bold text-white">
               U
             </div>
-            <span className="text-lg font-bold">UNIShare</span>
+            <span className="font-unishare text-lg font-bold">UNIShare</span>
           </Link>
 
           {/* Desktop nav */}

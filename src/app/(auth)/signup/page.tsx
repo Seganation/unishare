@@ -172,7 +172,7 @@ export default function SignupPage() {
               alt="UNIShare Logo"
               className="h-14 w-14 object-contain"
             />
-            <h1 className="text-5xl font-black text-white drop-shadow-lg">
+            <h1 className="font-unishare text-5xl font-black text-white drop-shadow-lg">
               UNIShare
             </h1>
           </div>
@@ -210,7 +210,10 @@ export default function SignupPage() {
             )}
 
             {/* Form Grid (responsive) */}
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form
+              onSubmit={handleSubmit}
+              className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+            >
               {/* Name - Col 1 */}
               <div className="space-y-1">
                 <label
@@ -326,12 +329,18 @@ export default function SignupPage() {
                       facultyId: "",
                     });
                   }}
-                  className="input-primary h-9 w-full bg-white/90 text-sm backdrop-blur-sm transition-all focus:bg-white"
+                  className="input-primary h-9 w-full rounded-lg border border-white/30 bg-white/90 px-3 py-1 text-sm leading-tight text-gray-900 backdrop-blur-sm transition-all focus:bg-white focus:ring-2 focus:ring-white/50 focus:outline-none"
                   disabled={isLoading || universitiesLoading}
                 >
-                  <option value="">Select university</option>
+                  <option value="" className="text-gray-500">
+                    Select university
+                  </option>
                   {universities?.map((uni) => (
-                    <option key={uni.id} value={uni.id}>
+                    <option
+                      key={uni.id}
+                      value={uni.id}
+                      className="text-gray-900"
+                    >
                       {uni.name}
                     </option>
                   ))}
@@ -354,12 +363,18 @@ export default function SignupPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, facultyId: e.target.value })
                   }
-                  className="input-primary h-9 w-full bg-white/90 text-sm backdrop-blur-sm transition-all focus:bg-white"
+                  className="input-primary h-9 w-full rounded-lg border border-white/30 bg-white/90 px-3 py-1 text-sm leading-tight text-gray-900 backdrop-blur-sm transition-all focus:bg-white focus:ring-2 focus:ring-white/50 focus:outline-none"
                   disabled={isLoading || !formData.universityId}
                 >
-                  <option value="">Select faculty</option>
+                  <option value="" className="text-gray-500">
+                    Select faculty
+                  </option>
                   {faculties.map((faculty) => (
-                    <option key={faculty.id} value={faculty.id}>
+                    <option
+                      key={faculty.id}
+                      value={faculty.id}
+                      className="text-gray-900"
+                    >
                       {faculty.name}
                     </option>
                   ))}
@@ -393,7 +408,7 @@ export default function SignupPage() {
                         label: "text-white font-medium text-sm",
                         allowedContent: "text-purple-200 text-xs",
                         button:
-                          "bg-white text-purple-700 font-medium px-3 py-1 text-sm rounded-md hover:bg-white/90 ut-ready:bg-white ut-uploading:bg-white/50",
+                          "bg-purple-600 text-white font-medium px-4 py-2 text-sm rounded-md hover:bg-purple-700 ut-ready:bg-purple-600 ut-uploading:bg-purple-400",
                       }}
                     />
                   ) : (
@@ -460,5 +475,6 @@ export default function SignupPage() {
           © {new Date().getFullYear()} UNIShare. All rights reserved.
         </p>
       </div>
+    </div>
   );
 }

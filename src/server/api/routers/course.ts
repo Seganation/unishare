@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { createNotification } from "~/lib/notifications";
 
 /**
  * Course tRPC Router
@@ -442,5 +443,241 @@ export const courseRouter = createTRPCRouter({
     ];
 
     return allCourses;
+  }),
+
+  /**
+   * Invite user to collaborate on course (owner only)
+   */
+  inviteCollaborator: protectedProcedure
+    .input(
+      z.object({
+        courseId: z.string(),
+        userId: z.string(),
+        role: z.enum(["VIEWER", "CONTRIBUTOR"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const currentUserId = ctx.session.user.id;
+
+      // Check ownership
+      const course = await ctx.db.course.findUnique({
+        where: { id: input.courseId },
+      });
+
+      if (!course) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Course not found",
+        });
+      }
+
+      if (course.createdBy !== currentUserId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only the owner can invite collaborators",
+        });
+      }
+
+      // Can't invite yourself
+      if (input.userId === currentUserId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't invite yourself",
+        });
+      }
+
+      // Check if already invited
+      const existing = await ctx.db.courseCollaborator.findUnique({
+        where: {
+          courseId_userId: {
+            courseId: input.courseId,
+            userId: input.userId,
+          },
+        },
+      });
+
+      if (existing) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User already invited",
+        });
+      }
+
+      // Create invitation
+      const collaboration = await ctx.db.courseCollaborator.create({
+        data: {
+          courseId: input.courseId,
+          userId: input.userId,
+          role: input.role,
+          status: "PENDING",
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              profileImage: true,
+            },
+          },
+          course: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      });
+
+      // Send notification to invited user
+      await createNotification({
+        userId: input.userId,
+        type: "COURSE_INVITATION",
+        title: "New course invitation",
+        message: `${ctx.session.user.name} invited you to collaborate on ${collaboration.course.title}`,
+        metadata: {
+          courseId: collaboration.course.id,
+          courseName: collaboration.course.title,
+          invitedBy: ctx.session.user.id,
+          inviterName: ctx.session.user.name ?? "Someone",
+          role: input.role,
+        },
+      });
+
+      return collaboration;
+    }),
+
+  /**
+   * Accept course invitation
+   */
+  acceptInvitation: protectedProcedure
+    .input(z.object({ courseId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      const collaboration = await ctx.db.courseCollaborator.update({
+        where: {
+          courseId_userId: {
+            courseId: input.courseId,
+            userId: userId,
+          },
+          status: "PENDING",
+        },
+        data: {
+          status: "ACCEPTED",
+          joinedAt: new Date(),
+        },
+        include: {
+          course: {
+            include: {
+              creator: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Notify course owner that invitation was accepted
+      await createNotification({
+        userId: collaboration.course.createdBy,
+        type: "INVITATION_ACCEPTED",
+        title: "Invitation accepted",
+        message: `${ctx.session.user.name} accepted your invitation to ${collaboration.course.title}`,
+        metadata: {
+          resourceType: "course",
+          resourceId: collaboration.course.id,
+          resourceName: collaboration.course.title,
+          acceptedBy: userId,
+          acceptorName: ctx.session.user.name ?? "Someone",
+        },
+      });
+
+      return collaboration;
+    }),
+
+  /**
+   * Reject course invitation
+   */
+  rejectInvitation: protectedProcedure
+    .input(z.object({ courseId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      const collaboration = await ctx.db.courseCollaborator.update({
+        where: {
+          courseId_userId: {
+            courseId: input.courseId,
+            userId: userId,
+          },
+          status: "PENDING",
+        },
+        data: {
+          status: "REJECTED",
+        },
+        include: {
+          course: {
+            include: {
+              creator: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Notify course owner that invitation was rejected
+      await createNotification({
+        userId: collaboration.course.createdBy,
+        type: "INVITATION_REJECTED",
+        title: "Invitation declined",
+        message: `${ctx.session.user.name} declined your invitation to ${collaboration.course.title}`,
+        metadata: {
+          resourceType: "course",
+          resourceId: collaboration.course.id,
+          resourceName: collaboration.course.title,
+          rejectedBy: userId,
+          rejectorName: ctx.session.user.name ?? "Someone",
+        },
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * Get pending invitations for current user
+   */
+  getPendingInvitations: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    const invitations = await ctx.db.courseCollaborator.findMany({
+      where: {
+        userId: userId,
+        status: "PENDING",
+      },
+      include: {
+        course: {
+          include: {
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                profileImage: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { invitedAt: "desc" },
+    });
+
+    return invitations;
   }),
 });

@@ -8,9 +8,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans:
-    ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
+  /* Body font - Sour Gummy for general content */
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  /* Heading font - Knewave for titles and UNIShare branding */
+  --font-heading: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {
@@ -197,7 +198,24 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body), var(--font-sans);
   }
+
+  /* Apply heading font to all headings and UNIShare branding */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading), var(--font-sans);
+  }
+
+  /* Utility class for UNIShare branding text */
+  .font-unishare {
+    font-family: var(--font-heading), var(--font-sans) !important;
+  }
+
   /* BlockNote editor border styles */
   .bn-shadcn * {
     @apply border-border outline-ring/50;
@@ -597,6 +615,48 @@
 
 .rbc-event {
   @apply text-white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rbc-event:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.rbc-addons-dnd-dragging .rbc-event {
+  opacity: 0.5;
+  cursor: grabbing !important;
+}
+
+.rbc-addons-dnd-drag-preview {
+  opacity: 0.8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: rotate(3deg);
+}
+
+.rbc-addons-dnd-over {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+.rbc-addons-dnd-resizable {
+  position: relative;
+}
+
+/* Trash zone pulse animation */
+@keyframes trash-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.trash-zone-active {
+  animation: trash-pulse 1s ease-in-out infinite;
 }
 
 .rbc-event:focus {

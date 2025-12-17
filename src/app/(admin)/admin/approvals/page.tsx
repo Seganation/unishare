@@ -64,7 +64,7 @@ export default function AdminApprovalsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="bg-background flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="mb-4 animate-spin text-5xl">⏳</div>
           <p className="text-muted-foreground text-lg">
@@ -121,11 +121,16 @@ export default function AdminApprovalsPage() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link href="/admin/approvals" className="group flex items-center gap-2">
+            <Link
+              href="/admin/approvals"
+              className="group flex items-center gap-2"
+            >
               <div className="bg-primary flex h-10 w-10 items-center justify-center rounded-lg transition-transform group-hover:scale-105">
                 <Book className="text-primary-foreground h-6 w-6" />
               </div>
-              <span className="text-primary text-xl font-bold">UNIShare Admin</span>
+              <span className="font-unishare text-primary text-xl font-bold">
+                UNIShare Admin
+              </span>
             </Link>
 
             {/* Logout Button */}
@@ -285,16 +290,18 @@ export default function AdminApprovalsPage() {
 
                     {/* Student ID Preview */}
                     <div>
-                      <p className="text-muted-foreground mb-2 text-sm font-semibold uppercase tracking-wide">
+                      <p className="text-muted-foreground mb-2 text-sm font-semibold tracking-wide uppercase">
                         Student ID
                       </p>
-                      <div className="border-border relative h-48 cursor-pointer overflow-hidden rounded-xl border-2 bg-slate-100 transition-all hover:border-primary dark:bg-slate-900">
+                      <div className="border-border hover:border-primary relative h-48 cursor-pointer overflow-hidden rounded-xl border-2 bg-slate-100 transition-all dark:bg-slate-900">
                         <Image
                           src={user.studentIdUrl}
                           alt="Student ID"
                           fill
                           className="object-contain p-2 transition-transform hover:scale-105"
-                          onClick={() => window.open(user.studentIdUrl, "_blank")}
+                          onClick={() =>
+                            window.open(user.studentIdUrl, "_blank")
+                          }
                         />
                       </div>
                       <button
@@ -310,10 +317,9 @@ export default function AdminApprovalsPage() {
                       <button
                         onClick={() => handleApprove(user.id)}
                         disabled={
-                          approveMutation.isPending ||
-                          rejectMutation.isPending
+                          approveMutation.isPending || rejectMutation.isPending
                         }
-                        className="group/btn flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:from-emerald-700 hover:to-teal-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                        className="group/btn flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:from-emerald-700 hover:to-teal-700 focus:ring-4 focus:ring-emerald-500/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                       >
                         <CheckCircle className="h-4 w-4 transition-transform group-hover/btn:scale-110" />
                         {approveMutation.isPending && selectedUser === user.id
@@ -323,10 +329,9 @@ export default function AdminApprovalsPage() {
                       <button
                         onClick={() => handleReject(user.id)}
                         disabled={
-                          approveMutation.isPending ||
-                          rejectMutation.isPending
+                          approveMutation.isPending || rejectMutation.isPending
                         }
-                        className="group/btn flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:from-red-700 hover:to-rose-700 focus:outline-none focus:ring-4 focus:ring-red-500/50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                        className="group/btn flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:from-red-700 hover:to-rose-700 focus:ring-4 focus:ring-red-500/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                       >
                         <XCircle className="h-4 w-4 transition-transform group-hover/btn:scale-110" />
                         {rejectMutation.isPending && selectedUser === user.id

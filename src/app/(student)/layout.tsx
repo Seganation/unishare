@@ -5,6 +5,7 @@ import { Book, Calendar, FileText, User, Edit3, Sparkles } from "lucide-react";
 import { ThemeToggle } from "~/components/theme-toggle";
 import { UserMenuDropdown } from "~/components/user-menu-dropdown";
 import { RandomLogo } from "~/components/random-logo";
+import { NotificationBell } from "~/components/notification-bell";
 
 export default async function StudentLayout({
   children,
@@ -37,7 +38,9 @@ export default async function StudentLayout({
               <div className="flex h-12 w-12 items-center justify-center transition-transform group-hover:scale-105">
                 <RandomLogo />
               </div>
-              <span className="text-primary text-xl font-bold">UNIShare</span>
+              <span className="font-unishare text-primary text-xl font-bold">
+                UNIShare
+              </span>
             </Link>
 
             {/* Navigation Links */}
@@ -61,6 +64,9 @@ export default async function StudentLayout({
 
             {/* User Menu */}
             <div className="flex items-center gap-2">
+              {/* Notification Bell */}
+              <NotificationBell />
+
               {/* Theme Toggle */}
               <ThemeToggle />
 

@@ -162,6 +162,7 @@ export const authConfig = {
         id: freshUser.id,
         name: freshUser.name,
         email: freshUser.email ?? "",
+        emailVerified: null,
         role: freshUser.role,
         facultyId: freshUser.facultyId,
         universityId: freshUser.universityId,

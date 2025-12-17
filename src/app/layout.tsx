@@ -1,7 +1,7 @@
 import "~/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Knewave } from "next/font/google";
+import { Knewave, Sour_Gummy } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "~/components/theme-provider";
@@ -16,16 +16,29 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
+// Font for UNIShare branding and titles
 const knewave = Knewave({
   subsets: ["latin"],
   weight: "400",
+  variable: "--font-heading",
+});
+
+// Font for body text and general content
+const sourGummy = Sour_Gummy({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
 });
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={knewave.className} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${knewave.variable} ${sourGummy.variable}`}
+      suppressHydrationWarning
+    >
       <body suppressHydrationWarning>
         <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
         <ThemeProvider

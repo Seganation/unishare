@@ -1,0 +1,8 @@
+basically we need recyclung bin for every deleted thing and also restoration for them
+we also need not so heavy but leight weight audit loggin for owneres of content and notifications for owners of content so they know what their contributors are doing
+courses need overhaul of favourating and also alerts in place for if course already has calendar events if they remove its favouritisim they will lose all content of timetable
+
+even the sign up is wierd the select inputs are under flown must me from druds sigin and sign up ui updates he forgot to fix i will fix it tho
+for the drag and drop of the timetable i need to also implement notifications and a small loader on that timetable frame layout so user get a sense of update and respnse
+
+hmm interesting the save changes of the profile page is not working fully the form has 3 fields only name can be updated it seems and this casues and auth issue because if we change the email it has to log us out, after further analyzation email shouldnt be updated only name and the email should be blured out with a green check mark saying verified so cant be edited and also remove the bio feild since it doesnt exsit in the db and not needed anywhere ohh actually not blured for the email but visable just not editable

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
+import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import type { View } from "react-big-calendar";
 import {
   format,
@@ -15,14 +16,25 @@ import {
 } from "date-fns";
 import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
-import { Plus, Calendar as CalendarIcon, Share2, Settings } from "lucide-react";
+import {
+  Plus,
+  Calendar as CalendarIcon,
+  Share2,
+  Eye,
+  Trash2,
+} from "lucide-react";
 import { CreateTimetableModal } from "~/components/timetable/create-timetable-modal";
 import { CreateEventModal } from "~/components/timetable/create-event-modal";
 import { ShareTimetableModal } from "~/components/timetable/share-timetable-modal";
+import { EventDetailsModal } from "~/components/timetable/event-details-modal";
 import { Loader } from "~/components/ai-elements/loader";
 import type { Event as PrismaEvent, Course } from "@prisma/client";
+
+// Create draggable calendar
+const DraggableCalendar = withDragAndDrop(BigCalendar);
 
 // Setup date-fns localizer for react-big-calendar
 const locales = {
@@ -46,6 +58,47 @@ type CalendarEvent = {
   resource: PrismaEvent & { course: Course };
 };
 
+// Helper function to check if two time ranges overlap
+function timesOverlap(
+  start1: string,
+  end1: string,
+  start2: string,
+  end2: string,
+): boolean {
+  const s1 = new Date(`2000-01-01T${start1}`);
+  const e1 = new Date(`2000-01-01T${end1}`);
+  const s2 = new Date(`2000-01-01T${start2}`);
+  const e2 = new Date(`2000-01-01T${end2}`);
+  return s1 < e2 && s2 < e1;
+}
+
+// Custom Event Component with View Icon
+function CustomEvent({
+  event,
+  onViewClick,
+}: {
+  event: CalendarEvent;
+  onViewClick: (event: CalendarEvent) => void;
+}) {
+  return (
+    <div className="flex h-full w-full items-center justify-between gap-1 overflow-hidden">
+      <span className="min-w-0 flex-1 truncate text-xs leading-tight font-medium">
+        {event.title}
+      </span>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onViewClick(event);
+        }}
+        className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-white/30"
+        title="View details"
+      >
+        <Eye className="h-3 w-3" />
+      </button>
+    </div>
+  );
+}
+
 export default function TimetablePage() {
   const [view, setView] = useState<View>("week");
   const [date, setDate] = useState(new Date());
@@ -55,6 +108,16 @@ export default function TimetablePage() {
   const [showCreateTimetable, setShowCreateTimetable] = useState(false);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<
+    (PrismaEvent & { course: Course }) | null
+  >(null);
+  const [showEventDetails, setShowEventDetails] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<
+    (PrismaEvent & { course: Course }) | null
+  >(null);
 
   const {
     data: timetables,
@@ -110,6 +173,122 @@ export default function TimetablePage() {
         (c) => c.role === "CONTRIBUTOR" && c.status === "ACCEPTED",
       )
     : false;
+
+  // Mutation for updating event when dragged
+  const updateEventMutation = api.timetable.updateEvent.useMutation({
+    onSuccess: () => {
+      void refetch();
+    },
+    onError: (error) => {
+      // Show error toast or revert
+      console.error("Failed to update event:", error);
+      void refetch(); // Revert by refetching
+    },
+  });
+
+  // Mutation for deleting event
+  const deleteEventMutation = api.timetable.deleteEvent.useMutation({
+    onSuccess: () => {
+      void refetch();
+      setShowDeleteDialog(false);
+      setEventToDelete(null);
+    },
+  });
+
+  // Handle event drop (dragging to new time/day)
+  const handleEventDrop = ({
+    event,
+    start,
+    end,
+  }: {
+    event: CalendarEvent;
+    start: Date;
+    end: Date;
+  }) => {
+    setIsDragging(false);
+    setDraggedEventId(null);
+
+    if (!canEdit) return;
+
+    const newDayOfWeek = getDay(start);
+    const newStartTime = format(start, "HH:mm");
+    const newEndTime = format(end, "HH:mm");
+
+    // Check for overlaps with other events on the new day
+    const eventsOnNewDay = selectedTimetable?.events.filter(
+      (e) => e.dayOfWeek === newDayOfWeek && e.id !== event.resource.id,
+    );
+
+    const hasOverlap = eventsOnNewDay?.some((e) =>
+      timesOverlap(newStartTime, newEndTime, e.startTime, e.endTime),
+    );
+
+    if (hasOverlap) {
+      alert("Cannot move event: Time conflict with another class");
+      return;
+    }
+
+    // Validate time range
+    if (start >= end) {
+      alert("Invalid time range");
+      return;
+    }
+
+    // Update the event
+    updateEventMutation.mutate({
+      eventId: event.resource.id,
+      dayOfWeek: newDayOfWeek,
+      startTime: newStartTime,
+      endTime: newEndTime,
+    });
+  };
+
+  // Handle event resize (changing duration)
+  const handleEventResize = ({
+    event,
+    start,
+    end,
+  }: {
+    event: CalendarEvent;
+    start: Date;
+    end: Date;
+  }) => {
+    setIsDragging(false);
+    setDraggedEventId(null);
+
+    if (!canEdit) return;
+
+    const newStartTime = format(start, "HH:mm");
+    const newEndTime = format(end, "HH:mm");
+    const dayOfWeek = event.resource.dayOfWeek;
+
+    // Check for overlaps
+    const eventsOnDay = selectedTimetable?.events.filter(
+      (e) => e.dayOfWeek === dayOfWeek && e.id !== event.resource.id,
+    );
+
+    const hasOverlap = eventsOnDay?.some((e) =>
+      timesOverlap(newStartTime, newEndTime, e.startTime, e.endTime),
+    );
+
+    if (hasOverlap) {
+      alert("Cannot resize event: Time conflict with another class");
+      return;
+    }
+
+    // Validate time range
+    if (start >= end) {
+      alert("Invalid time range");
+      return;
+    }
+
+    // Update the event
+    updateEventMutation.mutate({
+      eventId: event.resource.id,
+      startTime: newStartTime,
+      endTime: newEndTime,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -264,8 +443,8 @@ export default function TimetablePage() {
             </div>
 
             {/* Calendar */}
-            <div className="rounded-xl border-2 border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-              <BigCalendar
+            <div className="relative rounded-xl border-2 border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+              <DraggableCalendar
                 localizer={localizer}
                 events={calendarEvents}
                 startAccessor="start"
@@ -281,6 +460,29 @@ export default function TimetablePage() {
                 timeslots={2}
                 min={new Date(2025, 0, 1, 7, 0)} // 7 AM
                 max={new Date(2025, 0, 1, 22, 0)} // 10 PM
+                // Drag and Drop handlers
+                onEventDrop={handleEventDrop}
+                onEventResize={handleEventResize}
+                onDragStart={(args) => {
+                  if (canEdit && args.event) {
+                    setIsDragging(true);
+                    setDraggedEventId(args.event.resource.id);
+                  }
+                }}
+                resizable={canEdit}
+                draggableAccessor={() => canEdit}
+                // Custom event component with view icon
+                components={{
+                  event: (props) => (
+                    <CustomEvent
+                      event={props.event}
+                      onViewClick={(event) => {
+                        setSelectedEvent(event.resource);
+                        setShowEventDetails(true);
+                      }}
+                    />
+                  ),
+                }}
                 eventPropGetter={(event) => ({
                   style: {
                     backgroundColor: event.resource.course.color,
@@ -288,9 +490,14 @@ export default function TimetablePage() {
                     color: "white",
                     borderRadius: "6px",
                     border: "none",
-                    padding: "4px 8px",
-                    fontSize: "0.875rem",
-                    fontWeight: "600",
+                    padding: "4px 6px",
+                    fontSize: "0.75rem",
+                    fontWeight: "500",
+                    cursor: canEdit ? "move" : "default",
+                    transition: "all 0.2s",
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
                   },
                 })}
                 formats={{
@@ -303,6 +510,46 @@ export default function TimetablePage() {
                   work_week: "Mon-Fri",
                 }}
               />
+
+              {/* Drag-to-Delete Trash Zone - Inside Calendar */}
+              {/* {isDragging && canEdit && (
+                <div
+                  className="animate-in fade-in zoom-in-50 absolute right-4 bottom-4 z-50 duration-200"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.currentTarget.classList.add("scale-110");
+                  }}
+                  onDragLeave={(e) => {
+                    e.currentTarget.classList.remove("scale-110");
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.currentTarget.classList.remove("scale-110");
+
+                    if (draggedEventId) {
+                      const event = selectedTimetable?.events.find(
+                        (evt) => evt.id === draggedEventId,
+                      );
+                      if (event) {
+                        setEventToDelete(event);
+                        setShowDeleteDialog(true);
+                      }
+                    }
+
+                    setIsDragging(false);
+                    setDraggedEventId(null);
+                  }}
+                >
+                  <div className="flex h-20 w-20 flex-col items-center justify-center rounded-xl border-4 border-dashed border-red-400 bg-red-50 shadow-2xl transition-all hover:border-red-500 hover:bg-red-100 dark:border-red-600 dark:bg-red-900/40 dark:hover:border-red-500 dark:hover:bg-red-900/60">
+                    <Trash2 className="h-8 w-8 text-red-500 dark:text-red-400" />
+                    <span className="mt-1 text-[10px] font-bold text-red-600 dark:text-red-400">
+                      Delete
+                    </span>
+                  </div>
+                </div>
+              )} */}
             </div>
           </>
         )}
@@ -336,7 +583,96 @@ export default function TimetablePage() {
             timetableId={selectedTimetable.id}
             timetableName={selectedTimetable.name}
           />
+
+          <EventDetailsModal
+            open={showEventDetails}
+            onClose={() => {
+              setShowEventDetails(false);
+              setSelectedEvent(null);
+            }}
+            event={selectedEvent}
+            canEdit={canEdit}
+            onSuccess={() => {
+              void refetch();
+            }}
+            allEvents={selectedTimetable.events}
+          />
         </>
+      )}
+
+      {/* Delete Confirmation Dialog (from drag-to-trash) */}
+      {showDeleteDialog && eventToDelete && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-900">
+            <div className="mb-4 flex items-start gap-3">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                <Trash2 className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                  Delete Class?
+                </h3>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Are you sure you want to delete this class?
+                </p>
+                <div className="mt-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="h-3 w-3 rounded"
+                      style={{ backgroundColor: eventToDelete.course.color }}
+                    />
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      {eventToDelete.course.title}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    {eventToDelete.title} • {eventToDelete.startTime} -{" "}
+                    {eventToDelete.endTime}
+                  </p>
+                </div>
+                <p className="mt-3 text-xs text-red-600 dark:text-red-400">
+                  This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteDialog(false);
+                  setEventToDelete(null);
+                }}
+                className="flex-1"
+                disabled={deleteEventMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (eventToDelete) {
+                    deleteEventMutation.mutate({ eventId: eventToDelete.id });
+                  }
+                }}
+                className="flex-1"
+                disabled={deleteEventMutation.isPending}
+              >
+                {deleteEventMutation.isPending ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
