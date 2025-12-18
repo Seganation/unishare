@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, FileText, MoreVertical, Trash2, ChevronRight, ChevronDown } from "lucide-react";
+import {
+  Plus,
+  FileText,
+  MoreVertical,
+  Trash2,
+  ChevronRight,
+  ChevronDown,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
@@ -78,7 +85,13 @@ export function NotesSidebar({
   };
 
   // Recursive component for rendering a page and its children
-  const PageItem = ({ page, depth = 0 }: { page: NotePage; depth?: number }) => {
+  const PageItem = ({
+    page,
+    depth = 0,
+  }: {
+    page: NotePage;
+    depth?: number;
+  }) => {
     const [isExpanded, setIsExpanded] = useState(true);
     const hasChildren = page.children && page.children.length > 0;
 
@@ -88,8 +101,8 @@ export function NotesSidebar({
           className={cn(
             "group relative flex items-center gap-2 rounded-lg py-2 text-sm transition-colors",
             currentPageId === page.id
-              ? "bg-purple-50 text-purple-700"
-              : "hover:bg-gray-100 text-gray-700",
+              ? "bg-primary/10 text-primary"
+              : "hover:bg-muted",
           )}
           style={{ paddingLeft: `${12 + depth * 16}px` }}
         >
@@ -133,9 +146,7 @@ export function NotesSidebar({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => handleCreatePage(page.id)}
-                >
+                <DropdownMenuItem onClick={() => handleCreatePage(page.id)}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add sub-page
                 </DropdownMenuItem>
@@ -167,10 +178,10 @@ export function NotesSidebar({
   const topLevelPages = pages.filter((page) => !page.parentId);
 
   return (
-    <div className="flex h-full w-64 flex-col border-r border-gray-200 bg-white">
+    <div className="border-border bg-card flex h-full w-64 flex-col border-r">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 p-4">
-        <h2 className="font-semibold text-gray-900">Pages</h2>
+      <div className="border-border flex items-center justify-between border-b p-4">
+        <h2 className="font-semibold">Pages</h2>
         {canEdit && (
           <Button
             size="sm"
@@ -188,10 +199,10 @@ export function NotesSidebar({
       <div className="flex-1 overflow-y-auto p-2">
         {topLevelPages.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center">
-            <FileText className="mb-2 h-12 w-12 text-gray-300" />
-            <p className="text-sm text-gray-500">No pages yet</p>
+            <FileText className="text-muted-foreground/50 mb-2 h-12 w-12" />
+            <p className="text-muted-foreground text-sm">No pages yet</p>
             {canEdit && (
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="text-muted-foreground/70 mt-1 text-xs">
                 Click + to create one
               </p>
             )}

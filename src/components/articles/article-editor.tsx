@@ -63,12 +63,10 @@ export function ArticleEditor({
   }
 
   return (
-    <div className="border-border bg-card article-editor rounded-lg border">
-      <BlockNoteView
-        editor={editor}
-        theme={resolvedTheme === "dark" ? "dark" : "light"}
-        className="min-h-[500px] p-4"
-      />
-    </div>
+    <BlockNoteView
+      editor={editor}
+      theme={resolvedTheme === "dark" ? "dark" : "light"}
+      className="min-h-[500px]"
+    />
   );
 }

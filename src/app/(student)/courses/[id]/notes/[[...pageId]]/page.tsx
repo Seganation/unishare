@@ -62,7 +62,7 @@ export default async function NotesPage({
   }
 
   // Determine permissions
-  const userRole = isOwner ? "OWNER" : collaboration?.role ?? "VIEWER";
+  const userRole = isOwner ? "OWNER" : (collaboration?.role ?? "VIEWER");
   const canEdit = userRole === "OWNER" || userRole === "CONTRIBUTOR";
   const isReadOnly = userRole === "VIEWER";
 
@@ -100,11 +100,12 @@ export default async function NotesPage({
         courseId,
         liveblockRoom: "", // Will be updated to pageId
         order: 0,
-        content: {},
+        // content field intentionally omitted - document lives in Liveblocks Yjs
       },
     });
 
     // Update liveblockRoom to use pageId as room identifier
+    // The Yjs document will be automatically created by Liveblocks on first connection
     await db.note.update({
       where: { id: currentPage.id },
       data: { liveblockRoom: currentPage.id },
@@ -115,8 +116,8 @@ export default async function NotesPage({
   } else if (pages.length === 0) {
     // No pages and can't create - show empty state
     return (
-      <div className="flex min-h-screen flex-col bg-gradient-to-br from-purple-50 via-white to-indigo-50">
-        <div className="border-b-2 border-gray-200 bg-white shadow-sm">
+      <div className="bg-background flex min-h-screen flex-col">
+        <div className="border-border bg-card border-b shadow-sm">
           <div className="mx-auto max-w-7xl px-4 py-4">
             <Link href={`/courses/${courseId}`}>
               <Button variant="ghost" size="sm">
@@ -128,7 +129,7 @@ export default async function NotesPage({
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               No pages have been created yet. Ask a contributor or owner to
               create one.
             </p>
@@ -153,9 +154,9 @@ export default async function NotesPage({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-purple-50 via-white to-indigo-50">
+    <div className="bg-background flex min-h-screen flex-col">
       {/* Header */}
-      <div className="border-b-2 border-gray-200 bg-white shadow-sm">
+      <div className="border-border bg-card border-b shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -165,12 +166,12 @@ export default async function NotesPage({
                   Back to Course
                 </Button>
               </Link>
-              <div className="h-6 w-px bg-gray-300" />
+              <div className="bg-border h-6 w-px" />
               <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  {course.title}
-                </h1>
-                <p className="text-sm text-gray-600">Collaborative Notes</p>
+                <h1 className="text-xl font-bold">{course.title}</h1>
+                <p className="text-muted-foreground text-sm">
+                  Collaborative Notes
+                </p>
               </div>
             </div>
 
@@ -179,10 +180,10 @@ export default async function NotesPage({
               <div
                 className={`rounded-full px-3 py-1 text-xs font-bold ${
                   userRole === "OWNER"
-                    ? "bg-amber-100 text-amber-700"
+                    ? "bg-amber-500/20 text-amber-700 dark:text-amber-400"
                     : userRole === "CONTRIBUTOR"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-gray-100 text-gray-700"
+                      ? "bg-blue-500/20 text-blue-700 dark:text-blue-400"
+                      : "bg-muted text-muted-foreground"
                 }`}
               >
                 {userRole}

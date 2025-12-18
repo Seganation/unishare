@@ -77,7 +77,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { title, icon, content } = body;
+    const { title, icon } = body;
 
     // Get the page with course info
     const page = await db.note.findUnique({
@@ -113,13 +113,16 @@ export async function PATCH(
       );
     }
 
-    // Update the page
+    // Update the page (title/icon only - content lives in Liveblocks)
+    // NOTE: Document content is stored in Liveblocks Yjs, NOT in our database
+    // This follows industry standard (Figma, Canva, Google Docs) where CRDT
+    // state lives in specialized real-time infrastructure
     const updatedPage = await db.note.update({
       where: { id },
       data: {
         ...(title !== undefined && { title }),
         ...(icon !== undefined && { icon }),
-        ...(content !== undefined && { content }),
+        // Content is intentionally NOT saved here - it's managed by Liveblocks Yjs
       },
     });
 

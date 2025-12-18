@@ -223,8 +223,15 @@ model Note {
   icon          String?  // Emoji icon (optional, like Notion)
   courseId      String   // Removed @unique to allow multiple pages per course
   course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  content       Json     @default("{}")
-  liveblockRoom String   @unique // Each page has its own Liveblocks room
+
+  // DEPRECATED: Content is stored in Liveblocks Yjs, NOT in this database field
+  // Following industry standard (Figma, Canva, Google Docs): CRDT state lives
+  // in specialized real-time infrastructure. Liveblocks provides automatic
+  // persistence, version history, and durable storage for Yjs documents.
+  // This field exists for backward compatibility only - do NOT write to it!
+  content       Json?
+
+  liveblockRoom String   @unique // Liveblocks room ID where actual content is stored
   order         Int      @default(0) // For custom ordering of pages
 
   // Nested pages support

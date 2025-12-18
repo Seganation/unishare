@@ -53,19 +53,21 @@ export async function POST(request: NextRequest) {
 
     // Create the new page
     // Note: liveblockRoom will be set to pageId after creation
+    // Content is NOT stored in database - it lives in Liveblocks Yjs
     const newPage = await db.note.create({
       data: {
         title: "Untitled",
         courseId,
         liveblockRoom: "", // Will be updated to use pageId
         order: newOrder,
-        content: {},
+        // content field intentionally omitted - document lives in Liveblocks
         ...(parentId && { parentId }), // Add parentId if provided
       },
     });
 
     // Update liveblockRoom to use the pageId as the room identifier
     // This ensures all users viewing the same page connect to the same room
+    // The Yjs document will be automatically created and persisted by Liveblocks
     await db.note.update({
       where: { id: newPage.id },
       data: { liveblockRoom: newPage.id },

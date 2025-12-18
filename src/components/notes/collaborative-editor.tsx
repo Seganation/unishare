@@ -6,6 +6,7 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/shadcn";
 import { getYjsProviderForRoom } from "@liveblocks/yjs";
 import { ClientSideSuspense } from "@liveblocks/react/suspense";
+import { useTheme } from "next-themes";
 import {
   useSelf,
   useOthers,
@@ -49,6 +50,7 @@ export function CollaborativeNotesEditor({
   const room = useRoom();
   const userInfo = useSelf((me) => me?.info);
   const others = useOthers();
+  const { resolvedTheme } = useTheme();
 
   // State for inline title editing
   const [editingTitle, setEditingTitle] = useState(pageTitle);
@@ -58,17 +60,50 @@ export function CollaborativeNotesEditor({
   const provider = getYjsProviderForRoom(room);
   const doc = provider.getYDoc();
 
-  // Create BlockNote editor with Yjs collaboration
-  const editor: BlockNoteEditor | null = useCreateBlockNote({
-    collaboration: {
-      provider,
-      fragment: doc.getXmlFragment("document-store"),
-      user: {
-        name: userInfo?.name ?? "Anonymous",
-        color: userInfo?.color ?? "#000000",
+  // Track if Yjs has synced the initial document from Liveblocks
+  const [isSynced, setIsSynced] = useState(false);
+
+  // Wait for Yjs to sync before creating the editor
+  useEffect(() => {
+    // Check if provider is already synced (document loaded from Liveblocks)
+    if (provider.synced) {
+      console.log("✅ Yjs provider already synced");
+      setIsSynced(true);
+      return;
+    }
+
+    console.log("⏳ Waiting for Yjs provider to sync...");
+
+    // Listen for sync event
+    const handleSync = (synced: boolean) => {
+      console.log("🔄 Yjs sync status:", synced);
+      if (synced) {
+        setIsSynced(true);
+      }
+    };
+
+    provider.on("synced", handleSync);
+
+    return () => {
+      provider.off("synced", handleSync);
+    };
+  }, [provider]);
+
+  // Create BlockNote editor with Yjs collaboration ONLY after sync
+  const editor: BlockNoteEditor | null = useCreateBlockNote(
+    {
+      collaboration: {
+        provider,
+        fragment: doc.getXmlFragment("document-store"),
+        user: {
+          name: userInfo?.name ?? "Anonymous",
+          color: userInfo?.color ?? "#000000",
+        },
       },
     },
-  });
+    // Only create editor after Yjs has synced
+    [isSynced ? provider : null],
+  );
 
   // Save title changes
   const handleTitleSave = async () => {
@@ -90,28 +125,31 @@ export function CollaborativeNotesEditor({
     }
   };
 
-  // Optional: Backup to database every 30 seconds
-  // Liveblocks already handles persistence, but this gives us a backup in our DB
+  // ✅ CORRECT ARCHITECTURE: Liveblocks Yjs handles ALL persistence
+  //
+  // Key Understanding:
+  // - Liveblocks Yjs ALREADY persists the document automatically
+  // - The Yjs document lives in Liveblocks Storage (not our DB)
+  // - Liveblocks provides durable, reliable storage
+  // - We do NOT save content to our database
+  //
+  // Why we DON'T save to DB:
+  // 1. Yjs maintains its own state/history in Liveblocks
+  // 2. Saving BlockNote snapshots to DB creates a second source of truth
+  // 3. When reloading, DB content conflicts with Yjs state = "Position X out of range" errors
+  //
+  // This is DIFFERENT from non-collaborative editors (like articles)
+  // where we DO save to DB because there's no Liveblocks/CRDT involved.
+  //
+  // If you need DB backup later: Use Liveblocks REST API to export room storage periodically
+
   useEffect(() => {
-    if (!editor || !canEdit) return;
-
-    // Save a backup to database every 30 seconds
-    const saveInterval = setInterval(async () => {
-      try {
-        const content = editor.document;
-        await fetch(`/api/notes/${pageId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content }),
-        });
-        console.log("✅ Backup saved at", new Date().toLocaleTimeString());
-      } catch (error) {
-        console.error("❌ Backup save failed:", error);
-      }
-    }, 30000); // Every 30 seconds
-
-    return () => clearInterval(saveInterval);
-  }, [editor, canEdit, pageId]);
+    if (editor) {
+      console.log(
+        "✅ Collaborative editor ready - Liveblocks handles all persistence",
+      );
+    }
+  }, [editor]);
 
   const getRoleIcon = (role: string) => {
     switch (role) {
@@ -141,14 +179,21 @@ export function CollaborativeNotesEditor({
 
   const RoleIcon = getRoleIcon(userRole);
 
-  // Show loading state while editor is initializing
-  if (!editor) {
+  // Show loading state while Yjs syncs or editor is initializing
+  if (!isSynced || !editor) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="flex min-h-[600px] items-center justify-center">
           <div className="text-center">
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-purple-600 border-t-transparent" />
-            <p className="text-gray-600">Loading collaborative editor...</p>
+            <p className="text-muted-foreground mb-2">
+              {!isSynced
+                ? "Syncing document from Liveblocks..."
+                : "Initializing collaborative editor..."}
+            </p>
+            <p className="text-muted-foreground text-xs">
+              This ensures all your previous content loads correctly
+            </p>
           </div>
         </div>
       </div>
@@ -159,9 +204,9 @@ export function CollaborativeNotesEditor({
     <div className="mx-auto max-w-5xl px-4 py-8">
       {/* Read-Only Banner */}
       {isReadOnly && (
-        <div className="mb-6 animate-in slide-in-from-top-2 rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 p-6 shadow-lg">
+        <div className="animate-in slide-in-from-top-2 mb-6 rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 p-6 shadow-lg">
           <div className="flex items-start gap-4">
-            <div className="rounded-xl bg-amber-200 p-3">
+            <div className="rounded-xl bg-amber-500/20 p-3">
               <AlertCircle className="h-6 w-6 text-amber-700" />
             </div>
             <div className="flex-1">
@@ -179,13 +224,11 @@ export function CollaborativeNotesEditor({
       )}
 
       {/* Live Collaborators Bar */}
-      <div className="mb-6 flex items-center justify-between rounded-2xl border-2 border-gray-200 bg-white p-4 shadow-sm">
+      <div className="border-border bg-card mb-6 flex items-center justify-between rounded-2xl border p-4 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 animate-pulse text-purple-600" />
-            <span className="text-sm font-semibold text-gray-700">
-              Active Collaborators
-            </span>
+            <span className="text-sm font-semibold">Active Collaborators</span>
           </div>
 
           {/* User Avatars */}
@@ -214,13 +257,13 @@ export function CollaborativeNotesEditor({
             ))}
 
             {others.length > 5 && (
-              <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-gray-200 text-xs font-bold text-gray-600 shadow-lg">
+              <div className="border-background bg-muted text-foreground relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 text-xs font-bold shadow-lg">
                 +{others.length - 5}
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-1 text-sm text-gray-600">
+          <div className="text-muted-foreground flex items-center gap-1 text-sm">
             <UsersIcon className="h-4 w-4" />
             <span className="font-medium">
               {others.length + (userInfo ? 1 : 0)} online
@@ -229,19 +272,27 @@ export function CollaborativeNotesEditor({
         </div>
 
         {/* Your Role */}
-        <div
-          className={cn(
-            "flex items-center gap-2 rounded-xl border-2 px-4 py-2 font-bold shadow-sm",
-            getRoleColor(userRole),
-          )}
-        >
-          <RoleIcon className="h-4 w-4" />
-          <span className="text-sm">{userRole}</span>
+        <div className="flex items-center gap-3">
+          {/* Save Status Indicator - Liveblocks handles persistence */}
+          <div className="text-muted-foreground flex items-center gap-2 text-xs">
+            <div className="h-2 w-2 rounded-full bg-green-500" />
+            <span>All changes saved</span>
+          </div>
+
+          <div
+            className={cn(
+              "flex items-center gap-2 rounded-xl border-2 px-4 py-2 font-bold shadow-sm",
+              getRoleColor(userRole),
+            )}
+          >
+            <RoleIcon className="h-4 w-4" />
+            <span className="text-sm">{userRole}</span>
+          </div>
         </div>
       </div>
 
       {/* Page Title - Inline Editable */}
-      <div className="mb-6 rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm">
+      <div className="border-border bg-card mb-6 rounded-2xl border p-6 shadow-sm">
         <input
           type="text"
           value={editingTitle}
@@ -256,52 +307,46 @@ export function CollaborativeNotesEditor({
           disabled={!canEdit || isSavingTitle}
           placeholder="Untitled"
           className={cn(
-            "w-full border-none bg-transparent text-4xl font-bold text-gray-900 placeholder:text-gray-300 focus:outline-none",
+            "w-full border-none bg-transparent text-4xl font-bold focus:outline-none",
             !canEdit && "cursor-default",
           )}
         />
         {isSavingTitle && (
-          <p className="mt-2 text-xs text-gray-500">Saving title...</p>
+          <p className="text-muted-foreground mt-2 text-xs">Saving title...</p>
         )}
       </div>
 
       {/* BlockNote Editor with Comments */}
       <div className="relative">
-        <div
+        <BlockNoteView
+          editor={editor}
+          editable={canEdit}
+          theme={resolvedTheme === "dark" ? "dark" : "light"}
+          shadCNComponents={
+            {
+              // Using default BlockNote shadcn components
+              // Can pass custom shadcn components from your project here if needed
+            }
+          }
           className={cn(
-            "overflow-hidden rounded-2xl border-2 border-gray-200 bg-white shadow-xl transition-all",
-            isReadOnly
-              ? "cursor-not-allowed opacity-75"
-              : "hover:border-purple-300 hover:shadow-2xl",
+            "min-h-[600px]",
+            isReadOnly &&
+              "pointer-events-none cursor-not-allowed opacity-75 select-none",
           )}
-        >
-          <div className="p-8">
-            <BlockNoteView
-              editor={editor}
-              editable={canEdit}
-              shadCNComponents={{
-                // Using default BlockNote shadcn components
-                // Can pass custom shadcn components from your project here if needed
-              }}
-              className={cn(
-                "min-h-[600px]",
-                isReadOnly && "pointer-events-none select-none",
-              )}
-            />
-          </div>
-        </div>
+        />
 
         {/* Comments UI - Temporarily disabled while we fix core sync */}
         {/* TODO: Re-enable comments after verifying real-time collaboration works */}
       </div>
 
       {/* Helper Text */}
-      <div className="mt-6 rounded-xl bg-gradient-to-r from-purple-50 to-indigo-50 p-4 text-center">
-        <p className="text-sm text-gray-600">
+      <div className="bg-muted mt-6 rounded-xl p-4 text-center">
+        <p className="text-muted-foreground text-sm">
           {canEdit ? (
             <>
-              ✨ <strong>Real-time collaboration is active!</strong> All changes
-              are saved automatically and synced via Liveblocks Yjs.
+              ✨ <strong>Real-time collaboration active!</strong> All changes
+              are automatically synced and persisted by Liveblocks. No manual
+              saving needed.
             </>
           ) : (
             <>
