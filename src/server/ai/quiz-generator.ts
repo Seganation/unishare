@@ -4,8 +4,10 @@
  * Generates quizzes from course content using AI
  */
 
-import { generateText } from "./ollama";
+import { generateText } from "ai";
 import { z } from "zod";
+import { models } from "./config";
+import { QUIZ_GENERATION_SYSTEM_PROMPT, buildQuizPrompt } from "./prompts";
 
 export const QuizQuestionSchema = z.object({
   question: z.string(),
@@ -44,74 +46,18 @@ export async function generateQuiz(options: {
     questionTypes = ["MULTIPLE_CHOICE", "TRUE_FALSE"],
   } = options;
 
-  // Build context
-  let contextInfo = "";
-  if (courseContext) {
-    contextInfo += `Course context: ${courseContext}\n`;
-  }
-  if (noteContent) {
-    contextInfo += `Note content: ${noteContent}\n`;
-  }
-
-  // Build question type instructions
-  const typeInstructions = questionTypes
-    .map((type) => {
-      if (type === "MULTIPLE_CHOICE") {
-        return "multiple choice questions with 4 options (A, B, C, D)";
-      } else if (type === "TRUE_FALSE") {
-        return "true/false questions";
-      } else {
-        return "short answer questions";
-      }
-    })
-    .join(" and ");
-
-  const systemPrompt = `You are a quiz generator for university students. Generate educational quizzes that test understanding of concepts.
-
-IMPORTANT: You must respond with ONLY valid JSON, no other text. The JSON must match this exact structure:
-
-{
-  "title": "Quiz Title",
-  "description": "Brief description",
-  "questions": [
-    {
-      "question": "Question text here?",
-      "type": "MULTIPLE_CHOICE",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correctAnswer": "A",
-      "explanation": "Explanation of why this is correct"
-    }
-  ]
-}
-
-For TRUE_FALSE questions:
-- type must be "TRUE_FALSE"
-- options should be ["True", "False"]
-- correctAnswer must be "true" or "false"
-
-For SHORT_ANSWER questions:
-- type must be "SHORT_ANSWER"
-- options can be null or omitted
-- correctAnswer should be the expected answer
-
-${contextInfo ? `Context:\n${contextInfo}` : ""}`;
-
-  const prompt = `Generate a ${difficulty} difficulty quiz about: "${topic}"
-
-Create exactly ${questionCount} questions using ${typeInstructions}.
-
-Requirements:
-- Questions should test understanding, not just memorization
-- Include explanations for each answer
-- Make questions clear and unambiguous
-- For multiple choice, ensure only one answer is clearly correct
-- Difficulty level: ${difficulty}
-
-Return ONLY the JSON object, no markdown formatting, no code blocks, no additional text.`;
-
+  // Use optimized prompts from centralized config
   const result = await generateText({
-    prompt,
-    systemPrompt,
+    model: models.pro, // Use pro model for better quiz quality
+    system: QUIZ_GENERATION_SYSTEM_PROMPT,
+    prompt: buildQuizPrompt({
+      topic,
+      questionCount,
+      difficulty,
+      questionTypes,
+      courseContext,
+      noteContent,
+    }),
     temperature: 0.7,
   });
 
@@ -138,7 +84,7 @@ Return ONLY the JSON object, no markdown formatting, no code blocks, no addition
 
   return {
     quiz: quizData,
-    tokensUsed: result.tokensUsed,
+    tokensUsed: result.usage?.totalTokens,
   };
 }
 

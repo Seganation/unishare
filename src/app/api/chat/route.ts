@@ -2,23 +2,17 @@
  * AI Chat API Route - Streaming endpoint for chat interface
  *
  * This route integrates with Vercel AI SDK to provide streaming chat responses
- * using the local Ollama server.
+ * using Google Gemini.
  *
  * @see https://sdk.vercel.ai/docs/ai-sdk-core/overview
  */
 
 import { streamText, convertToModelMessages, createIdGenerator } from "ai";
 import type { UIMessage } from "ai";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
-import { env } from "~/env";
-
-// Create Ollama provider instance using OpenAI-compatible API
-const ollama = createOpenAICompatible({
-  name: "ollama",
-  baseURL: `${env.OLLAMA_BASE_URL}/v1`,
-});
+import { models } from "~/server/ai/config";
+import { getChatSystemPrompt } from "~/server/ai/prompts";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes max
@@ -37,18 +31,11 @@ export async function POST(req: Request) {
       conversationId?: string;
       courseId?: string;
       noteId?: string;
-      model?: string;
       temperature?: number;
     };
 
-    const {
-      message,
-      conversationId,
-      courseId,
-      noteId,
-      model = env.OLLAMA_MODEL,
-      temperature = 0.7,
-    } = json;
+    const { message, conversationId, courseId, noteId, temperature = 0.7 } =
+      json;
 
     console.log("=== CHAT API REQUEST ===");
     console.log("Received conversationId:", conversationId);
@@ -56,15 +43,16 @@ export async function POST(req: Request) {
     console.log("========================");
 
     // If conversationId provided, verify ownership and load context + previous messages
-    let conversation: {
-      id: string;
-      userId: string;
-      model: string;
-      temperature: number;
-      note?: { title: string; content: unknown } | null;
-      course?: { title: string } | null;
-      messages: Array<{ id: string; role: string; content: string }>;
-    } | null = null;
+    let conversation:
+      | Awaited<ReturnType<typeof db.aiConversation.findFirst<{
+          where: { id: string; userId: string };
+          include: {
+            messages: { orderBy: { createdAt: "asc" }; select: { id: true; role: true; data: true } };
+            note: { select: { title: true; content: true } };
+            course: { select: { title: true } };
+          };
+        }>>>
+      | null = null;
 
     // Variable to store the active conversation ID
     let activeConversationId = conversationId;
@@ -103,17 +91,13 @@ export async function POST(req: Request) {
       // Load messages in UIMessage format (recommended by AI SDK)
       if (conversation?.messages) {
         previousMessages = conversation.messages.map((msg) => {
-          const uiMessage = msg.data as UIMessage;
+          const uiMessage = msg.data as unknown as UIMessage;
           // Ensure message has required fields
           return {
             id: uiMessage.id || msg.id,
             role: uiMessage.role,
             parts: uiMessage.parts,
-            ...(uiMessage.createdAt && {
-              createdAt: new Date(uiMessage.createdAt),
-            }),
-            ...(uiMessage.metadata && { metadata: uiMessage.metadata }),
-          };
+          } as UIMessage;
         });
       }
 
@@ -129,7 +113,7 @@ export async function POST(req: Request) {
         try {
           // Use AI to generate a short, descriptive title
           const titleResult = await streamText({
-            model: ollama(model) as never,
+            model: models.fast,
             messages: [
               {
                 role: "system",
@@ -161,7 +145,6 @@ export async function POST(req: Request) {
             userId: session.user.id,
             courseId,
             noteId,
-            model,
             temperature,
           },
           include: {
@@ -196,14 +179,11 @@ export async function POST(req: Request) {
       return new Response("No conversation ID provided", { status: 400 });
     }
 
-    // Build system message based on context
-    let systemMessage = `You are a helpful teaching assistant for university students. Provide clear, educational responses. Format your responses using markdown with proper headings, bullet points, and code blocks where appropriate.`;
-
-    if (conversation?.note) {
-      systemMessage = `You are helping with a note titled "${conversation.note.title}". The current note content is available as context. Provide helpful, educational responses related to this note.`;
-    } else if (conversation?.course) {
-      systemMessage = `You are helping with a course titled "${conversation.course.title}". Provide helpful, educational responses related to this course.`;
-    }
+    // Build system message based on context using optimized prompts
+    const systemMessage = getChatSystemPrompt({
+      noteTitle: conversation?.note?.title,
+      courseTitle: conversation?.course?.title,
+    });
 
     // Combine previous messages with the new message
     const allMessages = [...previousMessages, message];
@@ -213,7 +193,7 @@ export async function POST(req: Request) {
 
     // Create streaming response
     const result = streamText({
-      model: ollama(model) as never,
+      model: models.fast,
       messages: convertToModelMessages(allMessages),
       system: systemMessage,
       temperature,
@@ -252,7 +232,7 @@ export async function POST(req: Request) {
                 id: msg.id,
                 conversationId: activeConversationId!,
                 role: msg.role.toUpperCase() as "USER" | "ASSISTANT" | "SYSTEM",
-                data: msg, // Store complete UIMessage object
+                data: msg as unknown as never, // Store complete UIMessage object
                 tokensUsed: msg.role === "assistant" ? tokenUsage : undefined,
               },
             });

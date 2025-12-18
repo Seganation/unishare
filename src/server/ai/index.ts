@@ -1,14 +1,10 @@
 /**
- * AI Module - Local Ollama Integration
+ * AI Module - Google Gemini Integration
  *
- * This module provides AI capabilities using a local Ollama server.
- * All AI processing happens locally and is NOT included in production deployments.
- *
- * @see /local_ai_ollama_phi_3_project_notes.md for setup instructions
+ * This module provides AI capabilities using Google Gemini models.
  */
 
 export {
-  getOllamaClient,
   isOllamaAvailable,
   isModelAvailable,
   generateText,
@@ -17,7 +13,8 @@ export {
   listAvailableModels,
   healthCheck,
   OllamaError,
-} from "./ollama";
+  AIProviderError,
+} from "./gemini";
 
 export { generateQuiz, gradeQuizAttempt } from "./quiz-generator";
 export type { QuizQuestion, GeneratedQuiz } from "./quiz-generator";

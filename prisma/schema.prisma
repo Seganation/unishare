@@ -361,7 +361,6 @@ model AiConversation {
   note        Note?       @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
   // Model configuration
-  model       String      @default("phi3:3.8b")
   temperature Float       @default(0.7)
 
   messages    AiMessage[]
@@ -409,7 +408,6 @@ model AiGeneratedNote {
 
   // Generation details
   prompt      String   // The prompt used to generate
-  model       String   // Model used (e.g., "phi3:3.8b")
   tokensUsed  Int?     // Track token usage
 
   // Before/after snapshots for history
@@ -452,7 +450,6 @@ model AiQuiz {
 
   // Generation details
   prompt      String   // What user asked to generate quiz about
-  model       String   @default("phi3:3.8b")
   tokensUsed  Int?
 
   // Quiz content
@@ -538,7 +535,6 @@ model AiStudyPlan {
 
   // Generation details
   prompt      String   // e.g., "Create 4-week study plan for final exam"
-  model       String   @default("phi3:3.8b")
   tokensUsed  Int?
 
   // Study plan content

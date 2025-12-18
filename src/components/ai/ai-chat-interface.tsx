@@ -31,9 +31,10 @@ import {
 } from "~/components/ai-elements/prompt-input";
 import { Card, CardContent } from "~/components/ui/card";
 import { Loader } from "~/components/ai-elements/loader";
-import { CopyIcon, RefreshCcwIcon } from "lucide-react";
+import { CopyIcon, RefreshCcwIcon, Sparkles } from "lucide-react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
 
 interface AIChatInterfaceProps {
   conversationId?: string;
@@ -311,7 +312,10 @@ export function AIChatInterface({
                 />
               </PromptInputBody>
               <PromptInputFooter>
-                <div />
+                <Badge variant="secondary" className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-normal">
+                  <Sparkles className="size-3" />
+                  Gemini 2.5 Flash
+                </Badge>
                 <PromptInputSubmit
                   disabled={
                     !input || status === "streaming" || status === "submitted"

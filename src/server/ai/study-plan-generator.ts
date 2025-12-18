@@ -4,8 +4,10 @@
  * Generates personalized study plans for courses
  */
 
-import { generateText } from "./ollama";
+import { generateText } from "ai";
 import { z } from "zod";
+import { models } from "./config";
+import { STUDY_PLAN_SYSTEM_PROMPT, buildStudyPlanPrompt } from "./prompts";
 
 export const StudyPlanTaskSchema = z.object({
   title: z.string(),
@@ -53,68 +55,19 @@ export async function generateStudyPlan(options: {
     deadline,
   } = options;
 
-  // Build context
-  let contextInfo = `Course: ${courseName}\n`;
-  if (courseDescription) {
-    contextInfo += `Description: ${courseDescription}\n`;
-  }
-  if (topics.length > 0) {
-    contextInfo += `Topics to cover: ${topics.join(", ")}\n`;
-  }
-  contextInfo += `Study time available: ${hoursPerWeek} hours per week\n`;
-  contextInfo += `Duration: ${weekCount} weeks\n`;
-  contextInfo += `Goal: ${goal}\n`;
-  if (deadline) {
-    contextInfo += `Deadline: ${deadline.toLocaleDateString()}\n`;
-  }
-
-  const systemPrompt = `You are a study plan generator for university students. Create realistic, achievable study plans.
-
-IMPORTANT: You must respond with ONLY valid JSON, no other text. The JSON must match this exact structure:
-
-{
-  "title": "Study Plan Title",
-  "description": "Brief description of the plan",
-  "weeks": [
-    {
-      "weekNumber": 1,
-      "title": "Week 1: Topic Name",
-      "description": "What to focus on this week",
-      "goals": ["Goal 1", "Goal 2", "Goal 3"],
-      "tasks": [
-        {
-          "title": "Task name",
-          "description": "Task details",
-          "estimatedMinutes": 60
-        }
-      ]
-    }
-  ]
-}
-
-Make sure:
-- Each week has clear, achievable goals
-- Tasks are specific and actionable
-- Time estimates are realistic
-- The plan builds progressively
-- Include review and practice time`;
-
-  const prompt = `Create a ${weekCount}-week study plan for the following course:
-
-${contextInfo}
-
-Requirements:
-- Distribute ${hoursPerWeek} hours of study time per week
-- Include a mix of: reading, practice, review, and testing
-- Make the plan progressive (basics first, then advanced)
-- Include specific tasks with time estimates
-- Add clear learning goals for each week
-
-Return ONLY the JSON object, no markdown formatting, no code blocks, no additional text.`;
-
+  // Use optimized prompts from centralized config
   const result = await generateText({
-    prompt,
-    systemPrompt,
+    model: models.pro, // Use pro model for better study plan quality
+    system: STUDY_PLAN_SYSTEM_PROMPT,
+    prompt: buildStudyPlanPrompt({
+      courseName,
+      weekCount,
+      hoursPerWeek,
+      goal,
+      courseDescription,
+      topics,
+      deadline,
+    }),
     temperature: 0.7,
   });
 
@@ -141,6 +94,6 @@ Return ONLY the JSON object, no markdown formatting, no code blocks, no addition
 
   return {
     studyPlan: studyPlanData,
-    tokensUsed: result.tokensUsed,
+    tokensUsed: result.usage?.totalTokens,
   };
 }

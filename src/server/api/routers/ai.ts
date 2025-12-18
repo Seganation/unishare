@@ -40,7 +40,6 @@ export const aiRouter = createTRPCRouter({
         title: z.string().optional(),
         courseId: z.string().optional(),
         noteId: z.string().optional(),
-        model: z.string().optional(),
         temperature: z.number().min(0).max(2).optional(),
       }),
     )
@@ -51,7 +50,6 @@ export const aiRouter = createTRPCRouter({
           userId: ctx.session.user.id,
           courseId: input.courseId,
           noteId: input.noteId,
-          model: input.model ?? "qwen2.5:1.5b",
           temperature: input.temperature ?? 0.7,
         },
         include: {
@@ -100,7 +98,6 @@ export const aiRouter = createTRPCRouter({
             title: true,
             createdAt: true,
             updatedAt: true,
-            model: true,
             temperature: true,
             userId: true,
             courseId: true,
@@ -309,10 +306,9 @@ export const aiRouter = createTRPCRouter({
           });
         }
 
-        // Generate AI response
+        // Generate AI response (using default Gemini model)
         const response = await chat({
           messages,
-          model: conversation.model,
           temperature: conversation.temperature,
         });
 
@@ -446,7 +442,6 @@ export const aiRouter = createTRPCRouter({
             noteId: input.noteId,
             userId: ctx.session.user.id,
             prompt: input.prompt,
-            model: "qwen2.5:1.5b",
             tokensUsed: result.tokensUsed,
             contentBefore: note.content as never,
             contentAfter: { text: result.text }, // You'll need to convert this to BlockNote format

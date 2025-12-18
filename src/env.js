@@ -37,9 +37,9 @@ export const env = createEnv({
     // Cron Job Authentication
     CRON_SECRET: z.string().min(32),
 
-    // AI (Ollama - Local Development Only)
-    OLLAMA_BASE_URL: z.string().url().default("http://localhost:11434"),
-    OLLAMA_MODEL: z.string().default("phi3:3.8b"),
+    // AI (Google Gemini)
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string(),
+    AI_MODEL: z.string().optional(), // Optional: override default model
 
     // Environment
     NODE_ENV: z
@@ -92,9 +92,9 @@ export const env = createEnv({
     // Cron Job Authentication
     CRON_SECRET: process.env.CRON_SECRET,
 
-    // AI (Ollama)
-    OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
-    OLLAMA_MODEL: process.env.OLLAMA_MODEL,
+    // AI (Google Gemini)
+    GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    AI_MODEL: process.env.AI_MODEL,
 
     // Application URL
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
