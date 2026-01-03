@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, ArrowRight, Sparkles, AlertCircle } from "lucide-react";
 import {
-  Carousel,
-  CarouselContent,
+  Carousel,  CarouselContent,
   CarouselItem,
 } from "~/components/ui/carousel";
 
