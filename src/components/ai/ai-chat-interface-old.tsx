@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { api } from "~/trpc/react";
 import type { UIMessage } from "ai";
 import { useQueryClient } from "@tanstack/react-query";
@@ -80,45 +81,47 @@ export function AIChatInterface({
 
   // Convert database messages to UI messages format
   const initialMessages: UIMessage[] =
-    conversation?.messages.map((msg) => ({
-      id: msg.id,
-      role: msg.role.toLowerCase() as "user" | "assistant",
-      parts: [
-        {
-          type: "text" as const,
-          text: msg.content,
-        },
-      ],
-    })) ?? [];
+    conversation?.messages.map((msg) => {
+      const messageData = msg.data as any;
+      return {
+        id: msg.id,
+        role: msg.role.toLowerCase() as "user" | "assistant",
+        parts: messageData?.parts ?? [
+          {
+            type: "text" as const,
+            text:
+              typeof messageData === "string"
+                ? messageData
+                : JSON.stringify(messageData),
+          },
+        ],
+      };
+    }) ?? [];
 
   const { messages, sendMessage, status, regenerate, error, setMessages } =
     useChat({
       id: conversationId, // Use conversation ID as stable chat ID
       messages: initialMessages,
-      api: "/api/chat",
-      body: {
-        // Default body parameters for all requests
-        courseId,
-        noteId,
-        model,
-        temperature,
-      },
+      transport: new DefaultChatTransport({
+        api: "/api/chat",
+        prepareSendMessagesRequest({ messages }) {
+          return {
+            body: {
+              message: messages[messages.length - 1],
+              conversationId,
+              courseId,
+              noteId,
+              model,
+              temperature,
+            },
+          };
+        },
+      }),
       onError: (error: Error) => {
         console.error("❌ Chat error:", error);
       },
-      onFinish: async (event) => {
+      onFinish: async () => {
         console.log("✅ Chat finished");
-
-        // Capture conversation ID from response if this was a new chat
-        if (!conversationIdRef.current && event.response) {
-          const newConversationId =
-            event.response.headers.get("X-Conversation-Id");
-          if (newConversationId) {
-            console.log("📝 Received new conversation ID:", newConversationId);
-            conversationIdRef.current = newConversationId;
-            onConversationCreated?.(newConversationId);
-          }
-        }
 
         // Refresh conversation list in sidebar
         await queryClient.invalidateQueries({

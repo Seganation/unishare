@@ -21,7 +21,7 @@ let ollamaClient: Ollama | null = null;
 export function getOllamaClient(): Ollama {
   if (!ollamaClient) {
     ollamaClient = new Ollama({
-      host: env.OLLAMA_BASE_URL,
+      host: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434",
     });
   }
   return ollamaClient;
@@ -47,7 +47,7 @@ export async function isModelAvailable(modelName?: string): Promise<boolean> {
   try {
     const client = getOllamaClient();
     const models = await client.list();
-    const targetModel = modelName ?? env.OLLAMA_MODEL;
+    const targetModel = modelName ?? process.env.OLLAMA_MODEL ?? "qwen2.5:1.5b";
 
     return models.models.some((model) => model.name === targetModel);
   } catch {
@@ -61,7 +61,10 @@ export async function isModelAvailable(modelName?: string): Promise<boolean> {
 export class OllamaError extends Error {
   constructor(
     message: string,
-    public readonly code: "SERVER_UNAVAILABLE" | "MODEL_NOT_FOUND" | "GENERATION_FAILED",
+    public readonly code:
+      | "SERVER_UNAVAILABLE"
+      | "MODEL_NOT_FOUND"
+      | "GENERATION_FAILED",
     public readonly details?: unknown,
   ) {
     super(message);
@@ -89,7 +92,7 @@ export async function generateText(options: {
   maxTokens?: number;
 }): Promise<{ text: string; tokensUsed?: number }> {
   const client = getOllamaClient();
-  const model = options.model ?? env.OLLAMA_MODEL;
+  const model = options.model ?? process.env.OLLAMA_MODEL ?? "qwen2.5:1.5b";
 
   // Check if Ollama is available
   if (!(await isOllamaAvailable())) {
@@ -154,7 +157,7 @@ export async function* generateTextStream(options: {
   maxTokens?: number;
 }): AsyncGenerator<{ text: string; done: boolean }> {
   const client = getOllamaClient();
-  const model = options.model ?? env.OLLAMA_MODEL;
+  const model = options.model ?? process.env.OLLAMA_MODEL ?? "qwen2.5:1.5b";
 
   // Check if Ollama is available
   if (!(await isOllamaAvailable())) {
@@ -219,7 +222,7 @@ export async function chat(options: {
   temperature?: number;
 }): Promise<{ text: string; tokensUsed?: number }> {
   const client = getOllamaClient();
-  const model = options.model ?? env.OLLAMA_MODEL;
+  const model = options.model ?? process.env.OLLAMA_MODEL ?? "qwen2.5:1.5b";
 
   // Check if Ollama is available
   if (!(await isOllamaAvailable())) {
@@ -300,7 +303,9 @@ export async function healthCheck(): Promise<{
       available: true,
       modelAvailable,
       models,
-      error: modelAvailable ? undefined : `Model '${env.OLLAMA_MODEL}' not found`,
+      error: modelAvailable
+        ? undefined
+        : `Model '${process.env.OLLAMA_MODEL ?? "qwen2.5:1.5b"}' not found`,
     };
   } catch (error) {
     return {

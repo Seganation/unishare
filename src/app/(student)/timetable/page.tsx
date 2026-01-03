@@ -33,8 +33,17 @@ import { EventDetailsModal } from "~/components/timetable/event-details-modal";
 import { Loader } from "~/components/ai-elements/loader";
 import type { Event as PrismaEvent, Course } from "@prisma/client";
 
-// Create draggable calendar
-const DraggableCalendar = withDragAndDrop(BigCalendar);
+// Calendar event type
+type CalendarEvent = {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  resource: PrismaEvent & { course: Course };
+};
+
+// Create draggable calendar with proper typing
+const DraggableCalendar = withDragAndDrop<CalendarEvent, object>(BigCalendar);
 
 // Setup date-fns localizer for react-big-calendar
 const locales = {
@@ -48,15 +57,6 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 });
-
-// Calendar event type
-type CalendarEvent = {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  resource: PrismaEvent & { course: Course };
-};
 
 // Helper function to check if two time ranges overlap
 function timesOverlap(
@@ -461,9 +461,9 @@ export default function TimetablePage() {
                 min={new Date(2025, 0, 1, 7, 0)} // 7 AM
                 max={new Date(2025, 0, 1, 22, 0)} // 10 PM
                 // Drag and Drop handlers
-                onEventDrop={handleEventDrop}
-                onEventResize={handleEventResize}
-                onDragStart={(args) => {
+                onEventDrop={handleEventDrop as any}
+                onEventResize={handleEventResize as any}
+                onDragStart={(args: any) => {
                   if (canEdit && args.event) {
                     setIsDragging(true);
                     setDraggedEventId(args.event.resource.id);

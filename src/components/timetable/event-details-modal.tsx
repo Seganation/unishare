@@ -153,12 +153,6 @@ export function EventDetailsModal({
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">
           <div className="flex-1">
-            <div
-              className="mb-2 inline-block rounded-md px-3 py-1 text-sm font-semibold text-white"
-              style={{ backgroundColor: event.course.color }}
-            >
-              {event.course.code}
-            </div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {isEditing ? "Edit Class" : "Class Details"}
             </h2>
@@ -183,9 +177,6 @@ export function EventDetailsModal({
               <h3 className="mt-2 text-xl font-bold text-gray-900 dark:text-gray-100">
                 {event.course.title}
               </h3>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                {event.course.code}
-              </p>
             </div>
 
             {/* Class Title */}
@@ -297,7 +288,7 @@ export function EventDetailsModal({
                 </span>
               </div>
               <p className="mt-2 font-semibold text-gray-900 dark:text-gray-100">
-                {event.course.title} ({event.course.code})
+                {event.course.title}
               </p>
             </div>
 

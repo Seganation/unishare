@@ -6,6 +6,7 @@ import { useSession } from "~/hooks/use-session";
 import { api } from "~/trpc/react";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
+import { AVATAR_COLORS } from "~/lib/constants";
 import {
   Pencil,
   Image,
@@ -15,17 +16,6 @@ import {
   Bell,
   UserPlus,
 } from "lucide-react";
-
-export const AVATAR_COLORS = [
-  { bg: "bg-red-500", text: "text-red-700" },
-  { bg: "bg-blue-500", text: "text-blue-700" },
-  { bg: "bg-green-500", text: "text-green-700" },
-  { bg: "bg-purple-500", text: "text-purple-700" },
-  { bg: "bg-orange-500", text: "text-orange-700" },
-  { bg: "bg-pink-500", text: "text-pink-700" },
-  { bg: "bg-indigo-500", text: "text-indigo-700" },
-  { bg: "bg-teal-500", text: "text-teal-700" },
-];
 
 export default function SettingsPage() {
   const router = useRouter();

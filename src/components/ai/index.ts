@@ -7,7 +7,7 @@
 // Chat Components
 export { AIChatInterface } from "./ai-chat-interface";
 export { AIHealthStatus } from "./ai-health-status";
-export { ConversationHistorySidebar } from "./conversation-history-sidebar";
+export { ChatHistorySidebar } from "./conversation-history-sidebar";
 
 // Quiz Components
 export { QuizList } from "./quiz-list";

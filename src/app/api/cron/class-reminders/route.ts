@@ -34,7 +34,7 @@ export async function GET(request: Request) {
       include: {
         timetable: {
           include: {
-            createdByUser: true,
+            creator: true,
             collaborators: {
               where: { status: "ACCEPTED" },
               include: { user: true },
@@ -62,7 +62,7 @@ export async function GET(request: Request) {
 
       // Get all users who should be notified (owner + collaborators)
       const usersToNotify = [
-        event.timetable.createdByUser,
+        event.timetable.creator,
         ...event.timetable.collaborators.map((c) => c.user),
       ];
 

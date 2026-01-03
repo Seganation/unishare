@@ -83,9 +83,12 @@ export async function POST(req: Request) {
     );
 
     if (!isCreator && !isContributor) {
-      return new Response("Forbidden: You don't have permission to edit this note", {
-        status: 403,
-      });
+      return new Response(
+        "Forbidden: You don't have permission to edit this note",
+        {
+          status: 403,
+        },
+      );
     }
 
     // Build system prompt based on type
@@ -123,7 +126,6 @@ export async function POST(req: Request) {
         noteId,
         userId: session.user.id,
         prompt,
-        model: model ?? "qwen2.5:1.5b",
         tokensUsed: result.tokensUsed,
         contentBefore: note.content as never,
         contentAfter: { markdown: result.text },
