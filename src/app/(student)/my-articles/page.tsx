@@ -12,6 +12,8 @@ import {
   PenTool,
   TrendingUp,
   Send,
+  Clock,
+  Tag,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -31,7 +33,8 @@ export default function MyArticlesPage() {
   const router = useRouter();
 
   // Fetch user's articles
-  const { data: allArticles = [], refetch } = api.article.getMyArticles.useQuery({});
+  const { data: allArticles = [], refetch } =
+    api.article.getMyArticles.useQuery({});
 
   // Publish mutation
   const publishMutation = api.article.publish.useMutation({
@@ -96,7 +99,7 @@ export default function MyArticlesPage() {
     });
   };
 
-  const ArticleCard = ({ article }: { article: typeof allArticles[0] }) => (
+  const ArticleCard = ({ article }: { article: (typeof allArticles)[0] }) => (
     <Card className="group border-border bg-card hover:border-primary/50 relative overflow-hidden border-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       {/* Shimmer Effect */}
       <div className="via-primary/10 absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
@@ -136,6 +139,12 @@ export default function MyArticlesPage() {
               <Calendar className="h-4 w-4" />
               {formatDate(article.updatedAt)}
             </div>
+            {article.readTime && (
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {article.readTime} min read
+              </div>
+            )}
             {article.status === "PUBLISHED" && (
               <div className="flex items-center gap-1">
                 <Eye className="h-4 w-4" />
@@ -144,8 +153,8 @@ export default function MyArticlesPage() {
             )}
             {article._count.tags > 0 && (
               <div className="flex items-center gap-1">
-                <FileText className="h-4 w-4" />
-                {article._count.tags}
+                <Tag className="h-4 w-4" />
+                {article._count.tags} tags
               </div>
             )}
           </div>
@@ -155,7 +164,7 @@ export default function MyArticlesPage() {
                 size="sm"
                 onClick={() => publishMutation.mutate({ id: article.id })}
                 disabled={publishMutation.isPending}
-                className="hover:scale-105 transition-transform"
+                className="transition-transform hover:scale-105"
               >
                 <Send className="mr-2 h-4 w-4" />
                 Publish
@@ -284,7 +293,7 @@ export default function MyArticlesPage() {
                   <div className="text-foreground text-4xl font-black">
                     {stat.value}
                   </div>
-                  <div className="text-muted-foreground mt-1 text-sm font-semibold uppercase tracking-wider">
+                  <div className="text-muted-foreground mt-1 text-sm font-semibold tracking-wider uppercase">
                     {stat.label}
                   </div>
                 </div>
@@ -297,7 +306,9 @@ export default function MyArticlesPage() {
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="bg-muted mb-6 grid w-full grid-cols-4 lg:w-[500px]">
             <TabsTrigger value="all">All ({allArticles.length})</TabsTrigger>
-            <TabsTrigger value="draft">Drafts ({draftArticles.length})</TabsTrigger>
+            <TabsTrigger value="draft">
+              Drafts ({draftArticles.length})
+            </TabsTrigger>
             <TabsTrigger value="published">
               Published ({publishedArticles.length})
             </TabsTrigger>

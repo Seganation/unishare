@@ -1,9 +1,18 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, BookOpen, Calendar, Eye, Clock, Tag } from "lucide-react";
+import {
+  Search,
+  BookOpen,
+  Calendar,
+  Eye,
+  Clock,
+  Tag,
+  X,
+  TrendingUp,
+} from "lucide-react";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -27,6 +36,19 @@ function ArticlesContent() {
   const currentSearch = searchParams.get("search") ?? "";
 
   const [searchInput, setSearchInput] = useState(currentSearch);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape to clear search when search input is focused
+      if (e.key === "Escape" && searchInput) {
+        setSearchInput("");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [searchInput]);
 
   // Fetch articles
   const { data, isLoading } = api.article.getAllPublished.useQuery({
@@ -121,13 +143,37 @@ function ArticlesContent() {
                 <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Search articles..."
+                  placeholder="Search articles by title, content, or tags..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="pl-10"
+                  className="pr-10 pl-10"
                 />
+                {searchInput && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchInput("");
+                      if (currentSearch) {
+                        updateUrl({ search: "", page: 1 });
+                      }
+                    }}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-3 w-3 text-gray-400" />
+                  </button>
+                )}
               </div>
-              <Button type="submit">Search</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Searching...
+                  </>
+                ) : (
+                  "Search"
+                )}
+              </Button>
             </form>
 
             {/* Tag Filter */}
@@ -148,32 +194,65 @@ function ArticlesContent() {
 
           {/* Active Filters */}
           {(currentSearch || currentTag) && (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Filters:
+              </span>
               {currentSearch && (
-                <Badge variant="secondary" className="gap-1">
-                  Search: {currentSearch}
+                <Badge variant="secondary" className="gap-1 px-3 py-1">
+                  <Search className="h-3 w-3" />
+                  &quot;{currentSearch}&quot;
                   <button
                     onClick={() => {
                       setSearchInput("");
                       updateUrl({ search: "", page: 1 });
                     }}
-                    className="ml-1 hover:text-red-600"
+                    className="ml-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600"
+                    aria-label="Clear search"
                   >
-                    ×
+                    <X className="h-3 w-3" />
                   </button>
                 </Badge>
               )}
               {currentTag && (
-                <Badge variant="secondary" className="gap-1">
-                  Tag: {tags?.find((t) => t.slug === currentTag)?.name}
+                <Badge variant="secondary" className="gap-1 px-3 py-1">
+                  <Tag className="h-3 w-3" />
+                  {tags?.find((t) => t.slug === currentTag)?.name}
                   <button
                     onClick={() => updateUrl({ tag: undefined, page: 1 })}
-                    className="ml-1 hover:text-red-600"
+                    className="ml-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600"
+                    aria-label="Clear tag filter"
                   >
-                    ×
+                    <X className="h-3 w-3" />
                   </button>
                 </Badge>
               )}
+              <button
+                onClick={() => {
+                  setSearchInput("");
+                  updateUrl({ search: "", tag: undefined, page: 1 });
+                }}
+                className="text-sm text-purple-600 underline hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
+
+          {/* Results Counter */}
+          {!isLoading && data && (currentSearch || currentTag) && (
+            <div className="mt-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <TrendingUp className="h-4 w-4" />
+              <span>
+                Found{" "}
+                <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                  {data.pagination.total}
+                </strong>{" "}
+                article{data.pagination.total !== 1 ? "s" : ""}
+                {currentSearch && ` matching "${currentSearch}"`}
+                {currentTag &&
+                  ` in ${tags?.find((t) => t.slug === currentTag)?.name}`}
+              </span>
             </div>
           )}
         </div>
@@ -337,15 +416,36 @@ function ArticlesContent() {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <BookOpen className="mb-4 h-16 w-16 text-gray-300" />
+            <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+              <BookOpen className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+            </div>
             <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-              No articles found
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
               {currentSearch || currentTag
-                ? "Try adjusting your filters"
-                : "Be the first to publish an article!"}
+                ? "No articles found"
+                : "No articles yet"}
+            </h3>
+            <p className="mb-4 max-w-md text-gray-600 dark:text-gray-400">
+              {currentSearch || currentTag ? (
+                <>
+                  We couldn&apos;t find any articles matching your search.
+                  <br />
+                  Try adjusting your filters or search terms.
+                </>
+              ) : (
+                "Be the first to publish an article and share your knowledge!"
+              )}
             </p>
+            {(currentSearch || currentTag) && (
+              <Button
+                onClick={() => {
+                  setSearchInput("");
+                  updateUrl({ search: "", tag: undefined, page: 1 });
+                }}
+                variant="outline"
+              >
+                Clear filters
+              </Button>
+            )}
           </div>
         )}
       </div>

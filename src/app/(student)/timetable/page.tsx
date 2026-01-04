@@ -25,6 +25,7 @@ import {
   Share2,
   Eye,
   Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { CreateTimetableModal } from "~/components/timetable/create-timetable-modal";
 import { CreateEventModal } from "~/components/timetable/create-event-modal";
@@ -70,6 +71,38 @@ function timesOverlap(
   const s2 = new Date(`2000-01-01T${start2}`);
   const e2 = new Date(`2000-01-01T${end2}`);
   return s1 < e2 && s2 < e1;
+}
+
+// Helper function to detect conflicts in a timetable
+function detectConflicts(events: (PrismaEvent & { course: Course })[]): Array<{
+  event1: PrismaEvent & { course: Course };
+  event2: PrismaEvent & { course: Course };
+}> {
+  const conflicts: Array<{
+    event1: PrismaEvent & { course: Course };
+    event2: PrismaEvent & { course: Course };
+  }> = [];
+
+  for (let i = 0; i < events.length; i++) {
+    for (let j = i + 1; j < events.length; j++) {
+      const event1 = events[i]!;
+      const event2 = events[j]!;
+
+      if (
+        event1.dayOfWeek === event2.dayOfWeek &&
+        timesOverlap(
+          event1.startTime,
+          event1.endTime,
+          event2.startTime,
+          event2.endTime,
+        )
+      ) {
+        conflicts.push({ event1, event2 });
+      }
+    }
+  }
+
+  return conflicts;
 }
 
 // Custom Event Component with View Icon
@@ -173,6 +206,12 @@ export default function TimetablePage() {
         (c) => c.role === "CONTRIBUTOR" && c.status === "ACCEPTED",
       )
     : false;
+
+  // Detect conflicts in the selected timetable
+  const conflicts = selectedTimetable
+    ? detectConflicts(selectedTimetable.events)
+    : [];
+  const hasConflicts = conflicts.length > 0;
 
   // Mutation for updating event when dragged
   const updateEventMutation = api.timetable.updateEvent.useMutation({
@@ -387,6 +426,48 @@ export default function TimetablePage() {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* Conflict Warning */}
+            {hasConflicts && (
+              <div className="mb-6 rounded-lg border-2 border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-amber-900 dark:text-amber-100">
+                      Schedule Conflicts Detected
+                    </h4>
+                    <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
+                      {conflicts.length} time conflict
+                      {conflicts.length > 1 ? "s" : ""} found. The following
+                      classes overlap:
+                    </p>
+                    <ul className="mt-2 space-y-1 text-sm text-amber-800 dark:text-amber-200">
+                      {conflicts.slice(0, 3).map((conflict, idx) => (
+                        <li key={idx} className="flex items-center gap-2">
+                          <span className="font-medium">
+                            {conflict.event1.course.title} (
+                            {conflict.event1.startTime} -{" "}
+                            {conflict.event1.endTime})
+                          </span>
+                          <span>↔</span>
+                          <span className="font-medium">
+                            {conflict.event2.course.title} (
+                            {conflict.event2.startTime} -{" "}
+                            {conflict.event2.endTime})
+                          </span>
+                        </li>
+                      ))}
+                      {conflicts.length > 3 && (
+                        <li className="text-xs italic">
+                          ... and {conflicts.length - 3} more conflict
+                          {conflicts.length - 3 > 1 ? "s" : ""}
+                        </li>
+                      )}
+                    </ul>
+                  </div>
                 </div>
               </div>
             )}
