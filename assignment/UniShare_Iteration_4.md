@@ -50,7 +50,7 @@ Sprint 4 delivered the collaboration backbone of UniShare, implementing real-tim
 - Created nested page navigation with breadcrumb UI
 - Implemented comprehensive notification infrastructure with user preferences
 - Built email templating system with Nodemailer 6.10+
-- Integrated FullCalendar 6.1+ for timetable and event management
+- Integrated react-big-calendar with date-fns localizer for timetable and event management
 - Added scheduled cron jobs (Vercel Cron) for automated timetable reminders
 
 ---
@@ -852,7 +852,7 @@ This sequence diagram demonstrates the automated timetable reminder system power
 | **Actors** | Student |
 | **Description** | Student creates timetable and adds recurring class events |
 | **Pre-conditions** | - Student is logged in<br>- Student has courses with favorites |
-| **Flow of Events** | 1. Student navigates to "Timetable" page<br>2. System checks if default timetable exists<br>3. If not, system creates Timetable (isDefault = true)<br>4. FullCalendar displays week view (Monday-Sunday)<br>5. Student clicks "Add Event" button<br>6. System displays event creation modal<br>7. Event form shows:<br>   - Title input<br>   - Course dropdown (favorited courses only)<br>   - Date picker<br>   - Start time picker<br>   - End time picker<br>   - Location input<br>   - Recurrence options<br>8. Student fills form:<br>   - Title: "Application Development Lecture"<br>   - Course: "SCSJ3104 - App Dev" (favorited)<br>   - Day: Monday<br>   - Start: 08:00 AM<br>   - End: 10:00 AM<br>   - Location: "Room 301"<br>   - Recurrence: Weekly<br>   - Days: Monday, Wednesday (checkboxes)<br>   - End date: May 30, 2026<br>9. Student clicks "Create Event"<br>10. System validates:<br>    - Start time before end time<br>    - No time conflict with existing events<br>11. System creates RecurrenceRule JSON:<br>    ```json<br>    {<br>      "frequency": "WEEKLY",<br>      "interval": 1,<br>      "daysOfWeek": ["MONDAY", "WEDNESDAY"],<br>      "endDate": "2026-05-30"<br>    }<br>    ```<br>12. System creates Event record<br>13. System generates event instances on calendar<br>14. Calendar displays event in course color<br>15. Student sees recurring events on all Mondays & Wednesdays<br>16. **Conflict Detection:**<br>17. Student tries to add another event:<br>    - Monday 09:00 AM - 11:00 AM<br>18. System detects overlap with existing event<br>19. System shows error: "Time conflict with App Dev Lecture"<br>20. Student adjusts time to 11:00 AM - 01:00 PM<br>21. No conflict, event created<br>22. **Reminder Setup:**<br>23. Cron job runs every hour<br>24. 1 hour before Monday 08:00 AM class<br>25. System creates Notification<br>26. Student receives email and in-app notification<br>27. Notification message: "App Dev Lecture starts in 1 hour at Room 301" |
+| **Flow of Events** | 1. Student navigates to "Timetable" page<br>2. System checks if default timetable exists<br>3. If not, system creates Timetable (isDefault = true)<br>4. react-big-calendar displays week view (Monday-Sunday)<br>5. Student clicks "Add Event" button<br>6. System displays event creation modal<br>7. Event form shows:<br>   - Title input<br>   - Course dropdown (favorited courses only)<br>   - Date picker<br>   - Start time picker<br>   - End time picker<br>   - Location input<br>   - Recurrence options<br>8. Student fills form:<br>   - Title: "Application Development Lecture"<br>   - Course: "SCSJ3104 - App Dev" (favorited)<br>   - Day: Monday<br>   - Start: 08:00 AM<br>   - End: 10:00 AM<br>   - Location: "Room 301"<br>   - Recurrence: Weekly<br>   - Days: Monday, Wednesday (checkboxes)<br>   - End date: May 30, 2026<br>9. Student clicks "Create Event"<br>10. System validates:<br>    - Start time before end time<br>    - No time conflict with existing events<br>11. System creates RecurrenceRule JSON:<br>    ```json<br>    {<br>      "frequency": "WEEKLY",<br>      "interval": 1,<br>      "daysOfWeek": ["MONDAY", "WEDNESDAY"],<br>      "endDate": "2026-05-30"<br>    }<br>    ```<br>12. System creates Event record<br>13. System generates event instances on calendar<br>14. Calendar displays event in course color<br>15. Student sees recurring events on all Mondays & Wednesdays<br>16. **Conflict Detection:**<br>17. Student tries to add another event:<br>    - Monday 09:00 AM - 11:00 AM<br>18. System detects overlap with existing event<br>19. System shows error: "Time conflict with App Dev Lecture"<br>20. Student adjusts time to 11:00 AM - 01:00 PM<br>21. No conflict, event created<br>22. **Reminder Setup:**<br>23. Cron job runs every hour<br>24. 1 hour before Monday 08:00 AM class<br>25. System creates Notification<br>26. Student receives email and in-app notification<br>27. Notification message: "App Dev Lecture starts in 1 hour at Room 301" |
 | **Post-conditions** | - Timetable created with recurring events<br>- Events linked to favorited courses<br>- Reminders scheduled automatically<br>- No time conflicts |
 | **Alternative Flows** | **A1: Edit Recurring Event**<br>- Student clicks event on calendar<br>- System shows edit modal<br>- Student changes time or location<br>- System asks: "Update this event only or all occurrences?"<br>- Student selects "All occurrences"<br>- System updates Event record<br>- All instances updated on calendar<br><br>**A2: Delete Recurring Event**<br>- Student clicks event<br>- Student clicks "Delete"<br>- System asks: "Delete this event or all occurrences?"<br>- Student selects "All occurrences"<br>- System deletes Event record<br>- All instances removed from calendar |
 | **Priority** | Medium |
@@ -1196,8 +1196,8 @@ Manages shared timetable access.
 - [x] Email templates (HTML)
 
 ### Timetable & Calendar ✅
-- [x] FullCalendar integration (6.1.19)
-- [x] Week view with day/list views
+- [x] react-big-calendar integration with date-fns localizer
+- [x] Week view with month/day/agenda views
 - [x] Event creation with form
 - [x] Recurring events (WEEKLY, DAILY)
 - [x] Course linking (favorited courses only)
@@ -1229,8 +1229,8 @@ Manages shared timetable access.
 | **Real-Time** | Liveblocks | 3.9+ | Collaboration infrastructure |
 | | Yjs | 13.6+ | CRDT for conflict resolution |
 | | BlockNote | 0.41+ | Rich text editor |
-| **Calendar** | FullCalendar | 6.1+ | Timetable and event management |
-| | date-fns | 4.1+ | Date utilities |
+| **Calendar** | react-big-calendar | Latest | Timetable and event management |
+| | date-fns | 4.1+ | Date utilities and localizer |
 | **Email** | Nodemailer | 6.10+ | Email notifications |
 | | Gmail SMTP | - | Email delivery provider |
 | **Validation** | Zod | 3.22+ | Schema validation |
@@ -1290,7 +1290,7 @@ Sprint 4 has successfully delivered the core collaboration features that transfo
 - **Production-ready real-time collaboration** with Liveblocks 3.9+ and Yjs CRDT 13.6+
 - **Public knowledge sharing** through the articles system with draft/publish workflow
 - **Comprehensive notification infrastructure** with in-app and email delivery
-- **Fully functional timetable system** with FullCalendar 6.1+, automated reminders, and cron jobs
+- **Fully functional timetable system** with react-big-calendar, automated reminders, and cron jobs
 
 **Overall Project Completion: 100%**
 
