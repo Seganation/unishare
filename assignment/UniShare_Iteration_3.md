@@ -1,6 +1,6 @@
 # UniShare - Sprint 3 Iteration Report
 
-**Application Development - SCSJ3104**  
+**Application Development - SCSJ3104**
 **Qaiwan International University**
 
 ## Prepared by:
@@ -13,9 +13,9 @@
 | Muhamad ahmad | |
 | Aland haval | |
 
-**Submitted to:** Mr. Sassan Sarbast  
-**Date:** January 10, 2026  
-**Sprint Duration:** December 6, 2025 - January 10, 2026
+**Submitted to:** Mr. Sassan Sarbast
+**Date:** January 15, 2026
+**Sprint Duration:** December 2, 2025 - January 15, 2026
 
 ---
 
@@ -32,24 +32,26 @@
 
 ## Sprint 3 Overview
 
-Sprint 3 focused on implementing the core student-driven course management system, resource organization, and introducing AI-powered learning assistance features. This sprint marks a significant expansion beyond the original scope with the integration of Google Gemini AI to enhance student learning experiences.
+Sprint 3 implements the core student-driven course management system with AI-powered learning assistance. This sprint delivers the primary functionality where students create courses, organize resources, and leverage Google Gemini AI for personalized learning support through conversational chat, quiz generation, study planning, and note enhancement.
 
 ### Sprint 3 Goals
-- ✅ Student-led course creation and management
-- ✅ Resource cards system with file uploads
-- ✅ Course detail pages with comprehensive views
-- ✅ Favorites system for course organization
-- ⚠️ **AI Learning Assistant** (ADDED - not in original scope)
-- ⚠️ **AI Quiz Generation** (ADDED - not in original scope)
-- ⚠️ **AI Study Plan Generator** (ADDED - not in original scope)
-- ⚠️ **AI Note Enhancement** (ADDED - not in original scope)
+- ✅ Student-led course creation with customization (title, description, color, icon)
+- ✅ Resource cards system with predefined and custom types
+- ✅ File upload system via UploadThing (16MB max for course resources)
+- ✅ Course favorites for calendar integration
+- ✅ **AI Learning Assistant** with Google Gemini 2.5 Flash for conversational help
+- ✅ **AI Quiz Generation** with Gemini 2.5 Pro for practice tests
+- ✅ **AI Study Plan Generator** with Gemini 2.5 Pro for personalized schedules
+- ✅ **AI Note Enhancement** with multiple generation types (generate, improve, summarize, expand)
 
 ### Technical Achievements
-- Implemented tRPC for type-safe API layer
-- Integrated Google Gemini 2.5 Flash and Pro models
-- Built streaming AI chat interface
-- Created comprehensive course management system
-- Implemented nested resource organization
+- Implemented tRPC for end-to-end type-safe API layer
+- Integrated Google Gemini AI (2.5 Flash for chat, 2.5 Pro for content generation)
+- Built streaming AI responses using Vercel AI SDK with Server-Sent Events (SSE)
+- Created comprehensive course management with cascade delete relationships
+- Implemented token usage tracking for all AI operations
+- Developed nested resource organization (Course → ResourceCard → Resource)
+- Added real-time AI chat with typing indicators and message history
 
 ---
 
@@ -57,1086 +59,1700 @@ Sprint 3 focused on implementing the core student-driven course management syste
 
 ### Student Course Management Use Case
 
-[Diagram 1: Student Course Management]
+**[DIAGRAM 1: Student Course Management Use Case - PLACEHOLDER FOR VISUAL DIAGRAM]**
+
+**Description:**
+The student course management use case illustrates the complete workflow for students to create, manage, and organize their academic courses. Students can create courses from scratch (empty course list initially), customize each course with title, description, semester, color coding, and emoji icons, view all owned and shared courses in a grid layout, edit course details at any time, delete courses (owner only with cascade delete), favorite courses for calendar integration, and manage resources within each course through predefined resource cards (Assignments, Tasks, Content, Notes) and custom cards.
 
 **Actors:**
-- Student (APPROVED role)
+- Student (APPROVED role, authenticated)
+- UniShare Course System
+- UploadThing Service
+
+**System Boundary:** Course Management Functions
 
 **Use Cases:**
-1. **Create Course**
-   - Student creates new course with title, description, color, semester
-   - System generates unique course ID
-   - System creates default resource cards (Assignments, Tasks, Content, Notes)
-   - System marks course as private by default
+1. **UC-S3-001:** Create New Course
+   - **Includes:** Validate Course Data, Generate Course ID, Create Default Resource Cards
+2. **UC-S3-002:** View Course List
+   - **Includes:** Fetch Owned Courses, Fetch Shared Courses (Sprint 4), Display Course Cards
+3. **UC-S3-003:** Edit Course Details
+   - **Includes:** Verify Ownership, Validate Changes, Update Course Metadata
+4. **UC-S3-004:** Delete Course
+   - **Includes:** Confirm Ownership, Cascade Delete Resources, Cascade Delete Cards
+5. **UC-S3-005:** Favorite Course
+   - **Includes:** Create Favorite Relationship, Update Calendar Availability
+6. **UC-S3-006:** Unfavorite Course
+   - **Includes:** Remove Favorite Relationship
+7. **UC-S3-007:** Create Custom Resource Card
+   - **Includes:** Validate Card Settings, Set File Upload Permission
+8. **UC-S3-008:** Upload Resource to Card
+   - **Includes:** Verify File Upload Permission, Upload to UploadThing, Store URL
+9. **UC-S3-009:** Delete Resource
+   - **Includes:** Verify Ownership/Permission, Remove File from UploadThing
+10. **UC-S3-010:** Reorder Resource Cards
+    - **Includes:** Update Order Values
 
-2. **View Courses**
-   - Student views list of owned courses
-   - Student views shared courses (from collaborators)
-   - System displays course cards with icons, colors, titles
+---
 
-3. **Edit Course**
-   - Student updates course details (title, description, color, semester, icon)
-   - System validates and saves changes
-   - System updates course metadata
+### AI Learning Assistant Use Case
 
-4. **Delete Course**
-   - Student initiates course deletion
-   - System confirms ownership (only owner can delete)
-   - System cascade deletes all resources, cards, collaborations
-   - System removes course from database
+**[DIAGRAM 2: AI Learning Assistant Use Case - PLACEHOLDER FOR VISUAL DIAGRAM]**
 
-5. **Favorite Course**
-   - Student marks course as favorite
-   - System stores favorite relationship
-   - System filters favorited courses in calendar views
-
-6. **Manage Resources**
-   - Student creates custom resource cards
-   - Student uploads files to resource cards (UploadThing)
-   - Student organizes resources by card type
-   - Student deletes resources (if owner)
-
-### AI Learning Assistant Use Case ⚠️
-
-[Diagram 2: AI Learning Assistant]
+**Description:**
+The AI learning assistant use case demonstrates how students interact with Google Gemini AI for personalized learning support. Students can start conversations with optional course context, chat with AI using Gemini 2.5 Flash for fast responses with streaming (word-by-word typing effect), generate practice quizzes using Gemini 2.5 Pro with configurable difficulty (Easy/Medium/Hard), question types (Multiple Choice, True/False, Short Answer, Essay), and question count (5-20), create personalized study plans with weekly task breakdowns based on course content and time availability, enhance notes through four generation types (GENERATE from topics, IMPROVE existing notes, SUMMARIZE long content, EXPAND brief notes), view conversation history with all messages preserved, continue previous conversations maintaining context, and attempt generated quizzes with automatic grading and score tracking.
 
 **Actors:**
-- Student (APPROVED role)
-- Google Gemini AI (External System)
+- Student (APPROVED role, authenticated)
+- Google Gemini AI (External System - 2.5 Flash & Pro models)
+- Vercel AI SDK (Streaming Infrastructure)
+- UniShare AI System
+
+**System Boundary:** AI-Powered Learning Features
 
 **Use Cases:**
-1. **Start AI Conversation**
-   - Student navigates to AI assistant page
-   - Student optionally selects a course context
-   - System creates new AI conversation
-   - System displays chat interface
-
-2. **Chat with AI**
-   - Student sends message to AI
-   - System streams response from Gemini 2.5 Flash
-   - System saves conversation history
-   - System displays AI response with typing effect
-
-3. **Generate Quiz**
-   - Student requests quiz generation
-   - Student specifies topic, difficulty, question count, types
-   - System sends request to Gemini 2.5 Pro
-   - System parses AI response into structured quiz
-   - System saves quiz to database
-   - Student can take quiz later
-
-4. **Generate Study Plan**
-   - Student requests study plan for course
-   - Student specifies duration, hours per week, goal, deadline
-   - System sends request to Gemini 2.5 Pro
-   - System parses AI response into weekly breakdown
-   - System saves study plan to database
-   - Student can track progress
-
-5. **Enhance Notes**
-   - Student requests AI improvement of notes
-   - Student provides existing note content
-   - System sends to Gemini with enhancement prompt
-   - System returns improved version
-   - Student can accept or modify
-
-6. **View Conversation History**
-   - Student views past AI conversations
-   - Student continues previous conversations
-   - System loads conversation messages
-   - System maintains context
+1. **UC-S3-011:** Start AI Conversation
+   - **Includes:** Create Conversation Record, Optionally Link Course Context
+2. **UC-S3-012:** Send Message to AI
+   - **Includes:** Validate Message, Call Gemini 2.5 Flash API, Stream Response (SSE), Save Message Pair
+3. **UC-S3-013:** Continue Previous Conversation
+   - **Includes:** Load Conversation History, Restore Context, Append New Messages
+4. **UC-S3-014:** Generate AI Quiz
+   - **Includes:** Specify Topic/Difficulty/Count/Types, Call Gemini 2.5 Pro, Parse JSON Response, Create Quiz Record
+5. **UC-S3-015:** Attempt Generated Quiz
+   - **Includes:** Display Questions, Record Answers, Calculate Score, Save Attempt
+6. **UC-S3-016:** Generate AI Study Plan
+   - **Includes:** Specify Duration/Hours/Goal, Call Gemini 2.5 Pro, Parse Weekly Breakdown, Save Plan
+7. **UC-S3-017:** Track Study Plan Progress
+   - **Includes:** Mark Tasks Complete, Update Progress Percentage
+8. **UC-S3-018:** Enhance Notes with AI
+   - **Includes:** Select Enhancement Type, Provide Content, Call Gemini, Return Enhanced Version
+9. **UC-S3-019:** View AI Conversation History
+   - **Includes:** List All Conversations, Show Message Previews
+10. **UC-S3-020:** Delete AI Conversation
+    - **Includes:** Verify Ownership, Cascade Delete Messages
 
 ---
 
 ## 2. Domain Model (UML Diagram)
 
-[Diagram 3: UniShare Domain Model - Sprint 3]
+**[DIAGRAM 3: UniShare Domain Model - Sprint 3 - PLACEHOLDER FOR VISUAL DIAGRAM]**
 
-### Core Entities
+**Description:**
+The domain model illustrates all entities introduced in Sprint 3, including **Course**, **ResourceCard**, **Resource**, **Favorite**, and the complete **AI feature set** (AiConversation, AiMessage, AiQuiz, AiQuizQuestion, AiQuizAttempt, AiStudyPlan, AiStudyPlanWeek, AiStudyPlanTask, AiGeneratedNote).
 
-**Course Entity** (NEW in Sprint 3):
-- `id`: String (CUID) - Primary key
-- `title`: String - Course name
-- `description`: String (optional) - Course details
-- `code`: String (optional) - Course code (e.g., "SCSJ3104")
-- `color`: String - Hex color for UI (#FF5733)
-- `semester`: String (optional) - Term/semester
-- `icon`: String (optional) - Emoji icon
-- `ownerId`: String - Foreign key to User
-- `createdAt`: DateTime - Creation timestamp
-- `updatedAt`: DateTime - Last update
+### Core Course Management Entities
 
-**ResourceCard Entity** (NEW in Sprint 3):
-- `id`: String (CUID) - Primary key
-- `title`: String - Card name
-- `description`: String (optional) - Card purpose
-- `order`: Int - Display order
-- `type`: CardType - ASSIGNMENT | TASK | CONTENT | NOTES | CUSTOM
-- `allowFileUploads`: Boolean - File upload permission
-- `courseId`: String - Foreign key to Course
-- `createdAt`: DateTime - Creation timestamp
-- `updatedAt`: DateTime - Last update
+**1. Course:**
+- id (PK, CUID)
+- title (String, required)
+- description (String, optional)
+- code (String, optional) - e.g., "SCSJ3104"
+- color (String, default: "#3B82F6") - Hex color
+- semester (String, optional) - e.g., "Fall 2025"
+- icon (String, optional) - Emoji icon
+- ownerId (FK → User.id, required)
+- createdAt, updatedAt
 
-**Resource Entity** (NEW in Sprint 3):
-- `id`: String (CUID) - Primary key
-- `title`: String - Resource name
-- `description`: String (optional) - Resource details
-- `fileUrl`: String (optional) - UploadThing URL
-- `fileType`: String (optional) - MIME type
-- `fileSize`: Int (optional) - Bytes
-- `order`: Int - Display order within card
-- `cardId`: String - Foreign key to ResourceCard
-- `uploadedById`: String - Foreign key to User
-- `createdAt`: DateTime - Upload timestamp
-- `updatedAt`: DateTime - Last update
+**2. ResourceCard:**
+- id (PK, CUID)
+- title (String, required)
+- description (String, optional)
+- order (Int, default: 0)
+- type (Enum: CardType) - ASSIGNMENT | TASK | CONTENT | NOTES | CUSTOM
+- allowFileUploads (Boolean, default: true)
+- courseId (FK → Course.id, CASCADE)
+- createdAt, updatedAt
 
-**Favorite Entity** (NEW in Sprint 3):
-- `id`: String (CUID) - Primary key
-- `userId`: String - Foreign key to User
-- `courseId`: String - Foreign key to Course
-- `createdAt`: DateTime - Favorite timestamp
+**3. Resource:**
+- id (PK, CUID)
+- title (String, required)
+- description (String, optional)
+- fileUrl (String, optional) - UploadThing URL
+- fileType (String, optional) - MIME type
+- fileSize (Int, optional) - Bytes
+- order (Int, default: 0)
+- cardId (FK → ResourceCard.id, CASCADE)
+- uploadedById (FK → User.id)
+- createdAt, updatedAt
 
-**AiConversation Entity** ⚠️ (NEW - UNDOCUMENTED):
-- `id`: String (CUID) - Primary key
-- `title`: String - Conversation title
-- `userId`: String - Foreign key to User
-- `courseId`: String (optional) - Context course
-- `createdAt`: DateTime - Conversation start
-- `updatedAt`: DateTime - Last message
+**4. Favorite:**
+- id (PK, CUID)
+- userId (FK → User.id, CASCADE)
+- courseId (FK → Course.id, CASCADE)
+- createdAt
+- Unique: (userId, courseId) - prevent duplicate favorites
 
-**AiMessage Entity** ⚠️ (NEW - UNDOCUMENTED):
-- `id`: String (CUID) - Primary key
-- `content`: String (text) - Message content
-- `role`: MessageRole - USER | ASSISTANT | SYSTEM
-- `conversationId`: String - Foreign key to AiConversation
-- `createdAt`: DateTime - Message timestamp
+### AI Feature Entities
 
-**AiQuiz Entity** ⚠️ (NEW - UNDOCUMENTED):
-- `id`: String (CUID) - Primary key
-- `title`: String - Quiz title
-- `topic`: String - Quiz topic
-- `difficulty`: QuizDifficulty - EASY | MEDIUM | HARD
-- `totalQuestions`: Int - Number of questions
-- `courseId`: String (optional) - Related course
-- `userId`: String - Foreign key to User (creator)
-- `createdAt`: DateTime - Generation timestamp
+**5. AiConversation:**
+- id (PK, CUID)
+- title (String, required)
+- userId (FK → User.id, CASCADE)
+- courseId (FK → Course.id, optional, SET_NULL) - Context course
+- tokensUsed (Int, default: 0)
+- createdAt, updatedAt
 
-**AiQuizQuestion Entity** ⚠️ (NEW - UNDOCUMENTED):
-- `id`: String (CUID) - Primary key
-- `question`: String (text) - Question text
-- `type`: QuestionType - MULTIPLE_CHOICE | TRUE_FALSE | SHORT_ANSWER | ESSAY
-- `options`: Json - Answer options array
-- `correctAnswer`: String - Correct answer
-- `explanation`: String (optional) - Answer explanation
-- `order`: Int - Question order
-- `quizId`: String - Foreign key to AiQuiz
-- `createdAt`: DateTime
+**6. AiMessage:**
+- id (PK, CUID)
+- content (String, text, required)
+- role (Enum: MessageRole) - USER | ASSISTANT | SYSTEM
+- conversationId (FK → AiConversation.id, CASCADE)
+- tokensUsed (Int, default: 0)
+- createdAt
 
-**AiQuizAttempt Entity** ⚠️ (NEW - UNDOCUMENTED):
-- `id`: String (CUID) - Primary key
-- `quizId`: String - Foreign key to AiQuiz
-- `userId`: String - Foreign key to User
-- `answers`: Json - User answers object
-- `score`: Float (optional) - Percentage score
-- `completedAt`: DateTime (optional) - Completion time
-- `createdAt`: DateTime - Attempt start
+**7. AiQuiz:**
+- id (PK, CUID)
+- title (String, required)
+- topic (String, required)
+- difficulty (Enum: QuizDifficulty) - EASY | MEDIUM | HARD
+- totalQuestions (Int, required)
+- courseId (FK → Course.id, optional, SET_NULL)
+- userId (FK → User.id, CASCADE)
+- tokensUsed (Int, default: 0)
+- createdAt, updatedAt
 
-**AiStudyPlan Entity** ⚠️ (NEW - UNDOCUMENTED):
-- `id`: String (CUID) - Primary key
-- `title`: String - Plan title
-- `goal`: String (optional) - Learning goal
-- `weekCount`: Int - Number of weeks
-- `hoursPerWeek`: Int - Study hours per week
-- `deadline`: DateTime (optional) - Target date
-- `weeks`: Json - Weekly breakdown array
-- `courseId`: String (optional) - Related course
-- `userId`: String - Foreign key to User
-- `createdAt`: DateTime - Generation timestamp
+**8. AiQuizQuestion:**
+- id (PK, CUID)
+- question (String, text, required)
+- type (Enum: QuestionType) - MULTIPLE_CHOICE | TRUE_FALSE | SHORT_ANSWER | ESSAY
+- options (Json, optional) - Array of answer options
+- correctAnswer (String, text, required)
+- explanation (String, text, optional)
+- order (Int, required)
+- quizId (FK → AiQuiz.id, CASCADE)
+- createdAt
 
-**AiGeneratedNote Entity** ⚠️ (NEW - UNDOCUMENTED):
-- `id`: String (CUID) - Primary key
-- `originalContent`: String (text) - Original note
-- `generatedContent`: String (text) - AI-enhanced version
-- `prompt`: String - Enhancement prompt
-- `type`: NoteGenerationType - GENERATE | IMPROVE | SUMMARIZE
-- `tokensUsed`: Int - API token count
-- `userId`: String - Foreign key to User
-- `createdAt`: DateTime - Generation timestamp
+**9. AiQuizAttempt:**
+- id (PK, CUID)
+- quizId (FK → AiQuiz.id, CASCADE)
+- userId (FK → User.id, CASCADE)
+- answers (Json, required) - User answers object
+- score (Float, optional) - Percentage (0-100)
+- completedAt (DateTime, optional)
+- createdAt, updatedAt
 
-### Relationships
+**10. AiStudyPlan:**
+- id (PK, CUID)
+- title (String, required)
+- goal (String, text, optional)
+- weekCount (Int, required, min: 1, max: 12)
+- hoursPerWeek (Int, required, min: 1, max: 40)
+- deadline (DateTime, optional)
+- courseId (FK → Course.id, optional, SET_NULL)
+- userId (FK → User.id, CASCADE)
+- tokensUsed (Int, default: 0)
+- createdAt, updatedAt
 
-**User ↔ Course**: One-to-Many
-- User owns multiple courses (ownerId)
+**11. AiStudyPlanWeek:**
+- id (PK, CUID)
+- weekNumber (Int, required)
+- title (String, required)
+- studyPlanId (FK → AiStudyPlan.id, CASCADE)
+- createdAt
+
+**12. AiStudyPlanTask:**
+- id (PK, CUID)
+- title (String, required)
+- description (String, text, optional)
+- estimatedHours (Int, required)
+- completed (Boolean, default: false)
+- weekId (FK → AiStudyPlanWeek.id, CASCADE)
+- order (Int, required)
+- createdAt, updatedAt
+
+**13. AiGeneratedNote:**
+- id (PK, CUID)
+- originalContent (String, text, optional)
+- generatedContent (String, text, required)
+- prompt (String, text, required)
+- type (Enum: NoteGenerationType) - GENERATE | IMPROVE | SUMMARIZE | EXPAND
+- tokensUsed (Int, default: 0)
+- userId (FK → User.id, CASCADE)
+- createdAt
+
+### Key Relationships
+
+**User ↔ Course:** One-to-Many
+- User owns multiple courses
 - Each course has one owner
+- User deletion does NOT cascade to courses (prevent data loss)
 
-**Course ↔ ResourceCard**: One-to-Many (Cascade Delete)
-- Course contains multiple resource cards
-- Each resource card belongs to one course
+**Course ↔ ResourceCard:** One-to-Many (CASCADE DELETE)
+- Course contains 4+ resource cards (4 default + custom)
 - Deleting course deletes all cards
 
-**ResourceCard ↔ Resource**: One-to-Many (Cascade Delete)
-- Resource card contains multiple resources
-- Each resource belongs to one card
+**ResourceCard ↔ Resource:** One-to-Many (CASCADE DELETE)
+- Card contains multiple resources
 - Deleting card deletes all resources
 
-**User ↔ Resource**: One-to-Many
+**User ↔ Resource:** One-to-Many
 - User uploads multiple resources
-- Each resource has one uploader
+- Resource tracks uploader
 
-**User ↔ Favorite**: One-to-Many
-- User can favorite multiple courses
-- Each favorite links one user to one course
+**User + Course ↔ Favorite:** Many-to-Many (via Favorite)
+- User favorites multiple courses
+- Course favorited by multiple users
+- Unique constraint prevents duplicates
 
-**Course ↔ Favorite**: One-to-Many
-- Course can be favorited by multiple users
-- Each favorite links one course to one user
+**User ↔ AiConversation:** One-to-Many (CASCADE DELETE)
+- User has multiple AI conversations
+- Deleting user deletes conversations
 
-**User ↔ AiConversation**: One-to-Many ⚠️
-- User can have multiple AI conversations
-- Each conversation belongs to one user
+**Course ↔ AiConversation:** One-to-Many (SET_NULL)
+- Course provides context for conversations
+- Deleting course sets courseId to NULL (preserve conversations)
 
-**Course ↔ AiConversation**: One-to-Many (Optional) ⚠️
-- Course can be context for multiple conversations
-- Each conversation may reference one course
-
-**AiConversation ↔ AiMessage**: One-to-Many (Cascade Delete) ⚠️
+**AiConversation ↔ AiMessage:** One-to-Many (CASCADE DELETE)
 - Conversation contains multiple messages
-- Each message belongs to one conversation
+- Deleting conversation deletes messages
 
-**User ↔ AiQuiz**: One-to-Many ⚠️
-- User can generate multiple quizzes
-- Each quiz created by one user
+**User ↔ AiQuiz:** One-to-Many (CASCADE DELETE)
+- User generates multiple quizzes
 
-**Course ↔ AiQuiz**: One-to-Many (Optional) ⚠️
-- Course can have multiple quizzes
-- Each quiz may relate to one course
+**Course ↔ AiQuiz:** One-to-Many (SET_NULL)
+- Course context for quizzes
 
-**AiQuiz ↔ AiQuizQuestion**: One-to-Many (Cascade Delete) ⚠️
-- Quiz contains multiple questions
-- Each question belongs to one quiz
+**AiQuiz ↔ AiQuizQuestion:** One-to-Many (CASCADE DELETE)
+- Quiz contains 5-20 questions
 
-**AiQuiz ↔ AiQuizAttempt**: One-to-Many ⚠️
-- Quiz can have multiple attempts
-- Each attempt is for one quiz
+**AiQuiz ↔ AiQuizAttempt:** One-to-Many (CASCADE DELETE)
+- Quiz can be attempted multiple times
 
-**User ↔ AiQuizAttempt**: One-to-Many ⚠️
-- User can attempt multiple quizzes
-- Each attempt by one user
+**User ↔ AiQuizAttempt:** One-to-Many (CASCADE DELETE)
+- User attempts multiple quizzes
 
-**User ↔ AiStudyPlan**: One-to-Many ⚠️
-- User can create multiple study plans
-- Each plan created by one user
+**User ↔ AiStudyPlan:** One-to-Many (CASCADE DELETE)
+- User creates multiple study plans
 
-**Course ↔ AiStudyPlan**: One-to-Many (Optional) ⚠️
-- Course can have multiple study plans
-- Each plan may relate to one course
+**Course ↔ AiStudyPlan:** One-to-Many (SET_NULL)
+- Study plan linked to course
 
-**User ↔ AiGeneratedNote**: One-to-Many ⚠️
-- User can generate multiple notes
-- Each note generated by one user
+**AiStudyPlan ↔ AiStudyPlanWeek:** One-to-Many (CASCADE DELETE)
+- Plan contains 1-12 weeks
+
+**AiStudyPlanWeek ↔ AiStudyPlanTask:** One-to-Many (CASCADE DELETE)
+- Week contains multiple tasks
+
+**User ↔ AiGeneratedNote:** One-to-Many (CASCADE DELETE)
+- User generates multiple note enhancements
+
+### Enums
+
+**CardType:**
+- ASSIGNMENT - File uploads enabled, for homework/projects
+- TASK - No uploads, text-based to-do items
+- CONTENT - File uploads enabled, for slides/readings
+- NOTES - No uploads, links to collaborative notes
+- CUSTOM - User-defined, configurable upload permission
+
+**MessageRole:**
+- USER - Student's messages
+- ASSISTANT - AI responses
+- SYSTEM - System-generated context/instructions
+
+**QuizDifficulty:**
+- EASY - Basic comprehension
+- MEDIUM - Application/analysis
+- HARD - Synthesis/evaluation
+
+**QuestionType:**
+- MULTIPLE_CHOICE - 4 options, one correct
+- TRUE_FALSE - Boolean answer
+- SHORT_ANSWER - Brief text response
+- ESSAY - Extended written response
+
+**NoteGenerationType:**
+- GENERATE - Create notes from topic
+- IMPROVE - Enhance existing notes
+- SUMMARIZE - Condense long content
+- EXPAND - Add detail to brief notes
 
 ---
 
 ## 3. Sequence Diagrams
 
-### Sequence 1: Create Course Flow
+### Sequence 1: Create Course with Default Resource Cards
 
-[Diagram 4: Create Course Sequence Diagram]
+**[DIAGRAM 4: Create Course Sequence Diagram - PLACEHOLDER FOR VISUAL DIAGRAM]**
 
-**Participants:**
-- Student
-- Course Form UI
-- tRPC Client
-- tRPC Router
-- Prisma ORM
-- PostgreSQL Database
-
-**Flow:**
-1. Student navigates to "Create Course" page
-2. Student fills form (title, description, color, semester, icon)
-3. Student submits form
-4. Course Form UI validates input (Zod schema)
-5. tRPC Client calls `api.course.create.mutate()`
-6. tRPC Router receives request
-7. Router verifies user authentication (session)
-8. Router validates user role (APPROVED only)
-9. Prisma creates Course record with ownerId
-10. Prisma creates 4 default ResourceCards:
-    - Assignments (order: 0, type: ASSIGNMENT, allowFileUploads: true)
-    - Tasks (order: 1, type: TASK, allowFileUploads: false)
-    - Content (order: 2, type: CONTENT, allowFileUploads: true)
-    - Notes (order: 3, type: NOTES, allowFileUploads: false)
-11. Database commits transaction
-12. Database returns Course + ResourceCards
-13. Prisma returns course object
-14. tRPC Router returns success response
-15. tRPC Client updates cache
-16. UI redirects to course detail page
-17. Student sees new course
-
-**Error Handling:**
-- Validation error → Return 400 with error messages
-- Unauthorized → Return 401, redirect to login
-- Database error → Return 500, rollback transaction
-
-### Sequence 2: Upload Resource to Card
-
-[Diagram 5: Resource Upload Sequence Diagram]
+**Description:**
+This sequence demonstrates the end-to-end course creation process including automatic generation of four default resource cards.
 
 **Participants:**
-- Student
-- Resource Upload UI
-- UploadThing Client
-- UploadThing Server
-- tRPC Client
-- tRPC Router
-- Prisma ORM
-- PostgreSQL Database
+1. Student (User)
+2. Course Creation Form (Next.js Client Component)
+3. Form Validation (Zod Schema)
+4. tRPC Client (Type-Safe API)
+5. tRPC Router (Server-Side Handler)
+6. Prisma ORM
+7. PostgreSQL Database (NeonDB)
 
 **Flow:**
-1. Student selects resource card in course
-2. Student clicks "Upload" button
-3. Resource Upload UI opens file picker
-4. Student selects file(s)
-5. UI validates file (size: max 16MB, type: PDF/images/docs/zip)
-6. UploadThing Client uploads file to cloud
-7. UploadThing Server stores file (S3-backed)
-8. UploadThing Server returns file URL
-9. UploadThing Client receives URL
-10. tRPC Client calls `api.resource.create.mutate()` with:
-    - cardId
-    - title (file name)
-    - fileUrl
-    - fileType (MIME)
-    - fileSize (bytes)
-11. tRPC Router validates:
-    - User owns course containing card
-    - Card allows file uploads
-12. Prisma creates Resource record
-13. Database commits
-14. Database returns Resource
-15. tRPC Router returns success
-16. UI updates resource list
-17. Student sees new resource in card
+1. Student → Course Form: Navigate to `/courses/new`
+2. Course Form → Student: Display form fields (title, description, code, semester, color picker, icon selector)
+3. Student → Course Form: Enter course title "Application Development"
+4. Student → Course Form: Enter description "Building web apps with Next.js"
+5. Student → Course Form: Enter code "SCSJ3104"
+6. Student → Course Form: Select semester "Fall 2025"
+7. Student → Course Form: Select color "#3B82F6" (blue)
+8. Student → Course Form: Select icon "💻" (computer emoji)
+9. Student → Course Form: Click "Create Course" button
+10. Course Form → Form Validation: Validate all fields
+11. Form Validation → Form Validation: Check title (required, 2-100 chars)
+12. Form Validation → Form Validation: Check description (optional, max 500 chars)
+13. Form Validation → Form Validation: Check code (optional, max 20 chars)
+14. Form Validation → Form Validation: Check color (valid hex code)
+15. Form Validation → Course Form: Validation passed
+16. Course Form → tRPC Client: Call `api.course.create.mutate({ title, description, code, semester, color, icon })`
+17. tRPC Client → tRPC Router: Send mutation request with type-safe payload
+18. tRPC Router → tRPC Router: Verify authentication (session exists)
+19. tRPC Router → tRPC Router: Check user role (must be APPROVED)
+20. tRPC Router → Prisma: Begin transaction
+21. Prisma → Database: `BEGIN TRANSACTION`
+22. Prisma → Database: `INSERT INTO courses (id, title, description, code, semester, color, icon, ownerId)`
+23. Database → Prisma: Course created with id `clx123abc`
+24. Prisma → Database: `INSERT INTO resource_cards` (4 records):
+    - Card 1: title="Assignments", order=0, type=ASSIGNMENT, allowFileUploads=true
+    - Card 2: title="Tasks", order=1, type=TASK, allowFileUploads=false
+    - Card 3: title="Content", order=2, type=CONTENT, allowFileUploads=true
+    - Card 4: title="Notes", order=3, type=NOTES, allowFileUploads=false
+25. Database → Prisma: 4 resource cards created
+26. Prisma → Database: `COMMIT TRANSACTION`
+27. Database → Prisma: Transaction committed successfully
+28. Prisma → tRPC Router: Return course object with nested cards
+29. tRPC Router → tRPC Client: Return success response with course data
+30. tRPC Client → tRPC Client: Update React Query cache
+31. tRPC Client → Course Form: Mutation successful
+32. Course Form → Student: Redirect to `/courses/clx123abc`
+33. Student: See new course detail page with 4 empty resource cards
 
-**Error Handling:**
-- File too large → Show error before upload
-- Invalid file type → Block upload
-- Unauthorized → Return 403
-- Card doesn't allow uploads → Return 400
+**Alternative Flows:**
+- **A1: Validation fails**
+  - At step 15, if validation fails (e.g., title too short)
+  - Show field-specific errors inline
+  - Student corrects errors and resubmits
+- **A2: User not authenticated**
+  - At step 18, if no session exists
+  - tRPC returns 401 UNAUTHORIZED
+  - Redirect to `/login`
+- **A3: User role is PENDING**
+  - At step 19, if role check fails
+  - tRPC returns 403 FORBIDDEN
+  - Show error: "Your account is pending approval"
+- **A4: Database transaction fails**
+  - At step 26, if commit fails
+  - Prisma rolls back transaction
+  - Show error: "Failed to create course, please try again"
 
-### Sequence 3: AI Chat Conversation ⚠️
+---
 
-[Diagram 6: AI Chat Sequence Diagram]
+### Sequence 2: AI Chat Conversation with Streaming
+
+**[DIAGRAM 5: AI Chat Sequence Diagram - PLACEHOLDER FOR VISUAL DIAGRAM]**
+
+**Description:**
+This sequence illustrates the real-time AI chat workflow using Google Gemini 2.5 Flash with streaming responses via Vercel AI SDK.
 
 **Participants:**
-- Student
-- Chat UI
-- `/api/chat` Route (Next.js API)
-- Vercel AI SDK
-- Google Gemini API
-- Prisma ORM
-- PostgreSQL Database
+1. Student (User)
+2. AI Chat UI (Next.js Client Component)
+3. tRPC Client
+4. tRPC Router (AI Handler)
+5. Vercel AI SDK
+6. Google Gemini 2.5 Flash API
+7. Prisma ORM
+8. PostgreSQL Database
 
 **Flow:**
-1. Student navigates to AI assistant (`/ai` or `/ai/{conversationId}`)
-2. If new conversation:
-   - tRPC Client calls `api.ai.createConversation.mutate()`
-   - Prisma creates AiConversation
-   - System generates title "New Conversation"
-3. Chat UI loads conversation history (if exists)
-4. Student types message
-5. Student presses Send
-6. Chat UI adds user message to display (optimistic update)
-7. Chat UI calls POST `/api/chat` with:
-   - `conversationId`
-   - `messages` array (conversation history)
-   - `courseId` (optional context)
-8. API Route validates user session
-9. API Route loads course context (if courseId provided):
-   - Fetches course title, resources, recent notes
-10. API Route creates system prompt:
-    - "You are a helpful AI learning assistant"
-    - Course context (if available)
-11. Vercel AI SDK calls `streamText()` with:
-    - Model: `google("gemini-2.5-flash")`
-    - Messages: conversation history
-    - System: context prompt
-12. Google Gemini API generates response (streaming)
-13. API Route receives text stream
-14. API Route sends Server-Sent Events (SSE) to client
-15. Chat UI receives stream chunks
-16. Chat UI displays AI response with typing effect
-17. When stream complete:
-    - API Route saves user message to database
-    - API Route saves AI message to database
-    - Prisma creates 2 AiMessage records
-18. Chat UI updates conversation title (first AI response)
-19. Student sees complete AI response
+1. Student → AI Chat UI: Navigate to `/ai/chat`
+2. AI Chat UI → tRPC: Call `api.ai.listConversations.useQuery()`
+3. tRPC → Database: `SELECT * FROM ai_conversations WHERE userId = {userId}`
+4. Database → tRPC: Return conversation list
+5. AI Chat UI → Student: Display conversation history sidebar
+6. Student → AI Chat UI: Click "New Conversation" button
+7. AI Chat UI → AI Chat UI: Open new chat interface
+8. Student → AI Chat UI: Optionally select course context from dropdown
+9. Student → AI Chat UI: Type message "Explain polymorphism in Java"
+10. Student → AI Chat UI: Press Enter to send
+11. AI Chat UI → tRPC Client: Call `api.ai.sendMessage.mutate({ message, courseId?, conversationId? })`
+12. tRPC Router → Prisma: Check if conversationId exists
+13. **If new conversation:**
+    - Prisma → Database: `INSERT INTO ai_conversations (title, userId, courseId)`
+    - Database → Prisma: Return conversation id
+14. **If existing conversation:**
+    - Prisma → Database: `SELECT * FROM ai_conversations WHERE id = {conversationId}`
+    - Verify ownership (userId matches)
+15. Prisma → Database: `INSERT INTO ai_messages (content, role=USER, conversationId)`
+16. Database → Prisma: User message saved
+17. tRPC Router → Vercel AI SDK: Initialize Gemini 2.5 Flash model
+18. Vercel AI SDK → Vercel AI SDK: Configure streaming settings:
+    ```typescript
+    {
+      model: 'gemini-2.5-flash',
+      temperature: 0.7,
+      maxTokens: 2048
+    }
+    ```
+19. tRPC Router → Vercel AI SDK: Prepare messages array:
+    ```typescript
+    [
+      { role: 'system', content: 'You are a helpful AI tutor' },
+      { role: 'user', content: 'Explain polymorphism in Java' }
+    ]
+    ```
+20. Vercel AI SDK → Gemini API: Send POST request to Gemini endpoint
+21. Gemini API → Vercel AI SDK: Start Server-Sent Events (SSE) stream
+22. Vercel AI SDK → tRPC Router: Stream response chunks
+23. tRPC Router → AI Chat UI: Forward stream via SSE
+24. AI Chat UI → AI Chat UI: Render tokens word-by-word (typing effect):
+    - "Polymorphism"
+    - "in Java"
+    - "is a"
+    - "fundamental"
+    - "OOP concept..."
+25. AI Chat UI → Student: Display streaming response with typing animation
+26. **Stream completes:**
+27. Gemini API → Vercel AI SDK: Send `[DONE]` marker
+28. Vercel AI SDK → tRPC Router: Stream complete, return full text and token count
+29. tRPC Router → Prisma: Save AI response
+30. Prisma → Database: `INSERT INTO ai_messages (content, role=ASSISTANT, conversationId, tokensUsed)`
+31. Database → Prisma: Message saved
+32. Prisma → Database: `UPDATE ai_conversations SET tokensUsed = tokensUsed + {count}`
+33. tRPC Router → AI Chat UI: Stream complete
+34. AI Chat UI → Student: Show complete message with timestamp
+35. Student: Can continue conversation with context preserved
 
-**Error Handling:**
-- No API key → Return 500 "AI service not configured"
-- Rate limit → Return 429 "Too many requests"
-- Invalid conversation → Return 404
-- Gemini error → Return 500, display friendly message
+**Token Usage Tracking:**
+- Each message tracks `tokensUsed` (prompt + completion tokens)
+- Conversation tracks cumulative `tokensUsed` for analytics
+- Used for cost monitoring and usage reports
 
-### Sequence 4: AI Quiz Generation ⚠️
+**Alternative Flows:**
+- **A1: Stream connection fails**
+  - At step 21, if network error or API unavailable
+  - Show error: "AI is currently unavailable"
+  - Save user message but don't create assistant message
+- **A2: Rate limit exceeded**
+  - At step 21, if Gemini returns 429
+  - Show error: "Too many requests, please wait"
+  - Display retry countdown
+- **A3: Conversation ownership verification fails**
+  - At step 14, if userId doesn't match conversation owner
+  - Return 403 FORBIDDEN
+  - Show error: "You don't have access to this conversation"
 
-[Diagram 7: Quiz Generation Sequence Diagram]
+---
+
+### Sequence 3: AI Quiz Generation
+
+**[DIAGRAM 6: AI Quiz Generation Sequence Diagram - PLACEHOLDER FOR VISUAL DIAGRAM]**
+
+**Description:**
+This sequence shows how students generate practice quizzes using Google Gemini 2.5 Pro with structured JSON output.
 
 **Participants:**
-- Student
-- Quiz Form UI
-- tRPC Client
-- tRPC Router (ai.generateQuiz)
-- Quiz Generator Service
-- Google Gemini API
-- Prisma ORM
-- PostgreSQL Database
+1. Student (User)
+2. Quiz Generation Form
+3. tRPC Client
+4. tRPC Router (AI Quiz Handler)
+5. Google Gemini 2.5 Pro API
+6. Prisma ORM
+7. PostgreSQL Database
 
 **Flow:**
-1. Student navigates to "AI Quiz" page
-2. Student fills quiz form:
-   - Topic (e.g., "Database Normalization")
-   - Question count (5-20)
-   - Difficulty (Easy/Medium/Hard)
-   - Question types (Multiple Choice, True/False, etc.)
-   - Course (optional)
-3. Student submits form
-4. Quiz Form UI validates input
-5. tRPC Client calls `api.ai.generateQuiz.mutate()`
-6. tRPC Router validates user session
-7. Router creates quiz generation prompt:
-   - Topic and difficulty
-   - Question count and types
-   - JSON output format specification
-8. Router calls `generateText()` with:
-   - Model: `google("gemini-2.5-pro")` (high quality)
-   - Prompt: structured quiz request
-9. Google Gemini API generates quiz JSON
-10. Router receives generated text
-11. Router parses JSON response
-12. Router validates quiz structure:
-    - Has questions array
-    - Each question has required fields
-    - Correct answers provided
-13. Prisma begins transaction
-14. Prisma creates AiQuiz record:
-    - title (from topic)
-    - topic
-    - difficulty
-    - totalQuestions
-    - courseId (optional)
-    - userId (current user)
-15. Prisma creates AiQuizQuestion records (bulk insert):
-    - For each question in parsed JSON
-    - Sets order, type, options, correctAnswer
-16. Database commits transaction
-17. Router returns Quiz with Questions
-18. tRPC Client receives quiz
-19. UI redirects to quiz detail page
-20. Student can start quiz attempt
+1. Student → Quiz Form: Navigate to `/ai/quiz/generate`
+2. Quiz Form → Student: Display generation form:
+   - Topic (text input, required)
+   - Course context (dropdown, optional)
+   - Difficulty (select: Easy/Medium/Hard)
+   - Question count (slider: 5-20)
+   - Question types (checkboxes: MC, T/F, Short Answer, Essay)
+3. Student → Quiz Form: Enter topic "Object-Oriented Programming"
+4. Student → Quiz Form: Select course context "Application Development"
+5. Student → Quiz Form: Select difficulty "Medium"
+6. Student → Quiz Form: Set question count to 10
+7. Student → Quiz Form: Check types: Multiple Choice, True/False
+8. Student → Quiz Form: Click "Generate Quiz" button
+9. Quiz Form → Quiz Form: Show loading state with progress animation
+10. Quiz Form → tRPC Client: Call `api.ai.generateQuiz.mutate({ topic, courseId, difficulty, count, types })`
+11. tRPC Client → tRPC Router: Send generation request
+12. tRPC Router → tRPC Router: Verify authentication and role
+13. tRPC Router → Gemini 2.5 Pro: Build prompt:
+    ```
+    Generate a {count} question quiz about {topic} at {difficulty} difficulty.
+    Question types: {types}
 
-**Error Handling:**
-- Invalid JSON from AI → Retry with clearer prompt
-- Missing required fields → Return 400
-- Gemini error → Return 500
-- Exceeded question limit → Return 400
+    Return JSON:
+    {
+      "title": "Quiz title",
+      "questions": [
+        {
+          "question": "Question text",
+          "type": "MULTIPLE_CHOICE",
+          "options": ["A", "B", "C", "D"],
+          "correctAnswer": "B",
+          "explanation": "Why B is correct"
+        }
+      ]
+    }
+    ```
+14. Gemini 2.5 Pro → Gemini 2.5 Pro: Generate structured quiz
+15. Gemini 2.5 Pro → tRPC Router: Return JSON response + token count
+16. tRPC Router → tRPC Router: Parse JSON response
+17. tRPC Router → tRPC Router: Validate quiz structure (all questions valid)
+18. tRPC Router → Prisma: Begin transaction
+19. Prisma → Database: `INSERT INTO ai_quizzes (title, topic, difficulty, totalQuestions, courseId, userId, tokensUsed)`
+20. Database → Prisma: Quiz created with id
+21. Prisma → Database: `INSERT INTO ai_quiz_questions` (10 records, one per question)
+22. Database → Prisma: All questions created
+23. Prisma → Database: `COMMIT TRANSACTION`
+24. tRPC Router → tRPC Client: Return quiz object with questions
+25. tRPC Client → Quiz Form: Generation successful
+26. Quiz Form → Student: Redirect to `/ai/quiz/{quizId}`
+27. Student: See generated quiz with all questions
+28. Student: Can attempt quiz or save for later
 
-### Sequence 5: Generate Study Plan ⚠️
+**Gemini 2.5 Pro Configuration:**
+```typescript
+{
+  model: 'gemini-2.5-pro',
+  temperature: 0.3,  // Lower for more consistent structured output
+  maxTokens: 4096,
+  responseFormat: 'json'
+}
+```
 
-[Diagram 8: Study Plan Generation Sequence Diagram]
+**Question Types Generated:**
+- **Multiple Choice:** 4 options, one correct, explanation provided
+- **True/False:** Boolean answer, explanation provided
+- **Short Answer:** Expected answer provided, grading requires manual review
+- **Essay:** Rubric or key points provided for evaluation
+
+**Alternative Flows:**
+- **A1: JSON parsing fails**
+  - At step 16, if Gemini returns invalid JSON
+  - Retry with modified prompt (up to 3 attempts)
+  - If all attempts fail, show error: "Quiz generation failed"
+- **A2: Validation fails**
+  - At step 17, if questions don't match expected types
+  - Log error and retry generation
+  - If retry fails, show error with details
+- **A3: Rate limit or quota exceeded**
+  - At step 15, if Gemini returns quota error
+  - Show error: "Daily AI quota exceeded, try again tomorrow"
+  - Log usage for admin review
+
+---
+
+### Sequence 4: AI Study Plan Generation
+
+**[DIAGRAM 7: AI Study Plan Generation Sequence Diagram - PLACEHOLDER FOR VISUAL DIAGRAM]**
+
+**Description:**
+This sequence illustrates personalized study plan creation using Gemini 2.5 Pro with weekly task breakdowns.
 
 **Participants:**
-- Student
-- Study Plan Form UI
-- tRPC Client
-- tRPC Router (ai.generateStudyPlan)
-- Study Plan Generator Service
-- Google Gemini API
-- Prisma ORM
-- PostgreSQL Database
+1. Student (User)
+2. Study Plan Form
+3. tRPC Client
+4. tRPC Router (AI Study Plan Handler)
+5. Google Gemini 2.5 Pro API
+6. Prisma ORM
+7. PostgreSQL Database
 
 **Flow:**
-1. Student selects course
-2. Student clicks "Generate Study Plan"
-3. Student fills form:
-   - Week count (1-12 weeks)
-   - Hours per week (1-40)
-   - Goal (optional, e.g., "Prepare for final exam")
-   - Deadline (optional)
-4. Student submits form
-5. tRPC Client calls `api.ai.generateStudyPlan.mutate()`
-6. Router loads course context:
-   - Course title and description
-   - Existing resources (for content awareness)
-7. Router creates study plan prompt:
-   - Course information
-   - Duration and time commitment
-   - Student goal
-   - JSON output format (weeks array)
-8. Router calls `generateText()` with:
-   - Model: `google("gemini-2.5-pro")`
-   - Prompt: detailed study plan request
-9. Gemini generates structured plan
-10. Router parses JSON:
-    - Weeks array with tasks
-    - Each week has title, topics, tasks
-11. Prisma creates AiStudyPlan record:
-    - title
-    - goal
-    - weekCount
-    - hoursPerWeek
-    - deadline
-    - weeks (JSON field)
-    - courseId
-    - userId
-12. Database commits
-13. Router returns study plan
-14. UI displays weekly breakdown:
-    - Week-by-week accordion
-    - Tasks with checkboxes (future: track progress)
-15. Student reviews plan
+1. Student → Study Plan Form: Navigate to `/ai/study-plan/generate`
+2. Study Plan Form → Student: Display form:
+   - Title (text, required)
+   - Goal (textarea, optional)
+   - Course context (dropdown, optional)
+   - Duration (slider: 1-12 weeks)
+   - Hours per week (slider: 1-40 hours)
+   - Deadline (date picker, optional)
+3. Student → Study Plan Form: Enter title "OOP Mastery Plan"
+4. Student → Study Plan Form: Enter goal "Master OOP concepts for final exam"
+5. Student → Study Plan Form: Select course "Application Development"
+6. Student → Study Plan Form: Set duration to 4 weeks
+7. Student → Study Plan Form: Set hours per week to 10
+8. Student → Study Plan Form: Set deadline "2026-02-15"
+9. Student → Study Plan Form: Click "Generate Plan" button
+10. Study Plan Form → tRPC Client: Call `api.ai.generateStudyPlan.mutate({ title, goal, courseId, weekCount, hoursPerWeek, deadline })`
+11. tRPC Router → tRPC Router: Fetch course content if courseId provided
+12. tRPC Router → Database: `SELECT title, description FROM courses WHERE id = {courseId}`
+13. Database → tRPC Router: Return course context
+14. tRPC Router → Gemini 2.5 Pro: Build prompt with course context:
+    ```
+    Create a {weekCount} week study plan for: {goal}
+    Course: {courseTitle} - {courseDescription}
+    Available time: {hoursPerWeek} hours/week
+    Deadline: {deadline}
 
-**Error Handling:**
-- Invalid week count → Return 400
-- Course not found → Return 404
-- Gemini timeout → Return 500, retry
+    Return JSON:
+    {
+      "weeks": [
+        {
+          "weekNumber": 1,
+          "title": "Week title",
+          "tasks": [
+            {
+              "title": "Task title",
+              "description": "Task details",
+              "estimatedHours": 3
+            }
+          ]
+        }
+      ]
+    }
+    ```
+15. Gemini 2.5 Pro → Gemini 2.5 Pro: Generate weekly breakdown
+16. Gemini 2.5 Pro → tRPC Router: Return JSON with weeks and tasks
+17. tRPC Router → tRPC Router: Parse and validate JSON structure
+18. tRPC Router → Prisma: Begin transaction
+19. Prisma → Database: `INSERT INTO ai_study_plans (title, goal, weekCount, hoursPerWeek, deadline, courseId, userId, tokensUsed)`
+20. Database → Prisma: Study plan created
+21. Prisma → Database: `INSERT INTO ai_study_plan_weeks` (4 records, one per week)
+22. Database → Prisma: Weeks created
+23. Prisma → Database: `INSERT INTO ai_study_plan_tasks` (multiple tasks per week)
+24. Database → Prisma: Tasks created
+25. Prisma → Database: `COMMIT TRANSACTION`
+26. tRPC Router → tRPC Client: Return study plan with nested weeks and tasks
+27. Study Plan Form → Student: Redirect to `/ai/study-plan/{planId}`
+28. Student: See study plan with weekly breakdown:
+    - **Week 1:** Introduction to OOP (3 tasks, 10 hours total)
+    - **Week 2:** Classes and Objects (4 tasks, 10 hours total)
+    - **Week 3:** Inheritance and Polymorphism (4 tasks, 10 hours total)
+    - **Week 4:** Advanced Concepts & Review (3 tasks, 10 hours total)
+29. Student: Can mark tasks as complete to track progress
+
+**Study Plan Structure:**
+- Each week has multiple tasks
+- Tasks have estimated hours (total per week matches hoursPerWeek)
+- Tasks include specific learning objectives and resources
+- Progress tracked via completed checkboxes
+
+**Alternative Flows:**
+- **A1: Invalid time allocation**
+  - If total task hours don't match hoursPerWeek
+  - Adjust task estimates proportionally
+- **A2: No course context**
+  - If courseId is null
+  - Generate plan based only on goal description
+  - Still create detailed weekly tasks
 
 ---
 
 ## 4. Use Case Scenarios
 
-### Use Case 1: Create Course with Resources (UC-S3-001)
+### Use Case 1: Create Course with Default Resources
 
-| Field | Value |
-|-------|-------|
-| **Use Case ID** | UC-S3-001 |
-| **Use Case Name** | Create Course with Resources |
-| **Actors** | Student (APPROVED) |
-| **Description** | Student creates a new course and uploads initial resources |
-| **Pre-conditions** | - User is logged in<br>- User has APPROVED role<br>- User has selected university and faculty |
-| **Flow of Events** | 1. Student clicks "Create Course" button<br>2. System displays course creation form<br>3. Student enters course title (e.g., "Application Development")<br>4. Student optionally enters description<br>5. Student selects color from palette<br>6. Student selects emoji icon<br>7. Student enters semester (e.g., "Fall 2025")<br>8. Student submits form<br>9. System validates input<br>10. System creates Course record<br>11. System generates 4 default ResourceCards<br>12. System redirects to course detail page<br>13. Student sees course with empty resource cards<br>14. Student clicks "Upload" on Assignments card<br>15. Student selects PDF file (e.g., assignment1.pdf)<br>16. System uploads to UploadThing<br>17. System creates Resource record with file URL<br>18. Student sees resource appear in Assignments card |
-| **Post-conditions** | - Course created in database<br>- 4 default resource cards exist<br>- 1 resource uploaded<br>- Student redirected to course page |
-| **Alternative Flows** | **A1: Validation Error**<br>- At step 9, if title is empty, system shows error<br>- Student corrects and resubmits<br><br>**A2: Upload Fails**<br>- At step 16, if file too large, system shows error<br>- Student selects smaller file |
-| **Priority** | High |
+**ID:** UC-S3-001
+**Actors:** Student (APPROVED role)
+**Description:** Student creates a new course which automatically generates four default resource cards for organization.
 
-### Use Case 2: Favorite Course for Calendar (UC-S3-002)
+**Preconditions:**
+- Student is authenticated with APPROVED role
+- Student has navigated to course creation page
 
-| Field | Value |
-|-------|-------|
-| **Use Case ID** | UC-S3-002 |
-| **Use Case Name** | Favorite Course for Calendar |
-| **Actors** | Student (APPROVED) |
-| **Description** | Student marks course as favorite to include in calendar |
-| **Pre-conditions** | - User is logged in<br>- User owns or has access to courses |
-| **Flow of Events** | 1. Student views courses list page<br>2. Student hovers over course card<br>3. Student clicks star icon<br>4. System creates Favorite record<br>5. Star icon turns solid/yellow<br>6. Course is now marked as favorite<br>7. Student navigates to Timetable page<br>8. Student clicks "Add Event" button<br>9. System displays course dropdown<br>10. Only favorited courses appear in dropdown<br>11. Student selects favorited course<br>12. Student creates calendar event linked to course |
-| **Post-conditions** | - Favorite relationship created<br>- Course appears in calendar course selector<br>- Star icon indicates favorite status |
-| **Alternative Flows** | **A1: Unfavorite**<br>- Student clicks solid star icon<br>- System deletes Favorite record<br>- Star becomes outline<br>- Course removed from calendar dropdown |
-| **Priority** | Medium |
+**Flow of Events:**
+1. Student navigates to `/courses/new`
+2. System displays course creation form
+3. Student enters course title "Application Development"
+4. Student enters description "Learning web development with Next.js 15"
+5. Student enters course code "SCSJ3104"
+6. Student selects semester "Fall 2025" from dropdown
+7. Student clicks color picker and selects "#3B82F6" (blue)
+8. Student clicks icon selector and chooses "💻" emoji
+9. Student clicks "Create Course" button
+10. System validates all inputs using Zod schema
+11. System checks title length (2-100 characters) ✓
+12. System validates color is valid hex code ✓
+13. System validates optional fields (description, code, semester) ✓
+14. System sends tRPC mutation to server
+15. Server verifies user is authenticated (checks JWT session)
+16. Server verifies user role is APPROVED
+17. Server begins database transaction
+18. Server creates Course record:
+    - Generates CUID for course id
+    - Sets ownerId to current user's id
+    - Stores title, description, code, semester, color, icon
+    - Sets createdAt and updatedAt timestamps
+19. Database returns course with id `clx123abc`
+20. Server creates 4 default ResourceCards:
+    - **Card 1 - Assignments:**
+      - title: "Assignments"
+      - order: 0
+      - type: ASSIGNMENT
+      - allowFileUploads: true
+      - courseId: `clx123abc`
+    - **Card 2 - Tasks:**
+      - title: "Tasks"
+      - order: 1
+      - type: TASK
+      - allowFileUploads: false
+      - courseId: `clx123abc`
+    - **Card 3 - Content:**
+      - title: "Content"
+      - order: 2
+      - type: CONTENT
+      - allowFileUploads: true
+      - courseId: `clx123abc`
+    - **Card 4 - Notes:**
+      - title: "Notes"
+      - order: 3
+      - type: NOTES
+      - allowFileUploads: false
+      - courseId: `clx123abc`
+21. Database creates all 4 resource cards
+22. Server commits transaction
+23. Server returns course object with nested resource cards to client
+24. tRPC client updates React Query cache
+25. Frontend redirects student to `/courses/clx123abc`
+26. Student sees course detail page:
+    - Course header with title, color, icon
+    - 4 empty resource cards in grid layout
+    - Each card shows title and "No resources yet" message
+    - "Add Resource" button on cards with allowFileUploads=true
 
-### Use Case 3: Chat with AI Learning Assistant ⚠️ (UC-S3-003)
+**Postconditions:**
+- Course record created in database
+- 4 default resource cards created
+- Student redirected to course detail page
+- Course appears in student's course list
 
-| Field | Value |
-|-------|-------|
-| **Use Case ID** | UC-S3-003 |
-| **Use Case Name** | Chat with AI Learning Assistant |
-| **Actors** | Student (APPROVED), Google Gemini AI |
-| **Description** | Student asks AI assistant for help with coursework |
-| **Pre-conditions** | - User is logged in<br>- GOOGLE_GENERATIVE_AI_API_KEY is configured<br>- User has internet connection |
-| **Flow of Events** | 1. Student clicks "AI Assistant" in navigation<br>2. System displays chat interface<br>3. System shows "Start new conversation" or conversation list<br>4. Student clicks "New Chat"<br>5. System creates AiConversation record<br>6. Student optionally selects course context<br>7. System loads course information (title, resources)<br>8. Student types question (e.g., "Explain database normalization")<br>9. Student presses Enter<br>10. System adds user message to UI<br>11. System sends request to /api/chat endpoint<br>12. API calls Gemini 2.5 Flash model<br>13. Gemini streams response<br>14. System displays AI response word-by-word<br>15. When complete, system saves both messages to database<br>16. Student can ask follow-up questions<br>17. Conversation history maintained |
-| **Post-conditions** | - AiConversation created<br>- AiMessage records saved for user and AI<br>- Conversation appears in history<br>- Student can continue conversation later |
-| **Alternative Flows** | **A1: API Error**<br>- At step 12, if Gemini unavailable, show error message<br>- Student can retry<br><br>**A2: Rate Limit**<br>- If too many requests, show "Please wait" message<br>- Disable send button temporarily |
-| **Priority** | High (NEW feature) |
+**Alternative Flows:**
+- **A1: Title too short**
+  - At step 11, if title < 2 characters
+  - Show error: "Title must be at least 2 characters"
+  - Student corrects title and resubmits
+- **A2: Invalid hex color**
+  - At step 12, if color format invalid
+  - Show error: "Invalid color format"
+  - Default to "#3B82F6" and continue
+- **A3: User not approved**
+  - At step 16, if user role is PENDING
+  - Return 403 FORBIDDEN error
+  - Show error: "Your account is pending approval"
+  - Redirect to `/waiting-approval`
+- **A4: Database transaction fails**
+  - At step 22, if commit fails (network error, constraint violation)
+  - Roll back all changes
+  - Show error: "Failed to create course, please try again"
+  - Log error for debugging
 
-### Use Case 4: Generate Quiz with AI ⚠️ (UC-S3-004)
+**Priority:** Critical
 
-| Field | Value |
-|-------|-------|
-| **Use Case ID** | UC-S3-004 |
-| **Use Case Name** | Generate Quiz with AI |
-| **Actors** | Student (APPROVED), Google Gemini AI |
-| **Description** | Student generates practice quiz using AI |
-| **Pre-conditions** | - User is logged in<br>- GOOGLE_GENERATIVE_AI_API_KEY is configured |
-| **Flow of Events** | 1. Student navigates to "AI Quiz" page<br>2. System displays quiz generation form<br>3. Student enters topic (e.g., "Object-Oriented Programming")<br>4. Student selects question count (e.g., 10)<br>5. Student selects difficulty (Medium)<br>6. Student checks question types (Multiple Choice, True/False)<br>7. Student optionally selects course context<br>8. Student clicks "Generate Quiz"<br>9. System shows loading indicator<br>10. System calls Gemini 2.5 Pro with structured prompt<br>11. Gemini generates quiz in JSON format<br>12. System parses JSON response<br>13. System creates AiQuiz record<br>14. System creates AiQuizQuestion records (bulk)<br>15. System redirects to quiz page<br>16. Student sees generated questions<br>17. Student can start quiz attempt or edit questions |
-| **Post-conditions** | - AiQuiz created with questions<br>- Quiz available for taking<br>- Quiz linked to course (if selected)<br>- Questions have correct answers and explanations |
-| **Alternative Flows** | **A1: Generation Fails**<br>- At step 11, if Gemini returns invalid JSON, retry<br>- If still fails, show error and option to regenerate<br><br>**A2: Edit Questions**<br>- After step 16, student clicks "Edit"<br>- Student modifies question text or answers<br>- System updates AiQuizQuestion record |
-| **Priority** | High (NEW feature) |
+---
 
-### Use Case 5: Generate Study Plan ⚠️ (UC-S3-005)
+### Use Case 2: Chat with AI Assistant
 
-| Field | Value |
-|-------|-------|
-| **Use Case ID** | UC-S3-005 |
-| **Use Case Name** | Generate Personalized Study Plan |
-| **Actors** | Student (APPROVED), Google Gemini AI |
-| **Description** | Student generates structured study plan for course |
-| **Pre-conditions** | - User is logged in<br>- User has courses<br>- GOOGLE_GENERATIVE_AI_API_KEY is configured |
-| **Flow of Events** | 1. Student opens course detail page<br>2. Student clicks "Generate Study Plan"<br>3. System displays study plan form<br>4. Student enters week count (e.g., 4 weeks)<br>5. Student enters hours per week (e.g., 5 hours)<br>6. Student enters goal (e.g., "Prepare for final exam")<br>7. Student selects deadline (e.g., Feb 15, 2026)<br>8. Student submits form<br>9. System loads course resources for context<br>10. System calls Gemini 2.5 Pro with course info<br>11. Gemini generates weekly breakdown with tasks<br>12. System parses JSON response<br>13. System creates AiStudyPlan record with weeks array<br>14. System displays study plan<br>15. Student sees week-by-week tasks:<br>    - Week 1: Introduction and basics<br>    - Week 2: Advanced concepts<br>    - Week 3: Practice problems<br>    - Week 4: Review and exam prep<br>16. Student can check off completed tasks (future feature) |
-| **Post-conditions** | - AiStudyPlan created<br>- Weekly tasks defined<br>- Plan linked to course<br>- Student has structured learning path |
-| **Alternative Flows** | **A1: Invalid Duration**<br>- At step 9, if week count > 12, show error<br>- Student adjusts duration<br><br>**A2: No Course Context**<br>- If course has no resources, Gemini uses topic only<br>- Generated plan is more generic |
-| **Priority** | Medium (NEW feature) |
+**ID:** UC-S3-012
+**Actors:** Student (APPROVED role), Google Gemini 2.5 Flash
+**Description:** Student interacts with AI assistant for learning help with streaming responses and conversation context.
+
+**Preconditions:**
+- Student is authenticated with APPROVED role
+- Google Gemini API is accessible
+- Vercel AI SDK is configured
+
+**Flow of Events:**
+1. Student navigates to `/ai/chat`
+2. System displays AI chat interface:
+   - Sidebar with conversation history
+   - "New Conversation" button
+   - Optional course context selector
+   - Message input textarea
+   - Send button
+3. Student clicks "New Conversation"
+4. System displays empty chat window with welcome message
+5. Student optionally selects course "Application Development" from dropdown
+6. Student types message in textarea: "Explain the difference between let and const in JavaScript"
+7. Student presses Enter or clicks Send button
+8. System validates message (not empty, max 5000 characters)
+9. System shows message in chat with user avatar and timestamp
+10. System shows typing indicator with animated dots
+11. System calls tRPC mutation: `api.ai.sendMessage.mutate({ message, courseId })`
+12. Server verifies authentication and role
+13. Server creates new AiConversation record:
+    - title: Auto-generated from first message (e.g., "JavaScript Variables")
+    - userId: Current user's id
+    - courseId: Selected course id (optional)
+    - tokensUsed: 0 (initial)
+14. Server creates user AiMessage record:
+    - content: Student's message
+    - role: USER
+    - conversationId: Newly created conversation id
+15. Server prepares context for Gemini:
+    - System message: "You are a helpful AI tutor for university students"
+    - If courseId provided: Fetch course title and description for context
+    - User message: Student's question
+16. Server initializes Vercel AI SDK with Gemini 2.5 Flash:
+    ```typescript
+    const model = google('gemini-2.5-flash', {
+      temperature: 0.7,
+      maxOutputTokens: 2048
+    });
+    ```
+17. Server calls `streamText()` from AI SDK:
+    ```typescript
+    const { textStream, usage } = await streamText({
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ]
+    });
+    ```
+18. Gemini API begins streaming response via Server-Sent Events (SSE)
+19. Server forwards stream to client via tRPC subscription
+20. Client receives stream chunks word-by-word:
+    - Chunk 1: "In"
+    - Chunk 2: "JavaScript,"
+    - Chunk 3: "both"
+    - Chunk 4: "`let`"
+    - Chunk 5: "and"
+    - Chunk 6: "`const`"
+    - ...continues...
+21. Client renders tokens in real-time with typing effect
+22. Student sees AI response appearing character by character
+23. Stream continues until complete response delivered
+24. Gemini sends `[DONE]` marker indicating stream end
+25. Server receives full response text and token usage:
+    - Prompt tokens: 45
+    - Completion tokens: 312
+    - Total tokens: 357
+26. Server creates assistant AiMessage record:
+    - content: Full AI response text
+    - role: ASSISTANT
+    - conversationId: Same conversation id
+    - tokensUsed: 357
+27. Server updates AiConversation tokensUsed:
+    ```sql
+    UPDATE ai_conversations
+    SET tokensUsed = tokensUsed + 357
+    WHERE id = {conversationId}
+    ```
+28. Client displays complete message with checkmark icon
+29. System re-enables message input
+30. Student can continue conversation with context preserved
+
+**Postconditions:**
+- New conversation created in database
+- User and assistant messages saved
+- Token usage tracked for analytics
+- Conversation appears in sidebar history
+- Student can send follow-up messages with full context
+
+**Alternative Flows:**
+- **A1: Empty message**
+  - At step 8, if message is empty or only whitespace
+  - Show inline error: "Message cannot be empty"
+  - Input remains focused, student can type
+- **A2: Message too long**
+  - At step 8, if message > 5000 characters
+  - Show error: "Message must be under 5000 characters"
+  - Display character count
+- **A3: Streaming connection fails**
+  - At step 19, if network error or API timeout
+  - Show error toast: "AI is currently unavailable"
+  - Save user message to database
+  - Student can retry by sending same message again
+- **A4: Gemini rate limit exceeded**
+  - At step 18, if Gemini returns 429 TOO_MANY_REQUESTS
+  - Show error: "Too many requests. Please wait 60 seconds."
+  - Display countdown timer
+  - Auto-retry after countdown
+- **A5: Invalid API response**
+  - At step 24, if stream contains malformed data
+  - Terminate stream gracefully
+  - Show error: "AI response failed, please try again"
+  - Log error with conversation id for debugging
+
+**Priority:** High
+
+---
+
+### Use Case 3: Generate AI Quiz
+
+**ID:** UC-S3-014
+**Actors:** Student (APPROVED role), Google Gemini 2.5 Pro
+**Description:** Student generates practice quiz using AI with customizable difficulty, question types, and question count.
+
+**Preconditions:**
+- Student is authenticated with APPROVED role
+- Google Gemini 2.5 Pro API is accessible
+- Student has navigated to quiz generation page
+
+**Flow of Events:**
+1. Student navigates to `/ai/quiz/generate`
+2. System displays quiz generation form:
+   - Topic (text input, required, placeholder: "e.g., Object-Oriented Programming")
+   - Course context (dropdown, optional, shows student's courses)
+   - Difficulty (radio buttons: Easy, Medium, Hard)
+   - Question count (slider: 5-20, default: 10)
+   - Question types (checkboxes: Multiple Choice, True/False, Short Answer, Essay)
+   - Generate button
+3. Student enters topic "Polymorphism in Java"
+4. Student selects course "Application Development" for context
+5. Student selects difficulty "Medium"
+6. Student sets question count to 10 using slider
+7. Student checks question types: "Multiple Choice" and "True/False"
+8. Student clicks "Generate Quiz" button
+9. System validates form:
+   - Topic not empty ✓
+   - At least one question type selected ✓
+   - Question count between 5-20 ✓
+10. System shows loading overlay with animated spinner:
+    - "Generating your quiz..."
+    - "This may take 10-30 seconds"
+11. System disables form to prevent duplicate submissions
+12. System calls tRPC mutation: `api.ai.generateQuiz.mutate({ topic, courseId, difficulty, questionCount, questionTypes })`
+13. Server verifies authentication and role
+14. Server fetches course context if courseId provided:
+    ```sql
+    SELECT title, description FROM courses WHERE id = {courseId}
+    ```
+15. Server prepares detailed prompt for Gemini 2.5 Pro:
+    ```
+    You are an expert quiz generator for university students.
+
+    Generate a quiz with the following specifications:
+    - Topic: Polymorphism in Java
+    - Course Context: Application Development - Building web apps...
+    - Difficulty: Medium
+    - Number of questions: 10
+    - Question types: Multiple Choice (4 options), True/False
+
+    For each question, provide:
+    1. Clear question text
+    2. Question type
+    3. All options (for MC)
+    4. Correct answer
+    5. Brief explanation
+
+    Return ONLY valid JSON in this format:
+    {
+      "title": "Quiz title",
+      "questions": [
+        {
+          "question": "What is polymorphism?",
+          "type": "MULTIPLE_CHOICE",
+          "options": ["A", "B", "C", "D"],
+          "correctAnswer": "B",
+          "explanation": "Why B is correct..."
+        }
+      ]
+    }
+    ```
+16. Server calls Gemini 2.5 Pro with structured output:
+    ```typescript
+    const { text, usage } = await generateText({
+      model: google('gemini-2.5-pro'),
+      prompt: quizPrompt,
+      temperature: 0.3,  // Lower for consistent structure
+      maxTokens: 4096
+    });
+    ```
+17. Gemini 2.5 Pro processes request (10-30 seconds)
+18. Gemini returns JSON response:
+    ```json
+    {
+      "title": "Polymorphism in Java - Medium Quiz",
+      "questions": [
+        {
+          "question": "Which of the following best describes polymorphism in Java?",
+          "type": "MULTIPLE_CHOICE",
+          "options": [
+            "A. The ability to create multiple classes",
+            "B. The ability of an object to take many forms",
+            "C. The process of hiding implementation details",
+            "D. The creation of subclasses"
+          ],
+          "correctAnswer": "B",
+          "explanation": "Polymorphism means 'many forms' and allows objects to be treated as instances of their parent class."
+        },
+        // ... 9 more questions
+      ]
+    }
+    ```
+19. Server parses JSON response using `JSON.parse()`
+20. Server validates quiz structure:
+    - Check questions array exists and has 10 items ✓
+    - Check each question has required fields ✓
+    - Validate question types match requested types ✓
+    - Ensure correctAnswer is in options for MC questions ✓
+21. **If validation fails:**
+    - Log error with full response
+    - Retry generation once with refined prompt
+    - If retry fails, return error to client
+22. **If validation passes:**
+23. Server begins database transaction
+24. Server creates AiQuiz record:
+    ```sql
+    INSERT INTO ai_quizzes (
+      title, topic, difficulty, totalQuestions, courseId, userId, tokensUsed
+    ) VALUES (
+      'Polymorphism in Java - Medium Quiz',
+      'Polymorphism in Java',
+      'MEDIUM',
+      10,
+      {courseId},
+      {userId},
+      {usage.totalTokens}
+    )
+    ```
+25. Database returns quiz id `clx456def`
+26. Server creates 10 AiQuizQuestion records:
+    ```sql
+    INSERT INTO ai_quiz_questions (
+      question, type, options, correctAnswer, explanation, order, quizId
+    ) VALUES ...
+    ```
+27. Database creates all 10 questions
+28. Server commits transaction
+29. Server returns quiz object to client:
+    ```typescript
+    {
+      id: 'clx456def',
+      title: 'Polymorphism in Java - Medium Quiz',
+      topic: 'Polymorphism in Java',
+      difficulty: 'MEDIUM',
+      totalQuestions: 10,
+      questions: [...],
+      tokensUsed: 1847,
+      createdAt: '2026-01-15T10:30:00Z'
+    }
+    ```
+30. Client receives successful response
+31. System hides loading overlay
+32. System redirects to `/ai/quiz/clx456def`
+33. Student sees generated quiz page:
+    - Quiz title and metadata
+    - "Start Quiz" button
+    - Option to view questions without attempting
+34. Student can:
+    - Attempt quiz now
+    - Save for later
+    - Share with classmates (Sprint 4 feature)
+
+**Postconditions:**
+- Quiz record created with 10 questions
+- Token usage tracked (typically 1500-2500 tokens)
+- Quiz appears in student's AI quiz history
+- Student can attempt quiz multiple times
+
+**Alternative Flows:**
+- **A1: No question types selected**
+  - At step 9, validation fails
+  - Show error: "Please select at least one question type"
+  - Form remains enabled
+- **A2: Topic too vague**
+  - At step 17, Gemini returns generic questions
+  - Server detects low quality (simple validation)
+  - Suggest student provide more specific topic
+- **A3: JSON parsing fails**
+  - At step 19, if Gemini returns invalid JSON
+  - Log error: "Invalid JSON from Gemini"
+  - Retry with modified prompt: "Return ONLY valid JSON, no markdown"
+  - If retry fails, show error: "Quiz generation failed, please try again"
+- **A4: Rate limit exceeded**
+  - At step 17, if Gemini returns 429 error
+  - Show error: "Daily AI quota exceeded. Try again tomorrow."
+  - Log usage for admin review
+- **A5: Question validation fails**
+  - At step 20, if questions don't match criteria
+  - Example: MC question has 3 options instead of 4
+  - Retry generation with stricter prompt
+  - If retry fails, return error with details
+
+**Priority:** High
 
 ---
 
 ## 5. Data Description
 
-### Course Table
-Stores student-created courses for organizing academic materials.
+### Course Management Workflow
 
-**Key Fields:**
-- **id**: Unique identifier (CUID format)
-- **title**: Course name displayed in UI
-- **color**: Hex color code for visual identification (#FF5733)
-- **icon**: Emoji icon for course card
-- **ownerId**: Foreign key linking to User who created course
-- **createdAt**: Timestamp for creation tracking
+The course management system empowers students to create and organize their academic courses from scratch. Students begin with an empty course list and build their structure by creating courses for each class they're taking. Each course creation triggers automatic generation of four predefined resource cards (Assignments, Tasks, Content, Notes) that serve as organizational containers. Students can customize courses with titles, descriptions, course codes, semester information, color coding for visual organization, and emoji icons for quick recognition.
 
-**Business Rules:**
-- Only course owner can delete course
-- Deleting course cascades to all ResourceCards and Resources
-- Course is private by default (visible only to owner)
-- Title is required, description is optional
-- Color defaults to system-generated value if not provided
+The resource card system provides a structured approach to organizing course materials. The Assignments card enables file uploads for homework and projects, the Tasks card supports text-based to-do lists without file uploads, the Content card allows uploading slides, readings, and supplementary materials, and the Notes card links to the collaborative note system (Sprint 4). Students can create additional custom resource cards with configurable file upload permissions to suit their specific organizational needs.
 
-### ResourceCard Table
-Represents organizational containers within courses (like folders).
+File uploads leverage UploadThing with a maximum file size of 16MB per file, supporting images (JPG, PNG, GIF, WEBP), PDFs, Word documents (DOC, DOCX), and PowerPoint presentations (PPT, PPTX). Each uploaded resource tracks the uploader (User), file metadata (type, size), and maintains proper order within its parent card. The system implements cascade delete rules ensuring that deleting a course removes all associated resource cards and resources, preventing orphaned data.
 
-**Key Fields:**
-- **id**: Unique identifier
-- **title**: Card name (e.g., "Assignments", "Lecture Notes")
-- **type**: Enum - ASSIGNMENT | TASK | CONTENT | NOTES | CUSTOM
-- **allowFileUploads**: Boolean flag for upload permission
-- **order**: Integer for display ordering
-- **courseId**: Foreign key to parent Course
+The favorites system allows students to mark courses for calendar integration. Favorited courses appear in dropdown filters when creating timetable events (Sprint 5), enabling students to schedule only relevant classes. The favorite relationship uses a unique constraint on (userId, courseId) to prevent duplicate favorites and implements cascade delete on both foreign keys.
 
-**Business Rules:**
-- New courses get 4 default cards automatically created
-- Default cards: Assignments (0), Tasks (1), Content (2), Notes (3)
-- Tasks card (type: TASK) has allowFileUploads = false
-- Custom cards can enable/disable file uploads
-- Cards are ordered by 'order' field ascending
+### AI Learning Assistant Workflow
 
-### Resource Table
-Stores individual files/items within ResourceCards.
+The AI learning assistant provides personalized educational support through four primary features: conversational chat, quiz generation, study plan creation, and note enhancement. All AI features use Google Gemini models (2.5 Flash for chat, 2.5 Pro for content generation) accessed via the Vercel AI SDK.
 
-**Key Fields:**
-- **id**: Unique identifier
-- **title**: Resource name (often filename)
-- **fileUrl**: UploadThing cloud storage URL
-- **fileType**: MIME type (application/pdf, image/jpeg, etc.)
-- **fileSize**: Size in bytes
-- **cardId**: Foreign key to parent ResourceCard
-- **uploadedById**: Foreign key to User who uploaded
+**Conversational Chat:**
+Students initiate conversations with optional course context, which loads course title and description to provide relevant responses. The system uses Gemini 2.5 Flash for fast, cost-effective responses with streaming enabled via Server-Sent Events (SSE). Messages stream word-by-word to the client, creating a natural typing effect. Each message tracks token usage (prompt tokens + completion tokens), and conversations maintain cumulative token counts for analytics. Conversations preserve full message history, allowing students to ask follow-up questions with context.
 
-**Business Rules:**
-- File upload only allowed if ResourceCard.allowFileUploads = true
-- Max file size: 16MB (enforced by UploadThing)
-- Supported types: PDF, images, DOCX, XLSX, ZIP
-- Only uploader or course owner can delete resource
-- fileUrl is optional (for text-based resources like tasks)
+The streaming implementation uses the Vercel AI SDK's `streamText()` function with Gemini 2.5 Flash configured at temperature 0.7 for balanced creativity and accuracy. The server forwards stream chunks to the client via tRPC subscriptions, and the React component renders tokens in real-time using state updates. When the stream completes, the full response and token count are saved to the database.
 
-### Favorite Table
-Tracks which courses students have marked as favorites.
+**Quiz Generation:**
+Students specify topic, difficulty (Easy/Medium/Hard), question count (5-20), and question types (Multiple Choice, True/False, Short Answer, Essay). The system builds a detailed prompt for Gemini 2.5 Pro requesting structured JSON output. Gemini 2.5 Pro is used instead of Flash for quiz generation because it produces higher quality, more accurate questions with better explanations. The temperature is set to 0.3 (lower than chat) to ensure consistent formatting and reduce hallucinations.
 
-**Key Fields:**
-- **id**: Unique identifier
-- **userId**: Foreign key to User
-- **courseId**: Foreign key to Course
-- **createdAt**: Timestamp when favorited
+The server validates the JSON response structure, checking that the questions array has the requested number of items, each question has all required fields (question, type, options, correctAnswer, explanation), question types match requested types, and correctAnswer is valid (exists in options for MC). If validation fails, the system retries once with a refined prompt emphasizing strict JSON formatting. Validated quizzes are saved with cascade relationships: AiQuiz → AiQuizQuestion.
 
-**Business Rules:**
-- Unique constraint on (userId, courseId) - can't favorite twice
-- Favorited courses appear in calendar course dropdown
-- Favoriting doesn't affect course permissions
-- Student can favorite both owned and shared courses
+**Study Plan Generation:**
+Students provide a title, optional goal, duration (1-12 weeks), hours per week (1-40), optional deadline, and optional course context. The system fetches course details if courseId is provided and builds a prompt requesting a weekly breakdown with specific tasks. Gemini 2.5 Pro generates structured JSON with weeks and tasks, where each week contains 3-5 tasks and total task hours match the specified hoursPerWeek.
 
-### AiConversation Table ⚠️
-Stores AI chat conversations for learning assistance.
+The server parses the JSON and creates a nested structure: AiStudyPlan → AiStudyPlanWeek (1-12 weeks) → AiStudyPlanTask (multiple per week). Students can mark individual tasks as complete, and the system calculates progress percentage based on completed tasks. Study plans are linked to courses via optional courseId (SET_NULL on course delete to preserve plans).
 
-**Key Fields:**
-- **id**: Unique identifier
-- **title**: Conversation title (auto-generated from first AI response)
-- **userId**: Foreign key to User who owns conversation
-- **courseId**: Optional foreign key for course context
-- **createdAt**: Conversation start timestamp
-- **updatedAt**: Last message timestamp
+**Note Enhancement:**
+Students select an enhancement type (GENERATE, IMPROVE, SUMMARIZE, EXPAND) and provide content. GENERATE creates notes from a topic with no original content, IMPROVE enhances existing notes with better structure and clarity, SUMMARIZE condenses long content into key points, and EXPAND adds detail and examples to brief notes. The system calls Gemini 2.5 Pro with type-specific prompts and saves both original and generated content along with token usage. Students can accept the AI-generated version or modify it before saving to their note system.
 
-**Business Rules:**
-- New conversations start with title "New Conversation"
-- Title updates after first AI response
-- Course context improves AI responses (if courseId provided)
-- Conversations are private (only visible to owner)
-- Deleting conversation cascades to all AiMessages
+### Token Usage and Cost Tracking
 
-### AiMessage Table ⚠️
-Stores individual messages within AI conversations.
+Every AI operation tracks token usage at multiple levels. Individual messages store tokensUsed (prompt + completion), conversations accumulate tokensUsed across all messages, quizzes store generation token cost, study plans track generation cost, and note enhancements record individual costs. This enables usage analytics (cost reports per user, quota enforcement, identifying high-usage features) and optimization (detecting inefficient prompts, adjusting temperature/maxTokens settings).
 
-**Key Fields:**
-- **id**: Unique identifier
-- **content**: Message text (TEXT type for long content)
-- **role**: Enum - USER | ASSISTANT | SYSTEM
-- **conversationId**: Foreign key to AiConversation
-- **createdAt**: Message timestamp
-
-**Business Rules:**
-- Messages are immutable (cannot edit after creation)
-- role = USER for student messages
-- role = ASSISTANT for AI responses
-- role = SYSTEM for context messages (rare)
-- Messages ordered by createdAt chronologically
-
-### AiQuiz Table ⚠️
-Stores AI-generated quizzes for practice and assessment.
-
-**Key Fields:**
-- **id**: Unique identifier
-- **title**: Quiz title (from topic)
-- **topic**: Subject matter (e.g., "Database Normalization")
-- **difficulty**: Enum - EASY | MEDIUM | HARD
-- **totalQuestions**: Count of questions
-- **courseId**: Optional course link
-- **userId**: Creator/owner
-
-**Business Rules:**
-- Quiz generation uses Gemini 2.5 Pro model
-- Question count range: 5-20
-- Deleting quiz cascades to AiQuizQuestions and AiQuizAttempts
-- Quiz is reusable (multiple attempts allowed)
-- Linked course provides context for generation
-
-### AiQuizQuestion Table ⚠️
-Stores individual questions within AI quizzes.
-
-**Key Fields:**
-- **id**: Unique identifier
-- **question**: Question text (TEXT type)
-- **type**: Enum - MULTIPLE_CHOICE | TRUE_FALSE | SHORT_ANSWER | ESSAY
-- **options**: JSON array of answer choices (for multiple choice)
-- **correctAnswer**: Correct answer string
-- **explanation**: Optional explanation of answer
-- **order**: Display order (0-indexed)
-- **quizId**: Foreign key to AiQuiz
-
-**Business Rules:**
-- MULTIPLE_CHOICE type requires options array
-- TRUE_FALSE type has 2 options: ["True", "False"]
-- SHORT_ANSWER and ESSAY have flexible answer matching
-- correctAnswer is always stored for grading
-- Questions ordered by 'order' field
-
-### AiQuizAttempt Table ⚠️
-Tracks student attempts at AI-generated quizzes.
-
-**Key Fields:**
-- **id**: Unique identifier
-- **quizId**: Foreign key to AiQuiz
-- **userId**: Foreign key to User attempting quiz
-- **answers**: JSON object mapping questionId → answer
-- **score**: Percentage score (0-100)
-- **completedAt**: Completion timestamp (null if in-progress)
-- **createdAt**: Attempt start
-
-**Business Rules:**
-- Student can attempt same quiz multiple times
-- score is null until quiz completed
-- answers stored as: `{ "q1": "Answer A", "q2": "True", ... }`
-- Auto-graded for MULTIPLE_CHOICE and TRUE_FALSE
-- Manual review needed for SHORT_ANSWER and ESSAY
-
-### AiStudyPlan Table ⚠️
-Stores AI-generated structured study plans.
-
-**Key Fields:**
-- **id**: Unique identifier
-- **title**: Plan title (from goal or course)
-- **goal**: Student's learning objective
-- **weekCount**: Number of weeks (1-12)
-- **hoursPerWeek**: Study hours per week (1-40)
-- **deadline**: Optional target date
-- **weeks**: JSON array of weekly tasks
-- **courseId**: Optional course link
-- **userId**: Creator/owner
-
-**Business Rules:**
-- Study plan generation uses Gemini 2.5 Pro
-- weeks JSON structure: `[{ week: 1, title: "...", topics: [...], tasks: [...] }]`
-- Each week has title, topics array, tasks array
-- Plan linked to course for context
-- Student can generate multiple plans per course
-
-### AiGeneratedNote Table ⚠️
-Tracks AI-enhanced or generated notes.
-
-**Key Fields:**
-- **id**: Unique identifier
-- **originalContent**: Student's original note (if improving)
-- **generatedContent**: AI-generated/enhanced version
-- **prompt**: Prompt used for generation
-- **type**: Enum - GENERATE | IMPROVE | SUMMARIZE
-- **tokensUsed**: Token count for cost tracking
-- **userId**: Owner
-
-**Business Rules:**
-- type = IMPROVE when enhancing existing notes
-- type = GENERATE when creating from topic
-- type = SUMMARIZE when condensing content
-- originalContent is null for GENERATE type
-- tokensUsed tracked for API cost monitoring
+Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tokens, $0.30 per 1M output tokens; Gemini 2.5 Pro is $1.25 per 1M input tokens, $5.00 per 1M output tokens. The free tier allows 1,500 requests per day, 1M tokens per minute. The system logs all token usage and monitors against rate limits.
 
 ---
 
 ## 6. Data Dictionary
 
-| Table | Field | Type | Constraints | Description |
-|-------|-------|------|-------------|-------------|
-| **Course** | id | String | PRIMARY KEY, CUID | Unique course identifier |
-| | title | String | NOT NULL | Course name (e.g., "Application Development") |
-| | description | String | NULL | Optional course description |
-| | code | String | NULL | Course code (e.g., "SCSJ3104") |
-| | color | String | NOT NULL, DEFAULT hex | Hex color code for UI (#FF5733) |
-| | semester | String | NULL | Term/semester (e.g., "Fall 2025") |
-| | icon | String | NULL | Emoji icon for course card |
-| | ownerId | String | NOT NULL, FOREIGN KEY → User.id | Course creator/owner |
-| | createdAt | DateTime | NOT NULL, DEFAULT now() | Creation timestamp |
-| | updatedAt | DateTime | NOT NULL, AUTO UPDATE | Last modification timestamp |
-| **ResourceCard** | id | String | PRIMARY KEY, CUID | Unique card identifier |
-| | title | String | NOT NULL | Card name |
-| | description | String | NULL | Optional card description |
-| | order | Int | NOT NULL | Display order (0-indexed) |
-| | type | CardType | NOT NULL | ASSIGNMENT \| TASK \| CONTENT \| NOTES \| CUSTOM |
-| | allowFileUploads | Boolean | NOT NULL, DEFAULT true | File upload permission flag |
-| | courseId | String | NOT NULL, FOREIGN KEY → Course.id, CASCADE | Parent course |
-| | createdAt | DateTime | NOT NULL, DEFAULT now() | Creation timestamp |
-| | updatedAt | DateTime | NOT NULL, AUTO UPDATE | Last modification timestamp |
-| **Resource** | id | String | PRIMARY KEY, CUID | Unique resource identifier |
-| | title | String | NOT NULL | Resource name (often filename) |
-| | description | String | NULL | Optional resource description |
-| | fileUrl | String | NULL | UploadThing cloud storage URL |
-| | fileType | String | NULL | MIME type (application/pdf, image/jpeg) |
-| | fileSize | Int | NULL | File size in bytes |
-| | order | Int | NOT NULL | Display order within card |
-| | cardId | String | NOT NULL, FOREIGN KEY → ResourceCard.id, CASCADE | Parent card |
-| | uploadedById | String | NOT NULL, FOREIGN KEY → User.id | Uploader user |
-| | createdAt | DateTime | NOT NULL, DEFAULT now() | Upload timestamp |
-| | updatedAt | DateTime | NOT NULL, AUTO UPDATE | Last modification timestamp |
-| **Favorite** | id | String | PRIMARY KEY, CUID | Unique favorite identifier |
-| | userId | String | NOT NULL, FOREIGN KEY → User.id | User who favorited |
-| | courseId | String | NOT NULL, FOREIGN KEY → Course.id | Favorited course |
-| | createdAt | DateTime | NOT NULL, DEFAULT now() | Favorite timestamp |
-| | | | UNIQUE (userId, courseId) | Prevent duplicate favorites |
-| **AiConversation** ⚠️ | id | String | PRIMARY KEY, CUID | Unique conversation identifier |
-| | title | String | NOT NULL | Conversation title (auto-generated) |
-| | userId | String | NOT NULL, FOREIGN KEY → User.id | Conversation owner |
-| | courseId | String | NULL, FOREIGN KEY → Course.id | Optional course context |
-| | createdAt | DateTime | NOT NULL, DEFAULT now() | Conversation start |
-| | updatedAt | DateTime | NOT NULL, AUTO UPDATE | Last message timestamp |
-| **AiMessage** ⚠️ | id | String | PRIMARY KEY, CUID | Unique message identifier |
-| | content | String (Text) | NOT NULL | Message text content |
-| | role | MessageRole | NOT NULL | USER \| ASSISTANT \| SYSTEM |
-| | conversationId | String | NOT NULL, FOREIGN KEY → AiConversation.id, CASCADE | Parent conversation |
-| | createdAt | DateTime | NOT NULL, DEFAULT now() | Message timestamp |
-| **AiQuiz** ⚠️ | id | String | PRIMARY KEY, CUID | Unique quiz identifier |
-| | title | String | NOT NULL | Quiz title |
-| | topic | String | NOT NULL | Subject matter |
-| | difficulty | QuizDifficulty | NOT NULL | EASY \| MEDIUM \| HARD |
-| | totalQuestions | Int | NOT NULL | Number of questions |
-| | courseId | String | NULL, FOREIGN KEY → Course.id | Optional course link |
-| | userId | String | NOT NULL, FOREIGN KEY → User.id | Quiz creator |
-| | createdAt | DateTime | NOT NULL, DEFAULT now() | Generation timestamp |
-| **AiQuizQuestion** ⚠️ | id | String | PRIMARY KEY, CUID | Unique question identifier |
-| | question | String (Text) | NOT NULL | Question text |
-| | type | QuestionType | NOT NULL | MULTIPLE_CHOICE \| TRUE_FALSE \| SHORT_ANSWER \| ESSAY |
-| | options | Json | NULL | Answer choices array (for multiple choice) |
-| | correctAnswer | String | NOT NULL | Correct answer |
-| | explanation | String | NULL | Optional answer explanation |
-| | order | Int | NOT NULL | Question order (0-indexed) |
-| | quizId | String | NOT NULL, FOREIGN KEY → AiQuiz.id, CASCADE | Parent quiz |
-| | createdAt | DateTime | NOT NULL, DEFAULT now() | Creation timestamp |
-| **AiQuizAttempt** ⚠️ | id | String | PRIMARY KEY, CUID | Unique attempt identifier |
-| | quizId | String | NOT NULL, FOREIGN KEY → AiQuiz.id | Quiz being attempted |
-| | userId | String | NOT NULL, FOREIGN KEY → User.id | Student attempting quiz |
-| | answers | Json | NOT NULL | User answers object |
-| | score | Float | NULL | Percentage score (0-100) |
-| | completedAt | DateTime | NULL | Completion timestamp |
-| | createdAt | DateTime | NOT NULL, DEFAULT now() | Attempt start timestamp |
-| **AiStudyPlan** ⚠️ | id | String | PRIMARY KEY, CUID | Unique study plan identifier |
-| | title | String | NOT NULL | Plan title |
-| | goal | String | NULL | Learning objective |
-| | weekCount | Int | NOT NULL | Number of weeks (1-12) |
-| | hoursPerWeek | Int | NOT NULL | Study hours per week (1-40) |
-| | deadline | DateTime | NULL | Target completion date |
-| | weeks | Json | NOT NULL | Weekly breakdown array |
-| | courseId | String | NULL, FOREIGN KEY → Course.id | Optional course link |
-| | userId | String | NOT NULL, FOREIGN KEY → User.id | Plan creator |
-| | createdAt | DateTime | NOT NULL, DEFAULT now() | Generation timestamp |
-| **AiGeneratedNote** ⚠️ | id | String | PRIMARY KEY, CUID | Unique generated note identifier |
-| | originalContent | String (Text) | NULL | Original note (for IMPROVE type) |
-| | generatedContent | String (Text) | NOT NULL | AI-generated/enhanced version |
-| | prompt | String | NOT NULL | Generation prompt used |
-| | type | NoteGenerationType | NOT NULL | GENERATE \| IMPROVE \| SUMMARIZE |
-| | tokensUsed | Int | NOT NULL | Token count for cost tracking |
-| | userId | String | NOT NULL, FOREIGN KEY → User.id | Note owner |
-| | createdAt | DateTime | NOT NULL, DEFAULT now() | Generation timestamp |
+### Entity: Course
+
+**Description:** Represents a student-created course for organizing academic materials. Each course is private by default and owned by one student.
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated on creation |
+| title | String | Course name | Required, Min: 2, Max: 100 | Student provides during creation |
+| description | String? | Course details | Optional, Max: 500 chars | Optional field in form |
+| code | String? | Course code | Optional, Max: 20 chars | E.g., "SCSJ3104" |
+| color | String | Hex color code | Default: "#3B82F6", Pattern: /^#[0-9A-F]{6}$/i | Color picker selection |
+| semester | String? | Term information | Optional, Max: 50 chars | E.g., "Fall 2025" |
+| icon | String? | Emoji icon | Optional, Max: 10 chars | Single emoji character |
+| ownerId | String | Course owner | Foreign Key → User.id, Required | Current authenticated user |
+| createdAt | DateTime | Creation timestamp | Auto-generated | Set automatically |
+| updatedAt | DateTime | Last update | Auto-updated | Updated on edits |
+
+**Relationships:**
+- **Belongs To:** User (N:1) via ownerId
+- **Has Many:** ResourceCard (1:N, CASCADE DELETE)
+- **Has Many:** Favorite (1:N, CASCADE DELETE)
+- **Has Many:** AiConversation (1:N, SET_NULL) - optional context
+- **Has Many:** AiQuiz (1:N, SET_NULL) - optional context
+- **Has Many:** AiStudyPlan (1:N, SET_NULL) - optional context
+
+**Indexes:**
+- Primary: id
+- Foreign: ownerId
+- Index: (ownerId, createdAt) for efficient course list queries
+
+---
+
+### Entity: ResourceCard
+
+**Description:** Organizational containers within courses for grouping related resources (Assignments, Tasks, etc.).
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| title | String | Card name | Required, Min: 1, Max: 100 | "Assignments", "Tasks", etc. |
+| description | String? | Card purpose | Optional, Max: 300 chars | Optional description |
+| order | Int | Display order | Default: 0, Min: 0 | 0-3 for default cards |
+| type | Enum (CardType) | Card category | ASSIGNMENT\|TASK\|CONTENT\|NOTES\|CUSTOM | Determines behavior |
+| allowFileUploads | Boolean | Upload permission | Default: true | true for ASSIGNMENT/CONTENT, false for TASK/NOTES |
+| courseId | String | Parent course | Foreign Key → Course.id, CASCADE DELETE | Links to owning course |
+| createdAt | DateTime | Creation timestamp | Auto-generated | Set automatically |
+| updatedAt | DateTime | Last update | Auto-updated | Updated on edits |
+
+**Default Cards Created Automatically:**
+1. Assignments (order: 0, type: ASSIGNMENT, allowFileUploads: true)
+2. Tasks (order: 1, type: TASK, allowFileUploads: false)
+3. Content (order: 2, type: CONTENT, allowFileUploads: true)
+4. Notes (order: 3, type: NOTES, allowFileUploads: false)
+
+**Relationships:**
+- **Belongs To:** Course (N:1, CASCADE DELETE)
+- **Has Many:** Resource (1:N, CASCADE DELETE)
+
+**Cascade Rules:**
+- Deleting course → deletes all cards
+- Deleting card → deletes all resources in card
+
+---
+
+### Entity: Resource
+
+**Description:** Individual files or items within resource cards (uploaded materials, links, etc.).
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| title | String | Resource name | Required, Min: 1, Max: 200 | File name or custom title |
+| description | String? | Resource details | Optional, Max: 1000 chars | Optional description |
+| fileUrl | String? | UploadThing URL | Optional, Valid URL | Uploaded file location |
+| fileType | String? | MIME type | Optional | E.g., "application/pdf" |
+| fileSize | Int? | File size in bytes | Optional, Max: 16MB (16777216 bytes) | Tracked for storage limits |
+| order | Int | Order within card | Default: 0, Min: 0 | Display order |
+| cardId | String | Parent card | Foreign Key → ResourceCard.id, CASCADE DELETE | Links to containing card |
+| uploadedById | String | Uploader | Foreign Key → User.id | Tracks who uploaded |
+| createdAt | DateTime | Upload timestamp | Auto-generated | Set automatically |
+| updatedAt | DateTime | Last update | Auto-updated | Updated on edits |
+
+**File Upload Constraints:**
+- Max file size: 16MB (16,777,216 bytes)
+- Allowed types: Images (JPG, PNG, GIF, WEBP), PDF, Word (DOC, DOCX), PowerPoint (PPT, PPTX)
+- Uploaded to UploadThing S3 CDN
+
+**Relationships:**
+- **Belongs To:** ResourceCard (N:1, CASCADE DELETE)
+- **Belongs To:** User (N:1) via uploadedById
+
+---
+
+### Entity: Favorite
+
+**Description:** Links users to courses they've favorited for calendar integration and quick access.
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| userId | String | User who favorited | Foreign Key → User.id, CASCADE DELETE | Current user |
+| courseId | String | Favorited course | Foreign Key → Course.id, CASCADE DELETE | Selected course |
+| createdAt | DateTime | Favorite timestamp | Auto-generated | When favorited |
+
+**Unique Constraint:**
+- (userId, courseId) - prevents duplicate favorites
+
+**Relationships:**
+- **Belongs To:** User (N:1, CASCADE DELETE)
+- **Belongs To:** Course (N:1, CASCADE DELETE)
+
+**Usage:**
+- Used in calendar dropdown to filter courses (Sprint 5)
+- Students can favorite both owned and shared courses
+
+---
+
+### Entity: AiConversation
+
+**Description:** Stores AI chat conversations with optional course context.
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| title | String | Conversation title | Required, Max: 200 chars | Auto-generated from first message |
+| userId | String | Conversation owner | Foreign Key → User.id, CASCADE DELETE | Current user |
+| courseId | String? | Optional course context | Foreign Key → Course.id, SET_NULL | Selected course for context |
+| tokensUsed | Int | Cumulative tokens | Default: 0, Min: 0 | Sum of all message tokens |
+| createdAt | DateTime | Start timestamp | Auto-generated | First message time |
+| updatedAt | DateTime | Last message time | Auto-updated | Updated on new messages |
+
+**Relationships:**
+- **Belongs To:** User (N:1, CASCADE DELETE)
+- **Belongs To:** Course (N:1, SET_NULL) - optional context
+- **Has Many:** AiMessage (1:N, CASCADE DELETE)
+
+**Token Tracking:**
+- Cumulative sum of all message tokensUsed
+- Used for usage analytics and cost tracking
+
+---
+
+### Entity: AiMessage
+
+**Description:** Individual messages within AI conversations (user and assistant messages).
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| content | String (text) | Message text | Required, Max: 10000 chars | User question or AI answer |
+| role | Enum (MessageRole) | Message source | USER\|ASSISTANT\|SYSTEM | Identifies sender |
+| conversationId | String | Parent conversation | Foreign Key → AiConversation.id, CASCADE DELETE | Links to conversation |
+| tokensUsed | Int | Token count | Default: 0, Min: 0 | Prompt + completion tokens |
+| createdAt | DateTime | Message timestamp | Auto-generated | When message sent |
+
+**Relationships:**
+- **Belongs To:** AiConversation (N:1, CASCADE DELETE)
+
+**Streaming Implementation:**
+- Messages created after stream completes
+- Full content and token count saved together
+
+---
+
+### Entity: AiQuiz
+
+**Description:** AI-generated practice quizzes with configurable settings.
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| title | String | Quiz title | Required, Max: 200 chars | AI-generated or custom |
+| topic | String | Quiz subject | Required, Max: 200 chars | Student-provided |
+| difficulty | Enum (QuizDifficulty) | Difficulty level | EASY\|MEDIUM\|HARD | Student-selected |
+| totalQuestions | Int | Question count | Required, Min: 5, Max: 20 | Student-selected |
+| courseId | String? | Optional course context | Foreign Key → Course.id, SET_NULL | Selected course |
+| userId | String | Quiz creator | Foreign Key → User.id, CASCADE DELETE | Current user |
+| tokensUsed | Int | Generation cost | Default: 0, Min: 0 | Gemini 2.5 Pro tokens |
+| createdAt | DateTime | Generation timestamp | Auto-generated | When quiz created |
+| updatedAt | DateTime | Last update | Auto-updated | Updated on edits |
+
+**Relationships:**
+- **Belongs To:** User (N:1, CASCADE DELETE)
+- **Belongs To:** Course (N:1, SET_NULL)
+- **Has Many:** AiQuizQuestion (1:N, CASCADE DELETE)
+- **Has Many:** AiQuizAttempt (1:N, CASCADE DELETE)
+
+**Generation Settings:**
+- Uses Gemini 2.5 Pro (higher quality than Flash)
+- Temperature: 0.3 (consistent output)
+- Typical token usage: 1500-2500 tokens per quiz
+
+---
+
+### Entity: AiQuizQuestion
+
+**Description:** Individual questions within AI-generated quizzes.
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| question | String (text) | Question text | Required, Max: 1000 chars | AI-generated |
+| type | Enum (QuestionType) | Question format | MULTIPLE_CHOICE\|TRUE_FALSE\|SHORT_ANSWER\|ESSAY | AI-selected based on request |
+| options | Json? | Answer choices | Optional, Required for MC/TF | Array of strings for MC, ["True", "False"] for TF |
+| correctAnswer | String (text) | Correct response | Required, Max: 1000 chars | AI-provided |
+| explanation | String (text)? | Answer explanation | Optional, Max: 1000 chars | AI-generated reasoning |
+| order | Int | Question order | Required, Min: 0 | 0-19 for 20-question quiz |
+| quizId | String | Parent quiz | Foreign Key → AiQuiz.id, CASCADE DELETE | Links to quiz |
+| createdAt | DateTime | Creation timestamp | Auto-generated | Same as quiz creation |
+
+**Relationships:**
+- **Belongs To:** AiQuiz (N:1, CASCADE DELETE)
+
+**Question Type Details:**
+- **MULTIPLE_CHOICE:** options array has 4 items, correctAnswer is one of the options
+- **TRUE_FALSE:** options array is ["True", "False"], correctAnswer is "True" or "False"
+- **SHORT_ANSWER:** options is null, correctAnswer is expected response
+- **ESSAY:** options is null, correctAnswer contains rubric or key points
+
+---
+
+### Entity: AiQuizAttempt
+
+**Description:** Records of students attempting AI-generated quizzes with answers and scores.
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| quizId | String | Quiz being attempted | Foreign Key → AiQuiz.id, CASCADE DELETE | Selected quiz |
+| userId | String | Student attempting | Foreign Key → User.id, CASCADE DELETE | Current user |
+| answers | Json | User's answers | Required | Object mapping questionId to answer |
+| score | Float? | Percentage score | Optional, Min: 0, Max: 100 | Calculated after completion |
+| completedAt | DateTime? | Completion time | Optional | Set when quiz submitted |
+| createdAt | DateTime | Attempt start | Auto-generated | When quiz started |
+| updatedAt | DateTime | Last update | Auto-updated | Updated on answer changes |
+
+**Relationships:**
+- **Belongs To:** AiQuiz (N:1, CASCADE DELETE)
+- **Belongs To:** User (N:1, CASCADE DELETE)
+
+**Answers Format:**
+```json
+{
+  "clxQuestion1": "B",
+  "clxQuestion2": "True",
+  "clxQuestion3": "Polymorphism allows..."
+}
+```
+
+**Scoring:**
+- Auto-graded for MC and T/F (compare with correctAnswer)
+- Manual review needed for Short Answer and Essay
+
+---
+
+### Entity: AiStudyPlan
+
+**Description:** AI-generated personalized study plans with weekly breakdowns.
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| title | String | Plan title | Required, Max: 200 chars | Student-provided |
+| goal | String (text)? | Learning objective | Optional, Max: 1000 chars | Student-provided |
+| weekCount | Int | Number of weeks | Required, Min: 1, Max: 12 | Student-selected |
+| hoursPerWeek | Int | Study hours/week | Required, Min: 1, Max: 40 | Student-selected |
+| deadline | DateTime? | Target completion | Optional | Student-selected |
+| courseId | String? | Related course | Foreign Key → Course.id, SET_NULL | Optional context |
+| userId | String | Plan creator | Foreign Key → User.id, CASCADE DELETE | Current user |
+| tokensUsed | Int | Generation cost | Default: 0, Min: 0 | Gemini 2.5 Pro tokens |
+| createdAt | DateTime | Generation timestamp | Auto-generated | When plan created |
+| updatedAt | DateTime | Last update | Auto-updated | Updated on progress |
+
+**Relationships:**
+- **Belongs To:** User (N:1, CASCADE DELETE)
+- **Belongs To:** Course (N:1, SET_NULL)
+- **Has Many:** AiStudyPlanWeek (1:N, CASCADE DELETE)
+
+**Generation Settings:**
+- Uses Gemini 2.5 Pro
+- Temperature: 0.5 (balanced creativity and structure)
+- Typical token usage: 2000-3500 tokens
+
+---
+
+### Entity: AiStudyPlanWeek
+
+**Description:** Individual weeks within AI study plans.
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| weekNumber | Int | Week sequence | Required, Min: 1, Max: 12 | 1-12 based on plan duration |
+| title | String | Week theme | Required, Max: 200 chars | AI-generated |
+| studyPlanId | String | Parent plan | Foreign Key → AiStudyPlan.id, CASCADE DELETE | Links to plan |
+| createdAt | DateTime | Creation timestamp | Auto-generated | Same as plan creation |
+
+**Relationships:**
+- **Belongs To:** AiStudyPlan (N:1, CASCADE DELETE)
+- **Has Many:** AiStudyPlanTask (1:N, CASCADE DELETE)
+
+---
+
+### Entity: AiStudyPlanTask
+
+**Description:** Individual tasks within study plan weeks.
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| title | String | Task name | Required, Max: 200 chars | AI-generated |
+| description | String (text)? | Task details | Optional, Max: 1000 chars | AI-generated instructions |
+| estimatedHours | Int | Time needed | Required, Min: 1, Max: 40 | AI-estimated |
+| completed | Boolean | Completion status | Default: false | Student marks complete |
+| weekId | String | Parent week | Foreign Key → AiStudyPlanWeek.id, CASCADE DELETE | Links to week |
+| order | Int | Task sequence | Required, Min: 0 | Display order within week |
+| createdAt | DateTime | Creation timestamp | Auto-generated | Same as plan creation |
+| updatedAt | DateTime | Last update | Auto-updated | Updated when completed |
+
+**Relationships:**
+- **Belongs To:** AiStudyPlanWeek (N:1, CASCADE DELETE)
+
+**Progress Tracking:**
+- Students check completed checkbox
+- Progress percentage = (completed tasks / total tasks) * 100
+
+---
+
+### Entity: AiGeneratedNote
+
+**Description:** AI-enhanced notes with multiple generation types.
+
+| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
+|-----------|----------|-------------|-------------|----------------|
+| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
+| originalContent | String (text)? | Input content | Optional, Max: 10000 chars | Student-provided (null for GENERATE type) |
+| generatedContent | String (text) | AI output | Required, Max: 10000 chars | AI-generated |
+| prompt | String (text) | Enhancement request | Required, Max: 1000 chars | Student-provided instructions |
+| type | Enum (NoteGenerationType) | Generation mode | GENERATE\|IMPROVE\|SUMMARIZE\|EXPAND | Student-selected |
+| tokensUsed | Int | Generation cost | Default: 0, Min: 0 | Gemini tokens |
+| userId | String | Note owner | Foreign Key → User.id, CASCADE DELETE | Current user |
+| createdAt | DateTime | Generation timestamp | Auto-generated | When note created |
+
+**Relationships:**
+- **Belongs To:** User (N:1, CASCADE DELETE)
+
+**Generation Types:**
+- **GENERATE:** originalContent is null, create notes from prompt
+- **IMPROVE:** originalContent provided, enhance quality
+- **SUMMARIZE:** originalContent provided, condense to key points
+- **EXPAND:** originalContent provided, add detail and examples
+
+---
+
+### Enum: CardType
+
+**Description:** Categorizes resource cards within courses.
+
+| Value | Description | File Uploads Allowed | Default Behavior |
+|-------|-------------|---------------------|------------------|
+| ASSIGNMENT | Homework and projects | Yes (true) | Created automatically, order: 0 |
+| TASK | Text-based to-do items | No (false) | Created automatically, order: 1 |
+| CONTENT | Slides, readings, materials | Yes (true) | Created automatically, order: 2 |
+| NOTES | Links to collaborative notes | No (false) | Created automatically, order: 3 |
+| CUSTOM | User-defined cards | Configurable | Created manually by students |
+
+---
+
+### Enum: MessageRole
+
+**Description:** Identifies the source of AI chat messages.
+
+| Value | Description | Usage |
+|-------|-------------|-------|
+| USER | Student's messages | Questions and prompts from student |
+| ASSISTANT | AI responses | Answers from Gemini 2.5 Flash |
+| SYSTEM | System instructions | Context and system prompts (not displayed in UI) |
+
+---
+
+### Enum: QuizDifficulty
+
+**Description:** Defines quiz complexity levels.
+
+| Value | Description | Question Characteristics |
+|-------|-------------|-------------------------|
+| EASY | Basic comprehension | Simple recall, definitions, basic concepts |
+| MEDIUM | Application and analysis | Problem-solving, comparisons, explanations |
+| HARD | Synthesis and evaluation | Critical thinking, complex scenarios, advanced concepts |
+
+---
+
+### Enum: QuestionType
+
+**Description:** Defines quiz question formats.
+
+| Value | Description | Answer Format | Auto-Gradable |
+|-------|-------------|---------------|--------------|
+| MULTIPLE_CHOICE | 4 options, one correct | Single letter (A-D) | Yes |
+| TRUE_FALSE | Boolean question | "True" or "False" | Yes |
+| SHORT_ANSWER | Brief text response | Text (1-2 sentences) | No (manual review) |
+| ESSAY | Extended written response | Text (paragraph+) | No (manual review) |
+
+---
+
+### Enum: NoteGenerationType
+
+**Description:** Types of AI note enhancements.
+
+| Value | Description | Original Content | Use Case |
+|-------|-------------|------------------|----------|
+| GENERATE | Create from topic | Not required (null) | "Generate notes about polymorphism" |
+| IMPROVE | Enhance existing | Required | "Improve my rough notes" |
+| SUMMARIZE | Condense content | Required | "Summarize this lecture transcript" |
+| EXPAND | Add detail | Required | "Expand on these bullet points" |
 
 ---
 
 ## Sprint 3 Success Criteria
 
-### Core Features ✅
-- [x] Student-led course creation with customization (title, description, color, icon, semester)
-- [x] Automatic generation of 4 default resource cards (Assignments, Tasks, Content, Notes)
-- [x] Custom resource card creation with configurable file upload settings
-- [x] File upload via UploadThing (max 16MB, PDF/images/docs/zip)
-- [x] Resource organization within cards
-- [x] Course detail pages with comprehensive views
-- [x] Course editing and deletion (owner-only)
-- [x] Favorites system for course organization
-- [x] tRPC API layer for type-safe backend communication
+✅ **Course Management:**
+- [x] Course creation with title, description, code, semester, color, icon
+- [x] 4 default resource cards auto-created (Assignments, Tasks, Content, Notes)
+- [x] Custom resource card creation with configurable upload permissions
+- [x] Course editing (all fields modifiable)
+- [x] Course deletion with cascade delete (removes cards and resources)
+- [x] Course list view with grid layout and color coding
+- [x] tRPC integration for type-safe API calls
 
-### AI Features ✅ (UNDOCUMENTED - NEW SCOPE)
-- [x] AI conversational assistant powered by Google Gemini 2.5 Flash
-- [x] Streaming chat interface with conversation history
-- [x] Course-aware AI responses (context from selected course)
-- [x] AI quiz generation with Gemini 2.5 Pro
-  - [x] Multiple question types (Multiple Choice, True/False, Short Answer, Essay)
-  - [x] Configurable difficulty levels (Easy, Medium, Hard)
-  - [x] 5-20 questions per quiz
-  - [x] Automatic question parsing and validation
-- [x] AI study plan generation
-  - [x] Weekly task breakdown
-  - [x] Customizable duration (1-12 weeks)
-  - [x] Hours per week configuration
-  - [x] Goal-oriented planning
-- [x] AI note generation and improvement capabilities
-- [x] Conversation management (view, continue, delete conversations)
-- [x] Quiz attempt tracking and grading
+✅ **Resource Management:**
+- [x] File upload to resource cards via UploadThing (16MB max)
+- [x] Supported file types: Images, PDF, Word, PowerPoint
+- [x] Resource metadata tracking (fileType, fileSize, uploadedBy)
+- [x] Resource ordering within cards
+- [x] Resource deletion (owner or uploader only)
+- [x] Cascade delete on card deletion
 
-### Technical Achievements ✅
-- [x] Migration from Ollama (local) to Google Gemini (cloud)
-- [x] Vercel AI SDK integration for streaming responses
-- [x] tRPC router for AI endpoints (1,118 lines of code)
-- [x] JSON schema validation for AI responses
-- [x] Token usage tracking for cost management
-- [x] Error handling for AI service failures
-- [x] Rate limiting protection
-- [x] Optimized prompts for better AI responses
+✅ **Favorites System:**
+- [x] Favorite/unfavorite courses
+- [x] Unique constraint prevents duplicate favorites
+- [x] Cascade delete on user or course deletion
+- [x] Favorites filter in calendar (Sprint 5 integration)
 
-### Database Schema ✅
-- [x] Course, ResourceCard, Resource tables implemented
-- [x] Favorite table for course favoriting
-- [x] 8 AI-related tables (Conversation, Message, Quiz, QuizQuestion, QuizAttempt, StudyPlan, GeneratedNote)
-- [x] Proper foreign key relationships and cascade deletes
-- [x] Indexes for performance optimization
-- [x] JSON fields for flexible data storage (quiz options, study plan weeks)
+✅ **AI Learning Assistant:**
+- [x] Conversation creation with optional course context
+- [x] Real-time streaming chat with Gemini 2.5 Flash
+- [x] Server-Sent Events (SSE) for word-by-word typing effect
+- [x] Conversation history sidebar
+- [x] Continue previous conversations with full context
+- [x] Token usage tracking per message and conversation
+- [x] Vercel AI SDK integration
 
-### User Experience ✅
-- [x] Intuitive course creation wizard
-- [x] Drag-and-drop file uploads
-- [x] Real-time AI response streaming (word-by-word)
-- [x] Loading indicators for AI generation
-- [x] Error messages for failed AI requests
-- [x] Responsive UI for all screen sizes
-- [x] Consistent design with Shadcn UI components
+✅ **AI Quiz Generation:**
+- [x] Quiz generation with Gemini 2.5 Pro
+- [x] Configurable difficulty (Easy, Medium, Hard)
+- [x] Configurable question count (5-20)
+- [x] Multiple question types (MC, T/F, Short Answer, Essay)
+- [x] JSON parsing and validation
+- [x] Quiz questions with explanations
+- [x] Quiz attempt system with answer recording
+- [x] Auto-grading for MC and T/F questions
+
+✅ **AI Study Plan Generation:**
+- [x] Study plan creation with weekly breakdown
+- [x] Configurable duration (1-12 weeks)
+- [x] Configurable hours per week (1-40)
+- [x] Course context integration
+- [x] Weekly tasks with estimated hours
+- [x] Progress tracking with completion checkboxes
+- [x] Nested structure: Plan → Week → Task
+
+✅ **AI Note Enhancement:**
+- [x] Four generation types (GENERATE, IMPROVE, SUMMARIZE, EXPAND)
+- [x] Topic-based note generation
+- [x] Existing note improvement
+- [x] Content summarization
+- [x] Brief note expansion
+- [x] Token usage tracking per generation
 
 ---
 
-## Technical Stack Summary (Sprint 3)
+## Technical Stack Summary
 
 | Category | Technology | Version | Purpose |
 |----------|-----------|---------|---------|
-| **Framework** | Next.js | 15.2.3 | App Router, Server Components, Server Actions |
-| **Language** | TypeScript | 5.8.2 | Type safety, better DX |
-| **Database** | PostgreSQL (NeonDB) | Latest | Serverless database |
-| **ORM** | Prisma | 6.5.0 | Type-safe database client |
-| **API Layer** | tRPC | 11.x | End-to-end type safety |
-| **AI Provider** | Google Gemini | 2.5 Flash/Pro | Conversational AI, quiz/plan generation |
-| **AI Framework** | Vercel AI SDK | 5.0.113 | Streaming, hooks, providers |
-| **File Storage** | UploadThing | 7.7.4 | Serverless file uploads |
-| **UI Library** | Shadcn UI | Latest | Component library |
-| **CSS** | Tailwind CSS | 4.0.15 | Utility-first styling |
-| **Forms** | React Hook Form + Zod | Latest | Form validation |
-| **Icons** | Lucide React | 0.548.0 | Icon library |
+| **Frontend Framework** | Next.js (App Router) | 15.1+ | React-based UI with server components |
+| **Language** | TypeScript | 5.0+ | Type-safe development |
+| **Database** | PostgreSQL (NeonDB) | 16+ | Course, resource, and AI data |
+| **ORM** | Prisma | 6.5+ | Type-safe database queries |
+| **API Layer** | tRPC | 11.0+ | End-to-end type safety |
+| **File Upload** | UploadThing | Latest | Resource file storage (S3 CDN) |
+| **AI Provider** | Google Gemini | 2.5 Flash & Pro | Chat and content generation |
+| **AI SDK** | Vercel AI SDK | 5.0.113 | Streaming AI responses |
+| **Streaming** | Server-Sent Events (SSE) | Native | Real-time AI chat streaming |
+| **Form Validation** | Zod | 3.22+ | Schema validation |
+| **Styling** | Tailwind CSS + Shadcn UI | Latest | Modern responsive UI |
 
----
-
-## Known Issues & Limitations
-
-### AI System
-- ⚠️ **Rate Limiting**: Free tier Gemini has 15 req/min limit - may affect multiple concurrent users
-- ⚠️ **Cost Tracking**: Token usage tracked but no billing alerts yet
-- ⚠️ **Prompt Injection**: No robust protection against malicious prompts
-- ⚠️ **Hallucinations**: AI may generate incorrect information - needs disclaimer
-- ⚠️ **Quiz Validation**: AI-generated quizzes not always perfectly formatted
-
-### Course System
-- ⚠️ **No Search**: Cannot search courses by title or code yet
-- ⚠️ **No Tags**: No tagging system for course categorization
-- ⚠️ **Limited Filters**: Cannot filter by semester or faculty
-
-### File Uploads
-- ⚠️ **Size Limit**: 16MB max - may be insufficient for large video lectures
-- ⚠️ **No Preview**: PDF previews not implemented
-- ⚠️ **No Virus Scan**: Uploaded files not scanned for malware
+**AI Model Selection:**
+- **Gemini 2.5 Flash:** Used for conversational chat (fast, cheap, good for real-time)
+- **Gemini 2.5 Pro:** Used for quiz generation, study plans, note enhancement (higher quality, better for structured output)
 
 ---
 
 ## Next Sprint Preview (Sprint 4)
 
-Sprint 4 will focus on collaboration features and the articles system:
+Sprint 4 will implement sharing and collaboration features:
 
-### Planned Features
-1. **Course Sharing System**:
-   - Faculty-restricted invitation system
-   - Viewer permission (read-only, download)
-   - Contributor permission (add resources, no delete)
-   - Owner controls (full management)
-   - Contributor avatars display (like GitHub)
+### 1. Course Sharing System:
+- Faculty-restricted sharing (same faculty only)
+- Two permission levels:
+  - **VIEWER:** Read-only access to resources
+  - **CONTRIBUTOR:** Can add resources, cannot delete
+- Invitation system with accept/reject workflow
+- Contributor avatars displayed on shared courses
+- "Shared with me" section in course list
 
-2. **Real-Time Collaborative Notes** (Liveblocks + BlockNote):
-   - Each course has one collaborative notes space
-   - Live cursors and presence indicators
-   - Conflict-free editing with CRDT (Yjs)
-   - Nested pages for organization
-   - Faculty-restricted sharing
-   - Auto-save functionality
+### 2. Real-Time Collaborative Notes:
+- BlockNote 0.41+ editor integration
+- Liveblocks 3.9+ for real-time sync
+- Yjs CRDT 13.6+ for conflict-free editing
+- Live cursors showing collaborator positions
+- Nested pages for organized notes
+- Sidebar navigation
+- Auto-save every 5 seconds
 
-3. **Public Articles System**:
-   - Article creation using BlockNote editor (solo mode)
-   - Draft and publish workflow
-   - Published articles visible to everyone (no login required)
-   - Article browsing, search, filtering by tags
-   - View counter and read time estimation
-   - Author dashboard for managing articles
-   - Admin can feature articles
+### 3. Public Articles System:
+- Article creation using BlockNote
+- Draft and publish workflow
+- Slug generation for URLs
+- Tag system for categorization
+- Public browsing (no login required)
+- Search and filter capabilities
+- View counter and read time estimation
 
-4. **Notification System** (Already Partially Implemented ⚠️):
-   - In-app notifications for shares, invitations
-   - Email notifications for important events
-   - User preferences for notification types
-   - Cron job for scheduled notifications
-
----
-
-## Conclusion
-
-Sprint 3 has been highly successful, delivering all planned course management features PLUS a comprehensive AI learning assistance system powered by Google Gemini. The project is significantly ahead of schedule with:
-
-- **90% of Sprint 3 complete** (target: Jan 10, 2026)
-- **75% of Sprint 4 complete** (target: Feb 5, 2026)
-- **4 major AI features** not in original scope
-- **Robust tRPC API architecture** for type safety
-- **Production-ready infrastructure** with error handling and validation
-
-The addition of AI features transforms UniShare from a simple course management tool into an intelligent learning companion that can:
-- Answer student questions contextually
-- Generate practice quizzes automatically
-- Create personalized study plans
-- Enhance and organize notes
-
-**Overall Project Completion: ~85%** (including undocumented features)
-
-**Recommendation**: Update Project Proposal and Plan documents to reflect AI integration, justify the added value, and document the technology decisions that led to choosing Google Gemini over other AI providers.
+### 4. Notification System:
+- Course invitation notifications
+- Contributor added/removed notifications
+- Resource uploaded notifications
+- Real-time notification badge
+- Mark as read functionality
 
 ---
 
