@@ -39,7 +39,7 @@ export function CourseCard({
   const colorClasses = getCourseColor(color);
 
   return (
-    <div className="group relative">
+    <div className="group relative h-full">
       {/* Favorite Button - Enhanced */}
       {onToggleFavorite && (
         <button
@@ -68,10 +68,10 @@ export function CourseCard({
         </button>
       )}
 
-      <Link href={`/courses/${id}`}>
+      <Link href={`/courses/${id}`} className="block h-full">
         <div
           className={cn(
-            "card-elevated hover-lift group relative overflow-hidden",
+            "card-elevated hover-lift group relative flex h-full flex-col overflow-hidden",
             "border-border hover:border-primary/30 border-2",
           )}
         >
@@ -125,11 +125,11 @@ export function CourseCard({
           </div>
 
           {/* Content Section - Enhanced */}
-          <div className="bg-card relative p-6">
+          <div className="bg-card relative flex flex-1 flex-col p-6">
             {/* Background Gradient */}
             <div className="to-muted/20 absolute inset-0 bg-gradient-to-b from-transparent" />
 
-            <div className="relative">
+            <div className="relative flex flex-1 flex-col">
               {/* Title with Gradient on Hover */}
               <h3 className="text-foreground group-hover:text-primary mb-2 line-clamp-1 text-xl font-bold transition-all duration-300">
                 {title}
@@ -172,7 +172,7 @@ export function CourseCard({
               )}
 
               {/* Stats Section - Enhanced with Icons */}
-              <div className="border-border flex items-center gap-5 border-t pt-4 text-sm">
+              <div className="border-border mt-auto flex items-center gap-5 border-t pt-4 text-sm">
                 <div className="text-muted-foreground group-hover:text-primary flex items-center gap-2 transition-colors">
                   <div className="bg-primary/10 group-hover:bg-primary/20 rounded-lg p-1.5 transition-colors">
                     <FileText className="text-primary h-4 w-4" />

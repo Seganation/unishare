@@ -4,7 +4,7 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { X, Search, UserPlus, Users } from "lucide-react";
+import { X, Search, UserPlus, Users, Share2 } from "lucide-react";
 import { Loader } from "~/components/ai-elements/loader";
 
 interface ShareTimetableModalProps {
@@ -48,26 +48,34 @@ export function ShareTimetableModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-900">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Share Timetable
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {timetableName}
-            </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="border-border bg-card w-full max-w-lg overflow-hidden rounded-3xl border-2 shadow-2xl">
+        {/* Header */}
+        <div className="bg-primary relative overflow-hidden px-6 py-8">
+          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+          <div className="relative flex items-center justify-between">
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <Share2 className="h-6 w-6 text-white/80" />
+                <span className="text-sm font-semibold uppercase tracking-wider text-white/80">
+                  Collaboration
+                </span>
+              </div>
+              <h2 className="text-3xl font-bold text-white">Share Timetable</h2>
+              <p className="mt-1 text-sm text-white/80">
+                {timetableName}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="rounded-full p-2 transition-all hover:bg-white/20"
+            >
+              <X className="h-6 w-6 text-white" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-full p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-          </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="p-6 space-y-4">
           {/* Role Selector */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -129,7 +137,7 @@ export function ShareTimetableModal({
           </div>
 
           {/* Search Results */}
-          <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+          <div className="border-border bg-card max-h-64 overflow-y-auto rounded-lg border-2">
             {isSearching && searchQuery.length >= 3 && (
               <div className="flex items-center justify-center p-8">
                 <Loader />
@@ -148,7 +156,7 @@ export function ShareTimetableModal({
                     {searchResults.map((user) => (
                       <div
                         key={user.id}
-                        className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                        className="hover:bg-accent flex items-center justify-between p-4 transition-colors"
                       >
                         <div className="flex items-center gap-3">
                           {user.profileImage ? (

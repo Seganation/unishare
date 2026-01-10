@@ -99,9 +99,9 @@ export function CourseForm({
       <div className="space-y-3">
         <Label
           htmlFor="title"
-          className="text-foreground flex items-center gap-2 text-sm font-bold"
+          className="text-foreground flex items-center gap-2 text-base font-bold md:text-lg"
         >
-          <Sparkles className="text-primary h-4 w-4" />
+          <Sparkles className="text-primary h-5 w-5" />
           Course Title <span className="text-destructive">*</span>
         </Label>
         <div className="relative">
@@ -112,7 +112,7 @@ export function CourseForm({
             placeholder="e.g., Data Structures & Algorithms"
             maxLength={100}
             className={cn(
-              "input-primary text-lg font-medium transition-all duration-300",
+              "input-primary h-14 text-xl font-medium transition-all duration-300",
               title.length > 0 && "border-primary ring-primary/20 ring-2",
             )}
             disabled={isLoading}
@@ -159,11 +159,11 @@ export function CourseForm({
       <div className="space-y-3">
         <Label
           htmlFor="description"
-          className="text-foreground flex items-center gap-2 text-sm font-bold"
+          className="text-foreground flex items-center gap-2 text-base font-bold md:text-lg"
         >
-          <Book className="text-primary h-4 w-4" />
+          <Book className="text-primary h-5 w-5" />
           Description{" "}
-          <span className="text-muted-foreground text-xs font-normal">
+          <span className="text-muted-foreground text-sm font-normal">
             (Optional)
           </span>
         </Label>
@@ -174,9 +174,9 @@ export function CourseForm({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add a brief description to help others understand what this course is about..."
             maxLength={500}
-            rows={4}
+            rows={5}
             className={cn(
-              "input-primary resize-none transition-all duration-300",
+              "input-primary text-lg resize-none p-5 transition-all duration-300",
               description.length > 0 && "border-primary ring-primary/20 ring-2",
             )}
             disabled={isLoading}
@@ -218,9 +218,9 @@ export function CourseForm({
 
       {/* Color Picker - Enhanced with Beautiful Swatches */}
       <div className="space-y-4">
-        <Label className="text-foreground flex items-center gap-2 text-sm font-bold">
-          <div className="bg-primary flex h-5 w-5 items-center justify-center rounded-full">
-            <div className="bg-primary-foreground h-3 w-3 rounded-full" />
+        <Label className="text-foreground flex items-center gap-2 text-base font-bold md:text-lg">
+          <div className="bg-primary flex h-6 w-6 items-center justify-center rounded-full">
+            <div className="bg-primary-foreground h-3.5 w-3.5 rounded-full" />
           </div>
           Choose a Color <span className="text-destructive">*</span>
         </Label>
@@ -254,9 +254,9 @@ export function CourseForm({
                   {/* Checkmark for Selected */}
                   {isSelected && (
                     <div className="animate-in zoom-in-50 absolute inset-0 flex items-center justify-center duration-300">
-                      <div className="glass flex h-8 w-8 items-center justify-center rounded-full shadow-2xl ring-2 ring-white/50">
+                      <div className="glass flex h-10 w-10 items-center justify-center rounded-full shadow-2xl ring-2 ring-white/50">
                         <Check
-                          className="h-5 w-5 font-bold text-white drop-shadow-lg"
+                          className="h-6 w-6 font-bold text-white drop-shadow-lg"
                           strokeWidth={3}
                         />
                       </div>
@@ -275,31 +275,31 @@ export function CourseForm({
         </div>
 
         {/* Selected Color Display */}
-        <div className="border-primary/30 bg-primary/5 flex items-center justify-between rounded-lg border px-4 py-2.5">
+        <div className="border-primary/30 bg-primary/5 flex items-center justify-between rounded-lg border px-5 py-3.5">
           <div className="flex items-center gap-3">
             <div
-              className="ring-background h-6 w-6 rounded-full shadow-md ring-2"
+              className="ring-background h-7 w-7 rounded-full shadow-md ring-2"
               style={{ backgroundColor: selectedColor }}
             />
-            <span className="text-foreground text-sm font-semibold">
+            <span className="text-foreground text-base font-semibold">
               Selected Color:{" "}
               <span className="text-primary">
                 {getCourseColor(selectedColor).name}
               </span>
             </span>
           </div>
-          <Sparkles className="text-primary h-4 w-4" />
+          <Sparkles className="text-primary h-5 w-5" />
         </div>
       </div>
 
       {/* Live Preview Card - Matches Enhanced CourseCard Design */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Label className="text-foreground flex items-center gap-2 text-sm font-bold">
-            <Sparkles className="text-primary h-4 w-4" />
+          <Label className="text-foreground flex items-center gap-2 text-base font-bold md:text-lg">
+            <Sparkles className="text-primary h-5 w-5" />
             Live Preview
           </Label>
-          <span className="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-medium">
+          <span className="bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-medium">
             Real-time
           </span>
         </div>
@@ -393,7 +393,7 @@ export function CourseForm({
       </div>
 
       {/* Action Buttons - Enhanced */}
-      <div className="border-border flex items-center gap-4 border-t-2 pt-6">
+      <div className="border-border flex items-center gap-6 border-t-2 pt-10">
         {onCancel && (
           <Button
             type="button"
@@ -401,14 +401,14 @@ export function CourseForm({
             onClick={onCancel}
             disabled={isLoading}
             className={cn(
-              "h-12 flex-1 text-base font-semibold",
+              "h-14 flex-1 text-lg font-semibold",
               "border-border hover:border-primary/50 border-2",
               "hover:bg-muted active:scale-95",
               "shadow-sm transition-all duration-200 hover:shadow-md",
               "focus-visible:ring-primary/20 focus-visible:ring-4",
             )}
           >
-            <X className="mr-2 h-5 w-5" />
+            <X className="mr-2 h-6 w-6" />
             Cancel
           </Button>
         )}
@@ -416,7 +416,7 @@ export function CourseForm({
           type="submit"
           disabled={isLoading || !title.trim()}
           className={cn(
-            "h-12 flex-1 text-base font-bold",
+            "h-14 flex-1 text-lg font-bold",
             "bg-primary hover:bg-primary/90",
             "active:scale-95 disabled:cursor-not-allowed disabled:opacity-50",
             "shadow-lg transition-all duration-300 hover:shadow-xl",

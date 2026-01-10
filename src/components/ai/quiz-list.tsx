@@ -17,9 +17,10 @@ import { formatDistanceToNow } from "date-fns";
 interface QuizListProps {
   courseId?: string;
   onSelectQuiz?: (quizId: string) => void;
+  onViewResults?: (quizId: string) => void;
 }
 
-export function QuizList({ courseId, onSelectQuiz }: QuizListProps) {
+export function QuizList({ courseId, onSelectQuiz, onViewResults }: QuizListProps) {
   const {
     data: quizzes,
     isLoading,
@@ -137,7 +138,7 @@ export function QuizList({ courseId, onSelectQuiz }: QuizListProps) {
                 {quiz.attempts.length > 0 && (
                   <Button
                     variant="outline"
-                    onClick={() => onSelectQuiz?.(quiz.id)}
+                    onClick={() => onViewResults?.(quiz.id)}
                   >
                     View Results
                   </Button>

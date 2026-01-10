@@ -775,4 +775,64 @@ export const timetableRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  /**
+   * Set default timetable for the current user
+   */
+  setDefaultTimetable: protectedProcedure
+    .input(
+      z.object({
+        timetableId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Verify user has access to this timetable
+      const timetable = await ctx.db.timetable.findUnique({
+        where: { id: input.timetableId },
+        include: {
+          collaborators: {
+            where: { userId: userId, status: "ACCEPTED" },
+          },
+        },
+      });
+
+      if (!timetable) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Timetable not found",
+        });
+      }
+
+      const hasAccess =
+        timetable.createdBy === userId || timetable.collaborators.length > 0;
+
+      if (!hasAccess) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have access to this timetable",
+        });
+      }
+
+      // Update user's default timetable
+      await ctx.db.user.update({
+        where: { id: userId },
+        data: { defaultTimetableId: input.timetableId },
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * Get the current user's default timetable ID
+   */
+  getDefaultTimetableId: protectedProcedure.query(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { defaultTimetableId: true },
+    });
+
+    return user?.defaultTimetableId ?? null;
+  }),
 });

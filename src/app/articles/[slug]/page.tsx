@@ -37,10 +37,10 @@ export default function ArticleDetailPage() {
   const router = useRouter();
   const slug = params.slug as string;
 
-  // Fetch article
+  // Fetch article - only if slug is a valid string
   const { data: article, isLoading } = api.article.getBySlug.useQuery(
-    { slug },
-    { enabled: !!slug }
+    { slug: slug ?? "" },
+    { enabled: typeof slug === "string" && slug.length > 0 }
   );
 
   // Increment views mutation

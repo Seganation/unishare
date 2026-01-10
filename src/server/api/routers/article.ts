@@ -42,7 +42,7 @@ export const articleRouter = createTRPCRouter({
         title: z.string().min(1, "Title is required").max(200),
         excerpt: z.string().max(500).optional(),
         coverImage: z.string().url().optional(),
-        content: z.any().default({}),
+        content: z.any().default([]),
         tags: z.array(z.string()).optional(),
       }),
     )
@@ -65,20 +65,20 @@ export const articleRouter = createTRPCRouter({
       // Create or find tags
       const tagConnections = input.tags
         ? await Promise.all(
-            input.tags.map(async (tagName) => {
-              const tagSlug = generateSlug(tagName);
-              // Find or create tag
-              const tag = await ctx.db.tag.upsert({
-                where: { slug: tagSlug },
-                create: {
-                  name: tagName,
-                  slug: tagSlug,
-                },
-                update: {},
-              });
-              return { id: tag.id };
-            })
-          )
+          input.tags.map(async (tagName) => {
+            const tagSlug = generateSlug(tagName);
+            // Find or create tag
+            const tag = await ctx.db.tag.upsert({
+              where: { slug: tagSlug },
+              create: {
+                name: tagName,
+                slug: tagSlug,
+              },
+              update: {},
+            });
+            return { id: tag.id };
+          })
+        )
         : undefined;
 
       // Create article
@@ -94,8 +94,8 @@ export const articleRouter = createTRPCRouter({
           authorId: ctx.session.user.id,
           tags: tagConnections
             ? {
-                connect: tagConnections,
-              }
+              connect: tagConnections,
+            }
             : undefined,
         },
         include: {
@@ -176,19 +176,19 @@ export const articleRouter = createTRPCRouter({
       // Create or find tags if provided
       const tagConnections = input.tags
         ? await Promise.all(
-            input.tags.map(async (tagName) => {
-              const tagSlug = generateSlug(tagName);
-              const tag = await ctx.db.tag.upsert({
-                where: { slug: tagSlug },
-                create: {
-                  name: tagName,
-                  slug: tagSlug,
-                },
-                update: {},
-              });
-              return { id: tag.id };
-            })
-          )
+          input.tags.map(async (tagName) => {
+            const tagSlug = generateSlug(tagName);
+            const tag = await ctx.db.tag.upsert({
+              where: { slug: tagSlug },
+              create: {
+                name: tagName,
+                slug: tagSlug,
+              },
+              update: {},
+            });
+            return { id: tag.id };
+          })
+        )
         : undefined;
 
       // Update article
@@ -203,9 +203,9 @@ export const articleRouter = createTRPCRouter({
             : undefined,
           tags: tagConnections
             ? {
-                set: [], // Clear existing tags
-                connect: tagConnections,
-              }
+              set: [], // Clear existing tags
+              connect: tagConnections,
+            }
             : undefined,
         },
         include: {

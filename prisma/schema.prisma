@@ -41,6 +41,8 @@ model User {
   events               Event[]
   articles             Article[]
   favorites            Favorite[]
+  defaultTimetableId   String?
+  defaultTimetable     Timetable? @relation("DefaultTimetable", fields: [defaultTimetableId], references: [id], onDelete: SetNull)
 
   // AI relations
   aiConversations      AiConversation[]
@@ -261,6 +263,7 @@ model Timetable {
   creator     User                    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
   events      Event[]
   collaborators TimetableCollaborator[]
+  defaultForUsers User[]              @relation("DefaultTimetable")
   createdAt   DateTime                @default(now())
   updatedAt   DateTime                @updatedAt
 

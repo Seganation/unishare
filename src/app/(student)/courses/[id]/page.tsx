@@ -13,10 +13,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { QuizList } from "~/components/ai/quiz-list";
 import { QuizTaker } from "~/components/ai/quiz-taker";
 import { QuizResults } from "~/components/ai/quiz-results";
+import { QuizAttemptsList } from "~/components/ai/quiz-attempts-list";
 import { QuizGeneratorForm } from "~/components/ai/quiz-generator-form";
-import { StudyPlanList } from "~/components/ai/study-plan-list";
-import { StudyPlanViewer } from "~/components/ai/study-plan-viewer";
-import { StudyPlanGeneratorForm } from "~/components/ai/study-plan-generator-form";
+// Study Plans - Commented out (not in use)
+// import { StudyPlanList } from "~/components/ai/study-plan-list";
+// import { StudyPlanViewer } from "~/components/ai/study-plan-viewer";
+// import { StudyPlanGeneratorForm } from "~/components/ai/study-plan-generator-form";
 import {
   ArrowLeft,
   Plus,
@@ -43,10 +45,12 @@ type View =
   | "quizzes"
   | "quiz-generator"
   | "quiz-taker"
-  | "quiz-results"
-  | "study-plans"
-  | "study-plan-generator"
-  | "study-plan-viewer";
+  | "quiz-attempts-list"
+  | "quiz-results";
+  // Study Plans - Commented out (not in use)
+  // | "study-plans"
+  // | "study-plan-generator"
+  // | "study-plan-viewer";
 
 export default function CourseDetailPage() {
   const params = useParams();
@@ -140,6 +144,17 @@ export default function CourseDetailPage() {
   };
 
   const handleQuizComplete = (attemptId: string) => {
+    setSelectedAttemptId(attemptId);
+    setQuizIdForResults(selectedQuizId);
+    setView("quiz-results");
+  };
+
+  const handleViewResults = (quizId: string) => {
+    setSelectedQuizId(quizId);
+    setView("quiz-attempts-list");
+  };
+
+  const handleViewSpecificAttempt = (attemptId: string) => {
     setSelectedAttemptId(attemptId);
     setQuizIdForResults(selectedQuizId);
     setView("quiz-results");
@@ -374,7 +389,11 @@ export default function CourseDetailPage() {
                     Generate Quiz
                   </Button>
                 </div>
-                <QuizList courseId={courseId} onSelectQuiz={handleQuizSelect} />
+                <QuizList
+                  courseId={courseId}
+                  onSelectQuiz={handleQuizSelect}
+                  onViewResults={handleViewResults}
+                />
               </>
             )}
             {view === "quiz-generator" && (
@@ -394,13 +413,21 @@ export default function CourseDetailPage() {
                 onComplete={handleQuizComplete}
               />
             )}
+            {view === "quiz-attempts-list" && selectedQuizId && (
+              <QuizAttemptsList
+                quizId={selectedQuizId}
+                onBack={() => setView("quizzes")}
+                onViewAttempt={handleViewSpecificAttempt}
+                onRetake={() => setView("quiz-taker")}
+              />
+            )}
             {view === "quiz-results" &&
               selectedAttemptId &&
               quizIdForResults && (
                 <QuizResults
                   quizId={quizIdForResults}
                   attemptId={selectedAttemptId}
-                  onBack={() => setView("quizzes")}
+                  onBack={() => setView("quiz-attempts-list")}
                   onRetake={() => setView("quiz-taker")}
                 />
               )}

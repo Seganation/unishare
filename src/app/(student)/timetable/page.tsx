@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import type { View } from "react-big-calendar";
@@ -12,7 +12,6 @@ import {
   addDays,
   setHours,
   setMinutes,
-  startOfDay,
 } from "date-fns";
 import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -24,13 +23,19 @@ import {
   Calendar as CalendarIcon,
   Share2,
   Eye,
-  Trash2,
   AlertTriangle,
+  Settings,
+  Users,
+  Star,
+  Sparkles,
 } from "lucide-react";
 import { CreateTimetableModal } from "~/components/timetable/create-timetable-modal";
 import { CreateEventModal } from "~/components/timetable/create-event-modal";
 import { ShareTimetableModal } from "~/components/timetable/share-timetable-modal";
 import { EventDetailsModal } from "~/components/timetable/event-details-modal";
+import { InvitationsBanner } from "~/components/timetable/invitations-banner";
+import { ManageCollaboratorsModal } from "~/components/timetable/manage-collaborators-modal";
+import { TimetableSettingsModal } from "~/components/timetable/timetable-settings-modal";
 import { Loader } from "~/components/ai-elements/loader";
 import type { Event as PrismaEvent, Course } from "@prisma/client";
 
@@ -115,7 +120,7 @@ function CustomEvent({
 }) {
   return (
     <div className="flex h-full w-full items-center justify-between gap-1 overflow-hidden">
-      <span className="min-w-0 flex-1 truncate text-xs leading-tight font-medium">
+      <span className="min-w-0 flex-1 truncate text-xs font-medium leading-tight">
         {event.title}
       </span>
       <button
@@ -135,22 +140,16 @@ function CustomEvent({
 export default function TimetablePage() {
   const [view, setView] = useState<View>("week");
   const [date, setDate] = useState(new Date());
-  const [selectedTimetableId, setSelectedTimetableId] = useState<string | null>(
-    null,
-  );
+  const [selectedTimetableId, setSelectedTimetableId] = useState<string | null>(null);
   const [showCreateTimetable, setShowCreateTimetable] = useState(false);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showCollaboratorsModal, setShowCollaboratorsModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<
     (PrismaEvent & { course: Course }) | null
   >(null);
   const [showEventDetails, setShowEventDetails] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState<
-    (PrismaEvent & { course: Course }) | null
-  >(null);
 
   const {
     data: timetables,
@@ -158,12 +157,29 @@ export default function TimetablePage() {
     refetch,
   } = api.timetable.getUserTimetables.useQuery();
 
-  // Select first timetable by default
-  const selectedTimetable = selectedTimetableId
-    ? [...(timetables?.owned ?? []), ...(timetables?.shared ?? [])].find(
-        (t) => t.id === selectedTimetableId,
-      )
-    : timetables?.owned?.[0];
+  // TODO: Get default timetable from user preferences (requires backend)
+  // For now, we'll use local state or first timetable
+  const defaultTimetableId = null; // This should come from api.timetable.getDefaultTimetableId
+
+  // Auto-select default timetable or first timetable
+  useEffect(() => {
+    if (!selectedTimetableId && timetables) {
+      if (defaultTimetableId) {
+        setSelectedTimetableId(defaultTimetableId);
+      } else if (timetables.owned?.[0]) {
+        setSelectedTimetableId(timetables.owned[0].id);
+      } else if (timetables.shared?.[0]) {
+        setSelectedTimetableId(timetables.shared[0].id);
+      }
+    }
+  }, [timetables, selectedTimetableId, defaultTimetableId]);
+
+  // Find selected timetable
+  const allTimetables = [
+    ...(timetables?.owned ?? []),
+    ...(timetables?.shared ?? []),
+  ];
+  const selectedTimetable = allTimetables.find((t) => t.id === selectedTimetableId);
 
   // Convert events to calendar format with recurring instances
   const calendarEvents: CalendarEvent[] = [];
@@ -207,10 +223,12 @@ export default function TimetablePage() {
       )
     : false;
 
+  const isOwner = selectedTimetable
+    ? selectedTimetable.createdBy === selectedTimetable.creator.id
+    : false;
+
   // Detect conflicts in the selected timetable
-  const conflicts = selectedTimetable
-    ? detectConflicts(selectedTimetable.events)
-    : [];
+  const conflicts = selectedTimetable ? detectConflicts(selectedTimetable.events) : [];
   const hasConflicts = conflicts.length > 0;
 
   // Mutation for updating event when dragged
@@ -219,18 +237,8 @@ export default function TimetablePage() {
       void refetch();
     },
     onError: (error) => {
-      // Show error toast or revert
       console.error("Failed to update event:", error);
       void refetch(); // Revert by refetching
-    },
-  });
-
-  // Mutation for deleting event
-  const deleteEventMutation = api.timetable.deleteEvent.useMutation({
-    onSuccess: () => {
-      void refetch();
-      setShowDeleteDialog(false);
-      setEventToDelete(null);
     },
   });
 
@@ -244,9 +252,6 @@ export default function TimetablePage() {
     start: Date;
     end: Date;
   }) => {
-    setIsDragging(false);
-    setDraggedEventId(null);
-
     if (!canEdit) return;
 
     const newDayOfWeek = getDay(start);
@@ -292,9 +297,6 @@ export default function TimetablePage() {
     start: Date;
     end: Date;
   }) => {
-    setIsDragging(false);
-    setDraggedEventId(null);
-
     if (!canEdit) return;
 
     const newStartTime = format(start, "HH:mm");
@@ -331,308 +333,385 @@ export default function TimetablePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader size={64} />
+      <div className="bg-background flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <Loader size={64} />
+          <p className="mt-4 text-lg font-semibold text-gray-600 dark:text-gray-400">
+            Loading your timetables...
+          </p>
+        </div>
       </div>
     );
   }
 
-  const allTimetables = [
-    ...(timetables?.owned ?? []),
-    ...(timetables?.shared ?? []),
-  ];
-
   return (
     <div className="bg-background min-h-screen">
-      {/* Header */}
-      <div className="bg-primary relative overflow-hidden px-4 py-12">
-        <div className="pattern-dots absolute inset-0 opacity-10" />
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="bg-primary-foreground/5 absolute -top-20 -right-20 h-64 w-64 rounded-full backdrop-blur-3xl" />
-          <div className="bg-primary-foreground/5 absolute -bottom-20 -left-20 h-80 w-80 rounded-full backdrop-blur-3xl" />
-        </div>
+      {/* Main Content with Sidebar Layout */}
+      <div className="container mx-auto max-w-7xl px-4 py-6">
+        {/* Invitations Banner */}
+        <InvitationsBanner />
 
-        <div className="relative container mx-auto max-w-7xl">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="mb-3 flex items-center gap-2">
-                <CalendarIcon className="h-6 w-6 text-yellow-300" />
-                <span className="text-primary-foreground/70 text-sm font-semibold tracking-wider uppercase">
-                  Schedule
-                </span>
-              </div>
-              <h1 className="text-primary-foreground mb-3 text-4xl font-black drop-shadow-lg md:text-5xl">
-                My Timetables
-              </h1>
-              <p className="text-primary-foreground/80 text-lg">
-                Manage your class schedule and share with friends
-              </p>
-            </div>
-
-            <Button
-              size="lg"
-              variant="secondary"
-              onClick={() => setShowCreateTimetable(true)}
-              className="group h-14 px-8 text-base font-bold shadow-2xl"
-            >
-              <Plus className="mr-2 h-5 w-5 transition-transform group-hover:rotate-90" />
-              Create Timetable
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="container mx-auto max-w-7xl px-4 py-8">
         {allTimetables.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center dark:border-gray-700 dark:bg-gray-800/50">
-            <CalendarIcon className="mb-4 h-16 w-16 text-gray-400 dark:text-gray-500" />
-            <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
+          /* Empty State */
+          <div className="border-border bg-card mx-auto flex max-w-2xl flex-col items-center justify-center rounded-2xl border-2 border-dashed p-16 text-center shadow-lg">
+            <div className="bg-primary/10 mb-6 flex h-24 w-24 items-center justify-center rounded-full">
+              <CalendarIcon className="text-primary h-12 w-12" />
+            </div>
+            <h3 className="mb-3 text-3xl font-bold text-gray-900 dark:text-white">
               No Timetables Yet
             </h3>
-            <p className="mb-6 text-gray-600 dark:text-gray-400">
-              Create your first timetable to start managing your class schedule
+            <p className="mb-8 text-lg text-gray-600 dark:text-gray-400">
+              Create your first timetable to start organizing your class schedule
             </p>
-            <Button onClick={() => setShowCreateTimetable(true)} size="lg">
+            <Button
+              onClick={() => setShowCreateTimetable(true)}
+              size="lg"
+              className="bg-primary text-primary-foreground px-8 text-base font-bold shadow-lg hover:scale-105"
+            >
               <Plus className="mr-2 h-5 w-5" />
               Create Your First Timetable
             </Button>
           </div>
         ) : (
-          <>
-            {/* Course Colors Legend - Simple & Clean */}
-            {selectedTimetable && selectedTimetable.events.length > 0 && (
-              <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
-                <h4 className="mb-3 text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Course Colors
-                </h4>
-                <div className="flex flex-wrap gap-3">
-                  {Array.from(
-                    new Set(selectedTimetable.events.map((e) => e.course.id)),
-                  ).map((courseId) => {
-                    const event = selectedTimetable.events.find(
-                      (e) => e.course.id === courseId,
-                    );
-                    if (!event) return null;
-                    return (
-                      <div key={courseId} className="flex items-center gap-2">
-                        <div
-                          className="h-3 w-3 rounded-sm"
-                          style={{ backgroundColor: event.course.color }}
-                        />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">
-                          {event.course.title}
-                        </span>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+            {/* Sidebar */}
+            <aside className="lg:col-span-1">
+              <div className="bg-card sticky top-6 space-y-4 rounded-xl border p-4 shadow-lg">
+                {/* Header with Create Button */}
+                <div className="flex items-center justify-between border-b pb-3">
+                  <h2 className="flex items-center gap-2 text-lg font-bold">
+                    <CalendarIcon className="h-5 w-5 text-primary" />
+                    Timetables
+                  </h2>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowCreateTimetable(true)}
+                    className="h-8 w-8 p-0"
+                    title="Create Timetable"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Timetable Navigation */}
+                <div className="space-y-3">
+                  {/* My Timetables */}
+                  {timetables?.owned && timetables.owned.length > 0 && (
+                    <div>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        My Timetables
+                      </p>
+                      <div className="space-y-1">
+                        {timetables.owned.map((timetable) => {
+                          const isSelected = selectedTimetableId === timetable.id;
+                          const isDefault = defaultTimetableId === timetable.id;
+                          return (
+                            <button
+                              key={timetable.id}
+                              onClick={() => setSelectedTimetableId(timetable.id)}
+                              className={`w-full text-left rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                                isSelected
+                                  ? "bg-primary text-primary-foreground shadow-sm"
+                                  : "hover:bg-accent text-foreground"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="flex items-center gap-1.5 truncate">
+                                  {isDefault && (
+                                    <Star
+                                      className={`h-3.5 w-3.5 flex-shrink-0 ${
+                                        isSelected
+                                          ? "fill-current text-current"
+                                          : "fill-amber-500 text-amber-500"
+                                      }`}
+                                    />
+                                  )}
+                                  <span className="truncate">{timetable.name}</span>
+                                </span>
+                                <span
+                                  className={`text-xs flex-shrink-0 ${
+                                    isSelected ? "opacity-80" : "text-muted-foreground"
+                                  }`}
+                                >
+                                  {timetable.events.length}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                    </div>
+                  )}
 
-            {/* Conflict Warning */}
-            {hasConflicts && (
-              <div className="mb-6 rounded-lg border-2 border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-amber-900 dark:text-amber-100">
-                      Schedule Conflicts Detected
-                    </h4>
-                    <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
-                      {conflicts.length} time conflict
-                      {conflicts.length > 1 ? "s" : ""} found. The following
-                      classes overlap:
-                    </p>
-                    <ul className="mt-2 space-y-1 text-sm text-amber-800 dark:text-amber-200">
-                      {conflicts.slice(0, 3).map((conflict, idx) => (
-                        <li key={idx} className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {conflict.event1.course.title} (
-                            {conflict.event1.startTime} -{" "}
-                            {conflict.event1.endTime})
-                          </span>
-                          <span>↔</span>
-                          <span className="font-medium">
-                            {conflict.event2.course.title} (
-                            {conflict.event2.startTime} -{" "}
-                            {conflict.event2.endTime})
-                          </span>
-                        </li>
-                      ))}
-                      {conflicts.length > 3 && (
-                        <li className="text-xs italic">
-                          ... and {conflicts.length - 3} more conflict
-                          {conflicts.length - 3 > 1 ? "s" : ""}
-                        </li>
+                  {/* Shared with Me */}
+                  {timetables?.shared && timetables.shared.length > 0 && (
+                    <div>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Shared with Me
+                      </p>
+                      <div className="space-y-1">
+                        {timetables.shared.map((timetable) => {
+                          const isSelected = selectedTimetableId === timetable.id;
+                          const isDefault = defaultTimetableId === timetable.id;
+                          return (
+                            <button
+                              key={timetable.id}
+                              onClick={() => setSelectedTimetableId(timetable.id)}
+                              className={`w-full text-left rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                                isSelected
+                                  ? "bg-primary text-primary-foreground shadow-sm"
+                                  : "hover:bg-accent text-foreground"
+                              }`}
+                            >
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="flex items-center gap-1.5 truncate">
+                                    {isDefault && (
+                                      <Star
+                                        className={`h-3.5 w-3.5 flex-shrink-0 ${
+                                          isSelected
+                                            ? "fill-current text-current"
+                                            : "fill-amber-500 text-amber-500"
+                                        }`}
+                                      />
+                                    )}
+                                    <span className="truncate">{timetable.name}</span>
+                                  </span>
+                                  <span
+                                    className={`text-xs flex-shrink-0 ${
+                                      isSelected ? "opacity-80" : "text-muted-foreground"
+                                    }`}
+                                  >
+                                    {timetable.events.length}
+                                  </span>
+                                </div>
+                                <p
+                                  className={`text-xs truncate ${
+                                    isSelected ? "opacity-70" : "text-muted-foreground"
+                                  }`}
+                                >
+                                  by {timetable.creator.name}
+                                </p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected Timetable Info */}
+                {selectedTimetable && (
+                  <>
+                    <div className="border-t pt-3 space-y-3">
+                      {/* Timetable Name and Badges */}
+                      <div>
+                        <h3 className="text-sm font-bold mb-2">Selected Timetable</h3>
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold text-foreground break-words">
+                            {selectedTimetable.name}
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {defaultTimetableId === selectedTimetable.id && (
+                              <div className="flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-2 py-0.5 text-xs font-semibold text-white">
+                                <Sparkles className="h-3 w-3" />
+                                Default
+                              </div>
+                            )}
+                            {!isOwner && (
+                              <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                                <Eye className="h-3 w-3" />
+                                {canEdit ? "Contributor" : "Viewer"}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="space-y-2">
+                        {canEdit && (
+                          <Button
+                            onClick={() => setShowCreateEvent(true)}
+                            size="sm"
+                            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+                          >
+                            <Plus className="mr-1.5 h-4 w-4" />
+                            Add Class
+                          </Button>
+                        )}
+                        <Button
+                          onClick={() => setShowCollaboratorsModal(true)}
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                        >
+                          <Users className="mr-1.5 h-4 w-4" />
+                          Collaborators
+                        </Button>
+                        {isOwner && (
+                          <Button
+                            onClick={() => setShowShareModal(true)}
+                            size="sm"
+                            variant="outline"
+                            className="w-full"
+                          >
+                            <Share2 className="mr-1.5 h-4 w-4" />
+                            Share
+                          </Button>
+                        )}
+                        <Button
+                          onClick={() => setShowSettingsModal(true)}
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                        >
+                          <Settings className="mr-1.5 h-4 w-4" />
+                          Settings
+                        </Button>
+                      </div>
+
+                      {/* Conflict Warning - Compact */}
+                      {hasConflicts && (
+                        <div className="rounded-lg border-2 border-amber-500 bg-amber-50 p-3 dark:bg-amber-950/20">
+                          <div className="flex items-start gap-2">
+                            <AlertTriangle className="h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-amber-900 dark:text-amber-100">
+                                {conflicts.length} Conflict{conflicts.length > 1 ? "s" : ""}
+                              </p>
+                              <p className="text-xs text-amber-700 dark:text-amber-300">
+                                Classes are overlapping
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       )}
-                    </ul>
-                  </div>
-                </div>
+
+                      {/* Read-Only Access Info - Compact */}
+                      {!canEdit && (
+                        <div className="rounded-lg border-2 border-primary bg-primary/10 p-3">
+                          <div className="flex items-start gap-2">
+                            <Eye className="h-4 w-4 flex-shrink-0 text-primary" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-foreground">
+                                View-Only Access
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Contact owner for edit access
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Course Colors Legend - Compact */}
+                      {selectedTimetable.events.length > 0 && (
+                        <div>
+                          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            Course Colors
+                          </h4>
+                          <div className="space-y-1.5">
+                            {Array.from(
+                              new Set(selectedTimetable.events.map((e) => e.course.id)),
+                            ).map((courseId) => {
+                              const event = selectedTimetable.events.find(
+                                (e) => e.course.id === courseId,
+                              );
+                              if (!event) return null;
+                              return (
+                                <div
+                                  key={courseId}
+                                  className="flex items-center gap-2"
+                                >
+                                  <div
+                                    className="h-3 w-3 flex-shrink-0 rounded shadow-sm"
+                                    style={{ backgroundColor: event.course.color }}
+                                  />
+                                  <span className="text-xs font-medium text-foreground truncate">
+                                    {event.course.title}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
-            )}
+            </aside>
 
-            {/* Timetable Selector & Actions */}
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <select
-                value={selectedTimetable?.id ?? ""}
-                onChange={(e) => setSelectedTimetableId(e.target.value)}
-                className="rounded-lg border-2 border-gray-300 bg-white px-4 py-2 font-semibold text-gray-900 shadow-sm transition-all hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-indigo-800"
-              >
-                {timetables?.owned && timetables.owned.length > 0 && (
-                  <optgroup label="My Timetables">
-                    {timetables.owned.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name} ({t.events.length} classes)
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-                {timetables?.shared && timetables.shared.length > 0 && (
-                  <optgroup label="Shared with Me">
-                    {timetables.shared.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name} - by {t.creator.name} ({t.events.length}{" "}
-                        classes)
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-              </select>
-
-              <div className="flex gap-2">
-                {canEdit && (
-                  <Button
-                    onClick={() => setShowCreateEvent(true)}
-                    variant="default"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Class
-                  </Button>
-                )}
-                {selectedTimetable?.createdBy ===
-                  selectedTimetable?.creator.id && (
-                  <Button
-                    onClick={() => setShowShareModal(true)}
-                    variant="outline"
-                  >
-                    <Share2 className="mr-2 h-4 w-4" />
-                    Share
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Calendar */}
-            <div className="relative rounded-xl border-2 border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-              <DraggableCalendar
-                localizer={localizer}
-                events={calendarEvents}
-                startAccessor="start"
-                endAccessor="end"
-                style={{ height: 700 }}
-                date={date}
-                onNavigate={(newDate) => setDate(newDate)}
-                view={view}
-                onView={(newView) => setView(newView)}
-                views={["week", "work_week", "day"]}
-                defaultView="week"
-                step={30}
-                timeslots={2}
-                min={new Date(2025, 0, 1, 7, 0)} // 7 AM
-                max={new Date(2025, 0, 1, 22, 0)} // 10 PM
-                // Drag and Drop handlers
-                onEventDrop={handleEventDrop as any}
-                onEventResize={handleEventResize as any}
-                onDragStart={(args: any) => {
-                  if (canEdit && args.event) {
-                    setIsDragging(true);
-                    setDraggedEventId(args.event.resource.id);
-                  }
-                }}
-                resizable={canEdit}
-                draggableAccessor={() => canEdit}
-                // Custom event component with view icon
-                components={{
-                  event: (props) => (
-                    <CustomEvent
-                      event={props.event}
-                      onViewClick={(event) => {
-                        setSelectedEvent(event.resource);
-                        setShowEventDetails(true);
-                      }}
-                    />
-                  ),
-                }}
-                eventPropGetter={(event) => ({
-                  style: {
-                    backgroundColor: event.resource.course.color,
-                    borderColor: event.resource.course.color,
-                    color: "white",
-                    borderRadius: "6px",
-                    border: "none",
-                    padding: "4px 6px",
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    cursor: canEdit ? "move" : "default",
-                    transition: "all 0.2s",
-                    overflow: "hidden",
-                    display: "flex",
-                    alignItems: "center",
-                  },
-                })}
-                formats={{
-                  dayFormat: (date, culture, localizer) =>
-                    localizer?.format(date, "EEE dd", culture) ?? "",
-                  dayHeaderFormat: (date, culture, localizer) =>
-                    localizer?.format(date, "EEEE MMM dd", culture) ?? "",
-                }}
-                messages={{
-                  work_week: "Mon-Fri",
-                }}
-              />
-
-              {/* Drag-to-Delete Trash Zone - Inside Calendar */}
-              {/* {isDragging && canEdit && (
-                <div
-                  className="animate-in fade-in zoom-in-50 absolute right-4 bottom-4 z-50 duration-200"
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.currentTarget.classList.add("scale-110");
-                  }}
-                  onDragLeave={(e) => {
-                    e.currentTarget.classList.remove("scale-110");
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.currentTarget.classList.remove("scale-110");
-
-                    if (draggedEventId) {
-                      const event = selectedTimetable?.events.find(
-                        (evt) => evt.id === draggedEventId,
-                      );
-                      if (event) {
-                        setEventToDelete(event);
-                        setShowDeleteDialog(true);
-                      }
-                    }
-
-                    setIsDragging(false);
-                    setDraggedEventId(null);
-                  }}
-                >
-                  <div className="flex h-20 w-20 flex-col items-center justify-center rounded-xl border-4 border-dashed border-red-400 bg-red-50 shadow-2xl transition-all hover:border-red-500 hover:bg-red-100 dark:border-red-600 dark:bg-red-900/40 dark:hover:border-red-500 dark:hover:bg-red-900/60">
-                    <Trash2 className="h-8 w-8 text-red-500 dark:text-red-400" />
-                    <span className="mt-1 text-[10px] font-bold text-red-600 dark:text-red-400">
-                      Delete
-                    </span>
-                  </div>
+            {/* Main Calendar Area */}
+            <main className="lg:col-span-3">
+              {selectedTimetable && (
+                <div className="border-border bg-card relative overflow-hidden rounded-xl border shadow-lg">
+                  <DraggableCalendar
+                    localizer={localizer}
+                    events={calendarEvents}
+                    startAccessor="start"
+                    endAccessor="end"
+                    style={{ height: "calc(100vh - 120px)", minHeight: 600 }}
+                    date={date}
+                    onNavigate={(newDate) => setDate(newDate)}
+                    view={view}
+                    onView={(newView) => setView(newView)}
+                    views={["week", "work_week", "day"]}
+                    defaultView="week"
+                    step={30}
+                    timeslots={2}
+                    min={new Date(2025, 0, 1, 7, 0)} // 7 AM
+                    max={new Date(2025, 0, 1, 22, 0)} // 10 PM
+                    // Drag and Drop handlers
+                    onEventDrop={handleEventDrop as any}
+                    onEventResize={handleEventResize as any}
+                    resizable={canEdit}
+                    draggableAccessor={() => canEdit}
+                    // Custom event component with view icon
+                    components={{
+                      event: (props) => (
+                        <CustomEvent
+                          event={props.event}
+                          onViewClick={(event) => {
+                            setSelectedEvent(event.resource);
+                            setShowEventDetails(true);
+                          }}
+                        />
+                      ),
+                    }}
+                    eventPropGetter={(event) => ({
+                      style: {
+                        backgroundColor: event.resource.course.color,
+                        borderColor: event.resource.course.color,
+                        color: "white",
+                        borderRadius: "8px",
+                        border: "none",
+                        padding: "4px 6px",
+                        fontSize: "0.75rem",
+                        fontWeight: "600",
+                        cursor: canEdit ? "move" : "default",
+                        transition: "all 0.2s",
+                        overflow: "hidden",
+                        display: "flex",
+                        alignItems: "center",
+                      },
+                    })}
+                    formats={{
+                      dayFormat: (date, culture, localizer) =>
+                        localizer?.format(date, "EEE dd", culture) ?? "",
+                      dayHeaderFormat: (date, culture, localizer) =>
+                        localizer?.format(date, "EEEE MMM dd", culture) ?? "",
+                    }}
+                    messages={{
+                      work_week: "Mon-Fri",
+                    }}
+                  />
                 </div>
-              )} */}
-            </div>
-          </>
+              )}
+            </main>
+          </div>
         )}
       </div>
 
@@ -665,6 +744,27 @@ export default function TimetablePage() {
             timetableName={selectedTimetable.name}
           />
 
+          <ManageCollaboratorsModal
+            open={showCollaboratorsModal}
+            onClose={() => setShowCollaboratorsModal(false)}
+            timetableId={selectedTimetable.id}
+            timetableName={selectedTimetable.name}
+            isOwner={isOwner}
+          />
+
+          <TimetableSettingsModal
+            open={showSettingsModal}
+            onClose={() => setShowSettingsModal(false)}
+            timetableId={selectedTimetable.id}
+            timetableName={selectedTimetable.name}
+            timetableDescription={selectedTimetable.description}
+            isOwner={isOwner}
+            isDefault={defaultTimetableId === selectedTimetable.id}
+            onSuccess={() => {
+              void refetch();
+            }}
+          />
+
           <EventDetailsModal
             open={showEventDetails}
             onClose={() => {
@@ -679,81 +779,6 @@ export default function TimetablePage() {
             allEvents={selectedTimetable.events}
           />
         </>
-      )}
-
-      {/* Delete Confirmation Dialog (from drag-to-trash) */}
-      {showDeleteDialog && eventToDelete && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-900">
-            <div className="mb-4 flex items-start gap-3">
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
-                <Trash2 className="h-6 w-6 text-red-600 dark:text-red-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                  Delete Class?
-                </h3>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  Are you sure you want to delete this class?
-                </p>
-                <div className="mt-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="h-3 w-3 rounded"
-                      style={{ backgroundColor: eventToDelete.course.color }}
-                    />
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">
-                      {eventToDelete.course.title}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {eventToDelete.title} • {eventToDelete.startTime} -{" "}
-                    {eventToDelete.endTime}
-                  </p>
-                </div>
-                <p className="mt-3 text-xs text-red-600 dark:text-red-400">
-                  This action cannot be undone.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowDeleteDialog(false);
-                  setEventToDelete(null);
-                }}
-                className="flex-1"
-                disabled={deleteEventMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  if (eventToDelete) {
-                    deleteEventMutation.mutate({ eventId: eventToDelete.id });
-                  }
-                }}
-                className="flex-1"
-                disabled={deleteEventMutation.isPending}
-              >
-                {deleteEventMutation.isPending ? (
-                  <>
-                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

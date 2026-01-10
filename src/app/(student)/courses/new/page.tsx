@@ -4,7 +4,7 @@ import { CourseForm } from "~/components/courses/course-form";
 
 export default function NewCoursePage() {
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-8">
+    <div className="container mx-auto max-w-4xl px-4 py-12">
       {/* Back Button */}
       <Link
         href="/courses"
@@ -16,10 +16,10 @@ export default function NewCoursePage() {
 
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-foreground mb-2 text-3xl font-bold md:text-4xl">
+        <h1 className="text-foreground mb-3 text-4xl font-black md:text-5xl lg:text-5xl">
           Create New Course
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-lg md:text-xl">
           Add a new course to organize your resources and collaborate with
           classmates
         </p>
