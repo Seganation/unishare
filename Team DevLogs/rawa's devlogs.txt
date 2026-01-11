@@ -1,5 +1,6 @@
+rawa dara dev log
+
 created teh foundation setted up tech stacks and did color pallete for ui and setted up base ui with shadcn brain stormed ideas finally landed with unishare , this project needs to be simple ui a bunch of pages nothing complex and no enterprise sidebar cause thats what makes students run and just a bunc of header route buttonss and everything else is squeezed together ina. beautiful easy to understand ui gotta go tell the team set up jiraa and send collaboration invites to the team and also make a team and prject on jira and then start giving out tasks
 need to set up ai and realtime collaboration note using black note editor u get me>?
 
-i also need to make an easter egg cast so like the movies cast
 

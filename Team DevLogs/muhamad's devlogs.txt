@@ -1,3 +1,6 @@
+muhamad ahmad dev log
+
+
 basically we need recyclung bin for every deleted thing and also restoration for them
 we also need not so heavy but leight weight audit loggin for owneres of content and notifications for owners of content so they know what their contributors are doing
 courses need overhaul of favourating and also alerts in place for if course already has calendar events if they remove its favouritisim they will lose all content of timetable
