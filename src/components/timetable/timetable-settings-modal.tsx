@@ -55,22 +55,24 @@ export function TimetableSettingsModal({
   const deleteMutation = api.timetable.delete.useMutation({
     onSuccess: () => {
       void utils.timetable.getUserTimetables.invalidate();
+      void utils.timetable.getDefaultTimetableId.invalidate();
       onSuccess?.();
       onClose();
     },
   });
 
-  // Note: These mutations need to be added to the backend
-  const setDefaultMutation = api.timetable.setDefaultTimetable?.useMutation({
+  const setDefaultMutation = api.timetable.setDefaultTimetable.useMutation({
     onSuccess: () => {
       void utils.timetable.getUserTimetables.invalidate();
+      void utils.timetable.getDefaultTimetableId.invalidate();
       onSuccess?.();
     },
   });
 
-  const leaveMutation = api.timetable.leaveTimetable?.useMutation({
+  const leaveMutation = api.timetable.leaveTimetable.useMutation({
     onSuccess: () => {
       void utils.timetable.getUserTimetables.invalidate();
+      void utils.timetable.getDefaultTimetableId.invalidate();
       onSuccess?.();
       onClose();
     },
@@ -87,10 +89,6 @@ export function TimetableSettingsModal({
   };
 
   const handleSetDefault = () => {
-    if (!setDefaultMutation) {
-      alert("This feature requires backend support. Please implement setDefaultTimetable mutation.");
-      return;
-    }
     setDefaultMutation.mutate({ timetableId });
   };
 
@@ -99,10 +97,6 @@ export function TimetableSettingsModal({
   };
 
   const handleLeave = () => {
-    if (!leaveMutation) {
-      alert("This feature requires backend support. Please implement leaveTimetable mutation.");
-      return;
-    }
     leaveMutation.mutate({ timetableId });
   };
 
@@ -182,7 +176,7 @@ export function TimetableSettingsModal({
                 </p>
                 <Button
                   onClick={handleSetDefault}
-                  disabled={isDefault || !setDefaultMutation}
+                  disabled={isDefault || setDefaultMutation.isPending}
                   className={`w-full ${
                     isDefault
                       ? "bg-amber-500 text-white"
@@ -193,6 +187,11 @@ export function TimetableSettingsModal({
                     <>
                       <Sparkles className="mr-2 h-4 w-4" />
                       Currently Default
+                    </>
+                  ) : setDefaultMutation.isPending ? (
+                    <>
+                      <Star className="mr-2 h-4 w-4 animate-spin" />
+                      Setting as Default...
                     </>
                   ) : (
                     <>
@@ -290,10 +289,10 @@ export function TimetableSettingsModal({
                         </Button>
                         <Button
                           onClick={handleLeave}
-                          disabled={leaveMutation?.isPending}
+                          disabled={leaveMutation.isPending}
                           className="flex-1 bg-orange-600 text-white hover:bg-orange-700"
                         >
-                          {leaveMutation?.isPending ? "Leaving..." : "Confirm Leave"}
+                          {leaveMutation.isPending ? "Leaving..." : "Confirm Leave"}
                         </Button>
                       </div>
                     </div>

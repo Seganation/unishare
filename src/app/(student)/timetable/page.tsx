@@ -14,8 +14,6 @@ import {
   setMinutes,
 } from "date-fns";
 import { enUS } from "date-fns/locale";
-import "react-big-calendar/lib/css/react-big-calendar.css";
-import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import {
@@ -157,9 +155,8 @@ export default function TimetablePage() {
     refetch,
   } = api.timetable.getUserTimetables.useQuery();
 
-  // TODO: Get default timetable from user preferences (requires backend)
-  // For now, we'll use local state or first timetable
-  const defaultTimetableId = null; // This should come from api.timetable.getDefaultTimetableId
+  // Get default timetable ID from user preferences
+  const { data: defaultTimetableId } = api.timetable.getDefaultTimetableId.useQuery();
 
   // Auto-select default timetable or first timetable
   useEffect(() => {

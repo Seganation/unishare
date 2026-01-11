@@ -254,6 +254,12 @@ export const timetableRouter = createTRPCRouter({
         });
       }
 
+      // Unset as default for all users who have it set
+      await ctx.db.user.updateMany({
+        where: { defaultTimetableId: input.id },
+        data: { defaultTimetableId: null },
+      });
+
       await ctx.db.timetable.delete({
         where: { id: input.id },
       });
@@ -835,4 +841,62 @@ export const timetableRouter = createTRPCRouter({
 
     return user?.defaultTimetableId ?? null;
   }),
+
+  /**
+   * Leave a shared timetable (collaborator only, not owner)
+   */
+  leaveTimetable: protectedProcedure
+    .input(
+      z.object({
+        timetableId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Verify this is a shared timetable (not owned by user)
+      const timetable = await ctx.db.timetable.findUnique({
+        where: { id: input.timetableId },
+        select: { createdBy: true },
+      });
+
+      if (!timetable) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Timetable not found",
+        });
+      }
+
+      if (timetable.createdBy === userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot leave a timetable you own. Delete it instead.",
+        });
+      }
+
+      // Remove collaboration
+      await ctx.db.timetableCollaborator.delete({
+        where: {
+          timetableId_userId: {
+            timetableId: input.timetableId,
+            userId: userId,
+          },
+        },
+      });
+
+      // If this was the default timetable, unset it
+      const user = await ctx.db.user.findUnique({
+        where: { id: userId },
+        select: { defaultTimetableId: true },
+      });
+
+      if (user?.defaultTimetableId === input.timetableId) {
+        await ctx.db.user.update({
+          where: { id: userId },
+          data: { defaultTimetableId: null },
+        });
+      }
+
+      return { success: true };
+    }),
 });

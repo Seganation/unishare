@@ -15,10 +15,9 @@ import { QuizTaker } from "~/components/ai/quiz-taker";
 import { QuizResults } from "~/components/ai/quiz-results";
 import { QuizAttemptsList } from "~/components/ai/quiz-attempts-list";
 import { QuizGeneratorForm } from "~/components/ai/quiz-generator-form";
-// Study Plans - Commented out (not in use)
-// import { StudyPlanList } from "~/components/ai/study-plan-list";
-// import { StudyPlanViewer } from "~/components/ai/study-plan-viewer";
-// import { StudyPlanGeneratorForm } from "~/components/ai/study-plan-generator-form";
+import { StudyPlanList } from "~/components/ai/study-plan-list";
+import { StudyPlanViewer } from "~/components/ai/study-plan-viewer";
+import { StudyPlanGeneratorForm } from "~/components/ai/study-plan-generator-form";
 import {
   ArrowLeft,
   Plus,
@@ -46,11 +45,10 @@ type View =
   | "quiz-generator"
   | "quiz-taker"
   | "quiz-attempts-list"
-  | "quiz-results";
-  // Study Plans - Commented out (not in use)
-  // | "study-plans"
-  // | "study-plan-generator"
-  // | "study-plan-viewer";
+  | "quiz-results"
+  | "study-plans"
+  | "study-plan-generator"
+  | "study-plan-viewer";
 
 export default function CourseDetailPage() {
   const params = useParams();

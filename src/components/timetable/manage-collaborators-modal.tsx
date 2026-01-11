@@ -31,14 +31,14 @@ export function ManageCollaboratorsModal({
   );
 
   // Note: These mutations need to be added to the backend
-  const updateRoleMutation = api.timetable.updateCollaboratorRole?.useMutation({
+  const updateRoleMutation = (api.timetable as any).updateCollaboratorRole?.useMutation({
     onSuccess: () => {
       void refetch();
       setChangingRoleId(null);
     },
   });
 
-  const removeCollaboratorMutation = api.timetable.removeCollaborator?.useMutation({
+  const removeCollaboratorMutation = (api.timetable as any).removeCollaborator?.useMutation({
     onSuccess: () => {
       void refetch();
       setRemovingId(null);

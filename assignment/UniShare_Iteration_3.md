@@ -5,13 +5,13 @@
 
 ## Prepared by:
 
-| Team Members | Matric Number |
-|--------------|---------------|
-| Rawa Dara Radha | |
-| Parwar Yassin qadr | |
-| Drud Zmnako | |
-| Muhamad ahmad | |
-| Aland haval | |
+| Team Members       | Matric Number |
+| ------------------ | ------------- |
+| Rawa Dara Radha    |               |
+| Parwar Yassin qadr |               |
+| Drud Zmnako        |               |
+| Muhamad ahmad      |               |
+| Aland haval        |               |
 
 **Submitted to:** Mr. Sassan Sarbast
 **Date:** January 15, 2026
@@ -35,6 +35,7 @@
 Sprint 3 implements the core student-driven course management system with AI-powered learning assistance. This sprint delivers the primary functionality where students create courses, organize resources, and leverage Google Gemini AI for personalized learning support through conversational chat, quiz generation, study planning, and note enhancement.
 
 ### Sprint 3 Goals
+
 - ✅ Student-led course creation with customization (title, description, color, icon)
 - ✅ Resource cards system with predefined and custom types
 - ✅ File upload system via UploadThing (16MB max for course resources)
@@ -45,6 +46,7 @@ Sprint 3 implements the core student-driven course management system with AI-pow
 - ✅ **AI Note Enhancement** with multiple generation types (generate, improve, summarize, expand)
 
 ### Technical Achievements
+
 - Implemented tRPC for end-to-end type-safe API layer
 - Integrated Google Gemini AI (2.5 Flash for chat, 2.5 Pro for content generation)
 - Built streaming AI responses using Vercel AI SDK with Server-Sent Events (SSE)
@@ -65,6 +67,7 @@ Sprint 3 implements the core student-driven course management system with AI-pow
 The student course management use case illustrates the complete workflow for students to create, manage, and organize their academic courses. Students can create courses from scratch (empty course list initially), customize each course with title, description, semester, color coding, and emoji icons, view all owned and shared courses in a grid layout, edit course details at any time, delete courses (owner only with cascade delete), favorite courses for calendar integration, and manage resources within each course through predefined resource cards (Assignments, Tasks, Content, Notes) and custom cards.
 
 **Actors:**
+
 - Student (APPROVED role, authenticated)
 - UniShare Course System
 - UploadThing Service
@@ -72,6 +75,7 @@ The student course management use case illustrates the complete workflow for stu
 **System Boundary:** Course Management Functions
 
 **Use Cases:**
+
 1. **UC-S3-001:** Create New Course
    - **Includes:** Validate Course Data, Generate Course ID, Create Default Resource Cards
 2. **UC-S3-002:** View Course List
@@ -103,6 +107,7 @@ The student course management use case illustrates the complete workflow for stu
 The AI learning assistant use case demonstrates how students interact with Google Gemini AI for personalized learning support. Students can start conversations with optional course context, chat with AI using Gemini 2.5 Flash for fast responses with streaming (word-by-word typing effect), generate practice quizzes using Gemini 2.5 Pro with configurable difficulty (Easy/Medium/Hard), question types (Multiple Choice, True/False, Short Answer, Essay), and question count (5-20), create personalized study plans with weekly task breakdowns based on course content and time availability, enhance notes through four generation types (GENERATE from topics, IMPROVE existing notes, SUMMARIZE long content, EXPAND brief notes), view conversation history with all messages preserved, continue previous conversations maintaining context, and attempt generated quizzes with automatic grading and score tracking.
 
 **Actors:**
+
 - Student (APPROVED role, authenticated)
 - Google Gemini AI (External System - 2.5 Flash & Pro models)
 - Vercel AI SDK (Streaming Infrastructure)
@@ -111,6 +116,7 @@ The AI learning assistant use case demonstrates how students interact with Googl
 **System Boundary:** AI-Powered Learning Features
 
 **Use Cases:**
+
 1. **UC-S3-011:** Start AI Conversation
    - **Includes:** Create Conversation Record, Optionally Link Course Context
 2. **UC-S3-012:** Send Message to AI
@@ -144,6 +150,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 ### Core Course Management Entities
 
 **1. Course:**
+
 - id (PK, CUID)
 - title (String, required)
 - description (String, optional)
@@ -155,6 +162,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - createdAt, updatedAt
 
 **2. ResourceCard:**
+
 - id (PK, CUID)
 - title (String, required)
 - description (String, optional)
@@ -165,6 +173,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - createdAt, updatedAt
 
 **3. Resource:**
+
 - id (PK, CUID)
 - title (String, required)
 - description (String, optional)
@@ -177,6 +186,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - createdAt, updatedAt
 
 **4. Favorite:**
+
 - id (PK, CUID)
 - userId (FK → User.id, CASCADE)
 - courseId (FK → Course.id, CASCADE)
@@ -186,6 +196,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 ### AI Feature Entities
 
 **5. AiConversation:**
+
 - id (PK, CUID)
 - title (String, required)
 - userId (FK → User.id, CASCADE)
@@ -194,6 +205,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - createdAt, updatedAt
 
 **6. AiMessage:**
+
 - id (PK, CUID)
 - content (String, text, required)
 - role (Enum: MessageRole) - USER | ASSISTANT | SYSTEM
@@ -202,6 +214,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - createdAt
 
 **7. AiQuiz:**
+
 - id (PK, CUID)
 - title (String, required)
 - topic (String, required)
@@ -213,6 +226,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - createdAt, updatedAt
 
 **8. AiQuizQuestion:**
+
 - id (PK, CUID)
 - question (String, text, required)
 - type (Enum: QuestionType) - MULTIPLE_CHOICE | TRUE_FALSE | SHORT_ANSWER | ESSAY
@@ -224,6 +238,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - createdAt
 
 **9. AiQuizAttempt:**
+
 - id (PK, CUID)
 - quizId (FK → AiQuiz.id, CASCADE)
 - userId (FK → User.id, CASCADE)
@@ -233,6 +248,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - createdAt, updatedAt
 
 **10. AiStudyPlan:**
+
 - id (PK, CUID)
 - title (String, required)
 - goal (String, text, optional)
@@ -245,6 +261,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - createdAt, updatedAt
 
 **11. AiStudyPlanWeek:**
+
 - id (PK, CUID)
 - weekNumber (Int, required)
 - title (String, required)
@@ -252,6 +269,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - createdAt
 
 **12. AiStudyPlanTask:**
+
 - id (PK, CUID)
 - title (String, required)
 - description (String, text, optional)
@@ -262,6 +280,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - createdAt, updatedAt
 
 **13. AiGeneratedNote:**
+
 - id (PK, CUID)
 - originalContent (String, text, optional)
 - generatedContent (String, text, required)
@@ -274,72 +293,91 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 ### Key Relationships
 
 **User ↔ Course:** One-to-Many
+
 - User owns multiple courses
 - Each course has one owner
 - User deletion does NOT cascade to courses (prevent data loss)
 
 **Course ↔ ResourceCard:** One-to-Many (CASCADE DELETE)
+
 - Course contains 4+ resource cards (4 default + custom)
 - Deleting course deletes all cards
 
 **ResourceCard ↔ Resource:** One-to-Many (CASCADE DELETE)
+
 - Card contains multiple resources
 - Deleting card deletes all resources
 
 **User ↔ Resource:** One-to-Many
+
 - User uploads multiple resources
 - Resource tracks uploader
 
 **User + Course ↔ Favorite:** Many-to-Many (via Favorite)
+
 - User favorites multiple courses
 - Course favorited by multiple users
 - Unique constraint prevents duplicates
 
 **User ↔ AiConversation:** One-to-Many (CASCADE DELETE)
+
 - User has multiple AI conversations
 - Deleting user deletes conversations
 
 **Course ↔ AiConversation:** One-to-Many (SET_NULL)
+
 - Course provides context for conversations
 - Deleting course sets courseId to NULL (preserve conversations)
 
 **AiConversation ↔ AiMessage:** One-to-Many (CASCADE DELETE)
+
 - Conversation contains multiple messages
 - Deleting conversation deletes messages
 
 **User ↔ AiQuiz:** One-to-Many (CASCADE DELETE)
+
 - User generates multiple quizzes
 
 **Course ↔ AiQuiz:** One-to-Many (SET_NULL)
+
 - Course context for quizzes
 
 **AiQuiz ↔ AiQuizQuestion:** One-to-Many (CASCADE DELETE)
+
 - Quiz contains 5-20 questions
 
 **AiQuiz ↔ AiQuizAttempt:** One-to-Many (CASCADE DELETE)
+
 - Quiz can be attempted multiple times
 
 **User ↔ AiQuizAttempt:** One-to-Many (CASCADE DELETE)
+
 - User attempts multiple quizzes
 
 **User ↔ AiStudyPlan:** One-to-Many (CASCADE DELETE)
+
 - User creates multiple study plans
 
 **Course ↔ AiStudyPlan:** One-to-Many (SET_NULL)
+
 - Study plan linked to course
 
 **AiStudyPlan ↔ AiStudyPlanWeek:** One-to-Many (CASCADE DELETE)
+
 - Plan contains 1-12 weeks
 
 **AiStudyPlanWeek ↔ AiStudyPlanTask:** One-to-Many (CASCADE DELETE)
+
 - Week contains multiple tasks
 
 **User ↔ AiGeneratedNote:** One-to-Many (CASCADE DELETE)
+
 - User generates multiple note enhancements
 
 ### Enums
 
 **CardType:**
+
 - ASSIGNMENT - File uploads enabled, for homework/projects
 - TASK - No uploads, text-based to-do items
 - CONTENT - File uploads enabled, for slides/readings
@@ -347,22 +385,26 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 - CUSTOM - User-defined, configurable upload permission
 
 **MessageRole:**
+
 - USER - Student's messages
 - ASSISTANT - AI responses
 - SYSTEM - System-generated context/instructions
 
 **QuizDifficulty:**
+
 - EASY - Basic comprehension
 - MEDIUM - Application/analysis
 - HARD - Synthesis/evaluation
 
 **QuestionType:**
+
 - MULTIPLE_CHOICE - 4 options, one correct
 - TRUE_FALSE - Boolean answer
 - SHORT_ANSWER - Brief text response
 - ESSAY - Extended written response
 
 **NoteGenerationType:**
+
 - GENERATE - Create notes from topic
 - IMPROVE - Enhance existing notes
 - SUMMARIZE - Condense long content
@@ -380,6 +422,7 @@ The domain model illustrates all entities introduced in Sprint 3, including **Co
 This sequence demonstrates the end-to-end course creation process including automatic generation of four default resource cards.
 
 **Participants:**
+
 1. Student (User)
 2. Course Creation Form (Next.js Client Component)
 3. Form Validation (Zod Schema)
@@ -389,6 +432,7 @@ This sequence demonstrates the end-to-end course creation process including auto
 7. PostgreSQL Database (NeonDB)
 
 **Flow:**
+
 1. Student → Course Form: Navigate to `/courses/new`
 2. Course Form → Student: Display form fields (title, description, code, semester, color picker, icon selector)
 3. Student → Course Form: Enter course title "Application Development"
@@ -428,6 +472,7 @@ This sequence demonstrates the end-to-end course creation process including auto
 33. Student: See new course detail page with 4 empty resource cards
 
 **Alternative Flows:**
+
 - **A1: Validation fails**
   - At step 15, if validation fails (e.g., title too short)
   - Show field-specific errors inline
@@ -455,6 +500,7 @@ This sequence demonstrates the end-to-end course creation process including auto
 This sequence illustrates the real-time AI chat workflow using Google Gemini 2.5 Flash with streaming responses via Vercel AI SDK.
 
 **Participants:**
+
 1. Student (User)
 2. AI Chat UI (Next.js Client Component)
 3. tRPC Client
@@ -465,6 +511,7 @@ This sequence illustrates the real-time AI chat workflow using Google Gemini 2.5
 8. PostgreSQL Database
 
 **Flow:**
+
 1. Student → AI Chat UI: Navigate to `/ai/chat`
 2. AI Chat UI → tRPC: Call `api.ai.listConversations.useQuery()`
 3. tRPC → Database: `SELECT * FROM ai_conversations WHERE userId = {userId}`
@@ -497,9 +544,9 @@ This sequence illustrates the real-time AI chat workflow using Google Gemini 2.5
 19. tRPC Router → Vercel AI SDK: Prepare messages array:
     ```typescript
     [
-      { role: 'system', content: 'You are a helpful AI tutor' },
-      { role: 'user', content: 'Explain polymorphism in Java' }
-    ]
+      { role: "system", content: "You are a helpful AI tutor" },
+      { role: "user", content: "Explain polymorphism in Java" },
+    ];
     ```
 20. Vercel AI SDK → Gemini API: Send POST request to Gemini endpoint
 21. Gemini API → Vercel AI SDK: Start Server-Sent Events (SSE) stream
@@ -524,11 +571,13 @@ This sequence illustrates the real-time AI chat workflow using Google Gemini 2.5
 35. Student: Can continue conversation with context preserved
 
 **Token Usage Tracking:**
+
 - Each message tracks `tokensUsed` (prompt + completion tokens)
 - Conversation tracks cumulative `tokensUsed` for analytics
 - Used for cost monitoring and usage reports
 
 **Alternative Flows:**
+
 - **A1: Stream connection fails**
   - At step 21, if network error or API unavailable
   - Show error: "AI is currently unavailable"
@@ -552,6 +601,7 @@ This sequence illustrates the real-time AI chat workflow using Google Gemini 2.5
 This sequence shows how students generate practice quizzes using Google Gemini 2.5 Pro with structured JSON output.
 
 **Participants:**
+
 1. Student (User)
 2. Quiz Generation Form
 3. tRPC Client
@@ -561,6 +611,7 @@ This sequence shows how students generate practice quizzes using Google Gemini 2
 7. PostgreSQL Database
 
 **Flow:**
+
 1. Student → Quiz Form: Navigate to `/ai/quiz/generate`
 2. Quiz Form → Student: Display generation form:
    - Topic (text input, required)
@@ -579,6 +630,7 @@ This sequence shows how students generate practice quizzes using Google Gemini 2
 11. tRPC Client → tRPC Router: Send generation request
 12. tRPC Router → tRPC Router: Verify authentication and role
 13. tRPC Router → Gemini 2.5 Pro: Build prompt:
+
     ```
     Generate a {count} question quiz about {topic} at {difficulty} difficulty.
     Question types: {types}
@@ -597,6 +649,7 @@ This sequence shows how students generate practice quizzes using Google Gemini 2
       ]
     }
     ```
+
 14. Gemini 2.5 Pro → Gemini 2.5 Pro: Generate structured quiz
 15. Gemini 2.5 Pro → tRPC Router: Return JSON response + token count
 16. tRPC Router → tRPC Router: Parse JSON response
@@ -614,6 +667,7 @@ This sequence shows how students generate practice quizzes using Google Gemini 2
 28. Student: Can attempt quiz or save for later
 
 **Gemini 2.5 Pro Configuration:**
+
 ```typescript
 {
   model: 'gemini-2.5-pro',
@@ -624,12 +678,14 @@ This sequence shows how students generate practice quizzes using Google Gemini 2
 ```
 
 **Question Types Generated:**
+
 - **Multiple Choice:** 4 options, one correct, explanation provided
 - **True/False:** Boolean answer, explanation provided
 - **Short Answer:** Expected answer provided, grading requires manual review
 - **Essay:** Rubric or key points provided for evaluation
 
 **Alternative Flows:**
+
 - **A1: JSON parsing fails**
   - At step 16, if Gemini returns invalid JSON
   - Retry with modified prompt (up to 3 attempts)
@@ -653,6 +709,7 @@ This sequence shows how students generate practice quizzes using Google Gemini 2
 This sequence illustrates personalized study plan creation using Gemini 2.5 Pro with weekly task breakdowns.
 
 **Participants:**
+
 1. Student (User)
 2. Study Plan Form
 3. tRPC Client
@@ -662,6 +719,7 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
 7. PostgreSQL Database
 
 **Flow:**
+
 1. Student → Study Plan Form: Navigate to `/ai/study-plan/generate`
 2. Study Plan Form → Student: Display form:
    - Title (text, required)
@@ -682,6 +740,7 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
 12. tRPC Router → Database: `SELECT title, description FROM courses WHERE id = {courseId}`
 13. Database → tRPC Router: Return course context
 14. tRPC Router → Gemini 2.5 Pro: Build prompt with course context:
+
     ```
     Create a {weekCount} week study plan for: {goal}
     Course: {courseTitle} - {courseDescription}
@@ -705,6 +764,7 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
       ]
     }
     ```
+
 15. Gemini 2.5 Pro → Gemini 2.5 Pro: Generate weekly breakdown
 16. Gemini 2.5 Pro → tRPC Router: Return JSON with weeks and tasks
 17. tRPC Router → tRPC Router: Parse and validate JSON structure
@@ -726,12 +786,14 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
 29. Student: Can mark tasks as complete to track progress
 
 **Study Plan Structure:**
+
 - Each week has multiple tasks
 - Tasks have estimated hours (total per week matches hoursPerWeek)
 - Tasks include specific learning objectives and resources
 - Progress tracked via completed checkboxes
 
 **Alternative Flows:**
+
 - **A1: Invalid time allocation**
   - If total task hours don't match hoursPerWeek
   - Adjust task estimates proportionally
@@ -751,10 +813,12 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
 **Description:** Student creates a new course which automatically generates four default resource cards for organization.
 
 **Preconditions:**
+
 - Student is authenticated with APPROVED role
 - Student has navigated to course creation page
 
 **Flow of Events:**
+
 1. Student navigates to `/courses/new`
 2. System displays course creation form
 3. Student enters course title "Application Development"
@@ -815,12 +879,14 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
     - "Add Resource" button on cards with allowFileUploads=true
 
 **Postconditions:**
+
 - Course record created in database
 - 4 default resource cards created
 - Student redirected to course detail page
 - Course appears in student's course list
 
 **Alternative Flows:**
+
 - **A1: Title too short**
   - At step 11, if title < 2 characters
   - Show error: "Title must be at least 2 characters"
@@ -851,11 +917,13 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
 **Description:** Student interacts with AI assistant for learning help with streaming responses and conversation context.
 
 **Preconditions:**
+
 - Student is authenticated with APPROVED role
 - Google Gemini API is accessible
 - Vercel AI SDK is configured
 
 **Flow of Events:**
+
 1. Student navigates to `/ai/chat`
 2. System displays AI chat interface:
    - Sidebar with conversation history
@@ -888,9 +956,9 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
     - User message: Student's question
 16. Server initializes Vercel AI SDK with Gemini 2.5 Flash:
     ```typescript
-    const model = google('gemini-2.5-flash', {
+    const model = google("gemini-2.5-flash", {
       temperature: 0.7,
-      maxOutputTokens: 2048
+      maxOutputTokens: 2048,
     });
     ```
 17. Server calls `streamText()` from AI SDK:
@@ -898,9 +966,9 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
     const { textStream, usage } = await streamText({
       model,
       messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMessage }
-      ]
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userMessage },
+      ],
     });
     ```
 18. Gemini API begins streaming response via Server-Sent Events (SSE)
@@ -937,6 +1005,7 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
 30. Student can continue conversation with context preserved
 
 **Postconditions:**
+
 - New conversation created in database
 - User and assistant messages saved
 - Token usage tracked for analytics
@@ -944,6 +1013,7 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
 - Student can send follow-up messages with full context
 
 **Alternative Flows:**
+
 - **A1: Empty message**
   - At step 8, if message is empty or only whitespace
   - Show inline error: "Message cannot be empty"
@@ -979,11 +1049,13 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
 **Description:** Student generates practice quiz using AI with customizable difficulty, question types, and question count.
 
 **Preconditions:**
+
 - Student is authenticated with APPROVED role
 - Google Gemini 2.5 Pro API is accessible
 - Student has navigated to quiz generation page
 
 **Flow of Events:**
+
 1. Student navigates to `/ai/quiz/generate`
 2. System displays quiz generation form:
    - Topic (text input, required, placeholder: "e.g., Object-Oriented Programming")
@@ -1013,6 +1085,7 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
     SELECT title, description FROM courses WHERE id = {courseId}
     ```
 15. Server prepares detailed prompt for Gemini 2.5 Pro:
+
     ```
     You are an expert quiz generator for university students.
 
@@ -1044,13 +1117,14 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
       ]
     }
     ```
+
 16. Server calls Gemini 2.5 Pro with structured output:
     ```typescript
     const { text, usage } = await generateText({
-      model: google('gemini-2.5-pro'),
+      model: google("gemini-2.5-pro"),
       prompt: quizPrompt,
-      temperature: 0.3,  // Lower for consistent structure
-      maxTokens: 4096
+      temperature: 0.3, // Lower for consistent structure
+      maxTokens: 4096,
     });
     ```
 17. Gemini 2.5 Pro processes request (10-30 seconds)
@@ -1070,7 +1144,7 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
           ],
           "correctAnswer": "B",
           "explanation": "Polymorphism means 'many forms' and allows objects to be treated as instances of their parent class."
-        },
+        }
         // ... 9 more questions
       ]
     }
@@ -1136,12 +1210,14 @@ This sequence illustrates personalized study plan creation using Gemini 2.5 Pro 
     - Share with classmates (Sprint 4 feature)
 
 **Postconditions:**
+
 - Quiz record created with 10 questions
 - Token usage tracked (typically 1500-2500 tokens)
 - Quiz appears in student's AI quiz history
 - Student can attempt quiz multiple times
 
 **Alternative Flows:**
+
 - **A1: No question types selected**
   - At step 9, validation fails
   - Show error: "Please select at least one question type"
@@ -1217,20 +1293,21 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Represents a student-created course for organizing academic materials. Each course is private by default and owned by one student.
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated on creation |
-| title | String | Course name | Required, Min: 2, Max: 100 | Student provides during creation |
-| description | String? | Course details | Optional, Max: 500 chars | Optional field in form |
-| code | String? | Course code | Optional, Max: 20 chars | E.g., "SCSJ3104" |
-| color | String | Hex color code | Default: "#3B82F6", Pattern: /^#[0-9A-F]{6}$/i | Color picker selection |
-| semester | String? | Term information | Optional, Max: 50 chars | E.g., "Fall 2025" |
-| icon | String? | Emoji icon | Optional, Max: 10 chars | Single emoji character |
-| ownerId | String | Course owner | Foreign Key → User.id, Required | Current authenticated user |
-| createdAt | DateTime | Creation timestamp | Auto-generated | Set automatically |
-| updatedAt | DateTime | Last update | Auto-updated | Updated on edits |
+| Attribute   | Datatype      | Description        | Constraints                                    | Sprint 3 Usage                   |
+| ----------- | ------------- | ------------------ | ---------------------------------------------- | -------------------------------- |
+| id          | String (CUID) | Unique identifier  | Primary Key                                    | Auto-generated on creation       |
+| title       | String        | Course name        | Required, Min: 2, Max: 100                     | Student provides during creation |
+| description | String?       | Course details     | Optional, Max: 500 chars                       | Optional field in form           |
+| code        | String?       | Course code        | Optional, Max: 20 chars                        | E.g., "SCSJ3104"                 |
+| color       | String        | Hex color code     | Default: "#3B82F6", Pattern: /^#[0-9A-F]{6}$/i | Color picker selection           |
+| semester    | String?       | Term information   | Optional, Max: 50 chars                        | E.g., "Fall 2025"                |
+| icon        | String?       | Emoji icon         | Optional, Max: 10 chars                        | Single emoji character           |
+| ownerId     | String        | Course owner       | Foreign Key → User.id, Required                | Current authenticated user       |
+| createdAt   | DateTime      | Creation timestamp | Auto-generated                                 | Set automatically                |
+| updatedAt   | DateTime      | Last update        | Auto-updated                                   | Updated on edits                 |
 
 **Relationships:**
+
 - **Belongs To:** User (N:1) via ownerId
 - **Has Many:** ResourceCard (1:N, CASCADE DELETE)
 - **Has Many:** Favorite (1:N, CASCADE DELETE)
@@ -1239,6 +1316,7 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 - **Has Many:** AiStudyPlan (1:N, SET_NULL) - optional context
 
 **Indexes:**
+
 - Primary: id
 - Foreign: ownerId
 - Index: (ownerId, createdAt) for efficient course list queries
@@ -1249,29 +1327,32 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Organizational containers within courses for grouping related resources (Assignments, Tasks, etc.).
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| title | String | Card name | Required, Min: 1, Max: 100 | "Assignments", "Tasks", etc. |
-| description | String? | Card purpose | Optional, Max: 300 chars | Optional description |
-| order | Int | Display order | Default: 0, Min: 0 | 0-3 for default cards |
-| type | Enum (CardType) | Card category | ASSIGNMENT\|TASK\|CONTENT\|NOTES\|CUSTOM | Determines behavior |
-| allowFileUploads | Boolean | Upload permission | Default: true | true for ASSIGNMENT/CONTENT, false for TASK/NOTES |
-| courseId | String | Parent course | Foreign Key → Course.id, CASCADE DELETE | Links to owning course |
-| createdAt | DateTime | Creation timestamp | Auto-generated | Set automatically |
-| updatedAt | DateTime | Last update | Auto-updated | Updated on edits |
+| Attribute        | Datatype        | Description        | Constraints                              | Sprint 3 Usage                                    |
+| ---------------- | --------------- | ------------------ | ---------------------------------------- | ------------------------------------------------- |
+| id               | String (CUID)   | Unique identifier  | Primary Key                              | Auto-generated                                    |
+| title            | String          | Card name          | Required, Min: 1, Max: 100               | "Assignments", "Tasks", etc.                      |
+| description      | String?         | Card purpose       | Optional, Max: 300 chars                 | Optional description                              |
+| order            | Int             | Display order      | Default: 0, Min: 0                       | 0-3 for default cards                             |
+| type             | Enum (CardType) | Card category      | ASSIGNMENT\|TASK\|CONTENT\|NOTES\|CUSTOM | Determines behavior                               |
+| allowFileUploads | Boolean         | Upload permission  | Default: true                            | true for ASSIGNMENT/CONTENT, false for TASK/NOTES |
+| courseId         | String          | Parent course      | Foreign Key → Course.id, CASCADE DELETE  | Links to owning course                            |
+| createdAt        | DateTime        | Creation timestamp | Auto-generated                           | Set automatically                                 |
+| updatedAt        | DateTime        | Last update        | Auto-updated                             | Updated on edits                                  |
 
 **Default Cards Created Automatically:**
+
 1. Assignments (order: 0, type: ASSIGNMENT, allowFileUploads: true)
 2. Tasks (order: 1, type: TASK, allowFileUploads: false)
 3. Content (order: 2, type: CONTENT, allowFileUploads: true)
 4. Notes (order: 3, type: NOTES, allowFileUploads: false)
 
 **Relationships:**
+
 - **Belongs To:** Course (N:1, CASCADE DELETE)
 - **Has Many:** Resource (1:N, CASCADE DELETE)
 
 **Cascade Rules:**
+
 - Deleting course → deletes all cards
 - Deleting card → deletes all resources in card
 
@@ -1281,26 +1362,28 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Individual files or items within resource cards (uploaded materials, links, etc.).
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| title | String | Resource name | Required, Min: 1, Max: 200 | File name or custom title |
-| description | String? | Resource details | Optional, Max: 1000 chars | Optional description |
-| fileUrl | String? | UploadThing URL | Optional, Valid URL | Uploaded file location |
-| fileType | String? | MIME type | Optional | E.g., "application/pdf" |
-| fileSize | Int? | File size in bytes | Optional, Max: 16MB (16777216 bytes) | Tracked for storage limits |
-| order | Int | Order within card | Default: 0, Min: 0 | Display order |
-| cardId | String | Parent card | Foreign Key → ResourceCard.id, CASCADE DELETE | Links to containing card |
-| uploadedById | String | Uploader | Foreign Key → User.id | Tracks who uploaded |
-| createdAt | DateTime | Upload timestamp | Auto-generated | Set automatically |
-| updatedAt | DateTime | Last update | Auto-updated | Updated on edits |
+| Attribute    | Datatype      | Description        | Constraints                                   | Sprint 3 Usage             |
+| ------------ | ------------- | ------------------ | --------------------------------------------- | -------------------------- |
+| id           | String (CUID) | Unique identifier  | Primary Key                                   | Auto-generated             |
+| title        | String        | Resource name      | Required, Min: 1, Max: 200                    | File name or custom title  |
+| description  | String?       | Resource details   | Optional, Max: 1000 chars                     | Optional description       |
+| fileUrl      | String?       | UploadThing URL    | Optional, Valid URL                           | Uploaded file location     |
+| fileType     | String?       | MIME type          | Optional                                      | E.g., "application/pdf"    |
+| fileSize     | Int?          | File size in bytes | Optional, Max: 16MB (16777216 bytes)          | Tracked for storage limits |
+| order        | Int           | Order within card  | Default: 0, Min: 0                            | Display order              |
+| cardId       | String        | Parent card        | Foreign Key → ResourceCard.id, CASCADE DELETE | Links to containing card   |
+| uploadedById | String        | Uploader           | Foreign Key → User.id                         | Tracks who uploaded        |
+| createdAt    | DateTime      | Upload timestamp   | Auto-generated                                | Set automatically          |
+| updatedAt    | DateTime      | Last update        | Auto-updated                                  | Updated on edits           |
 
 **File Upload Constraints:**
+
 - Max file size: 16MB (16,777,216 bytes)
 - Allowed types: Images (JPG, PNG, GIF, WEBP), PDF, Word (DOC, DOCX), PowerPoint (PPT, PPTX)
 - Uploaded to UploadThing S3 CDN
 
 **Relationships:**
+
 - **Belongs To:** ResourceCard (N:1, CASCADE DELETE)
 - **Belongs To:** User (N:1) via uploadedById
 
@@ -1310,21 +1393,24 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Links users to courses they've favorited for calendar integration and quick access.
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| userId | String | User who favorited | Foreign Key → User.id, CASCADE DELETE | Current user |
-| courseId | String | Favorited course | Foreign Key → Course.id, CASCADE DELETE | Selected course |
-| createdAt | DateTime | Favorite timestamp | Auto-generated | When favorited |
+| Attribute | Datatype      | Description        | Constraints                             | Sprint 3 Usage  |
+| --------- | ------------- | ------------------ | --------------------------------------- | --------------- |
+| id        | String (CUID) | Unique identifier  | Primary Key                             | Auto-generated  |
+| userId    | String        | User who favorited | Foreign Key → User.id, CASCADE DELETE   | Current user    |
+| courseId  | String        | Favorited course   | Foreign Key → Course.id, CASCADE DELETE | Selected course |
+| createdAt | DateTime      | Favorite timestamp | Auto-generated                          | When favorited  |
 
 **Unique Constraint:**
+
 - (userId, courseId) - prevents duplicate favorites
 
 **Relationships:**
+
 - **Belongs To:** User (N:1, CASCADE DELETE)
 - **Belongs To:** Course (N:1, CASCADE DELETE)
 
 **Usage:**
+
 - Used in calendar dropdown to filter courses (Sprint 5)
 - Students can favorite both owned and shared courses
 
@@ -1334,22 +1420,24 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Stores AI chat conversations with optional course context.
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| title | String | Conversation title | Required, Max: 200 chars | Auto-generated from first message |
-| userId | String | Conversation owner | Foreign Key → User.id, CASCADE DELETE | Current user |
-| courseId | String? | Optional course context | Foreign Key → Course.id, SET_NULL | Selected course for context |
-| tokensUsed | Int | Cumulative tokens | Default: 0, Min: 0 | Sum of all message tokens |
-| createdAt | DateTime | Start timestamp | Auto-generated | First message time |
-| updatedAt | DateTime | Last message time | Auto-updated | Updated on new messages |
+| Attribute  | Datatype      | Description             | Constraints                           | Sprint 3 Usage                    |
+| ---------- | ------------- | ----------------------- | ------------------------------------- | --------------------------------- |
+| id         | String (CUID) | Unique identifier       | Primary Key                           | Auto-generated                    |
+| title      | String        | Conversation title      | Required, Max: 200 chars              | Auto-generated from first message |
+| userId     | String        | Conversation owner      | Foreign Key → User.id, CASCADE DELETE | Current user                      |
+| courseId   | String?       | Optional course context | Foreign Key → Course.id, SET_NULL     | Selected course for context       |
+| tokensUsed | Int           | Cumulative tokens       | Default: 0, Min: 0                    | Sum of all message tokens         |
+| createdAt  | DateTime      | Start timestamp         | Auto-generated                        | First message time                |
+| updatedAt  | DateTime      | Last message time       | Auto-updated                          | Updated on new messages           |
 
 **Relationships:**
+
 - **Belongs To:** User (N:1, CASCADE DELETE)
 - **Belongs To:** Course (N:1, SET_NULL) - optional context
 - **Has Many:** AiMessage (1:N, CASCADE DELETE)
 
 **Token Tracking:**
+
 - Cumulative sum of all message tokensUsed
 - Used for usage analytics and cost tracking
 
@@ -1359,19 +1447,21 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Individual messages within AI conversations (user and assistant messages).
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| content | String (text) | Message text | Required, Max: 10000 chars | User question or AI answer |
-| role | Enum (MessageRole) | Message source | USER\|ASSISTANT\|SYSTEM | Identifies sender |
-| conversationId | String | Parent conversation | Foreign Key → AiConversation.id, CASCADE DELETE | Links to conversation |
-| tokensUsed | Int | Token count | Default: 0, Min: 0 | Prompt + completion tokens |
-| createdAt | DateTime | Message timestamp | Auto-generated | When message sent |
+| Attribute      | Datatype           | Description         | Constraints                                     | Sprint 3 Usage             |
+| -------------- | ------------------ | ------------------- | ----------------------------------------------- | -------------------------- |
+| id             | String (CUID)      | Unique identifier   | Primary Key                                     | Auto-generated             |
+| content        | String (text)      | Message text        | Required, Max: 10000 chars                      | User question or AI answer |
+| role           | Enum (MessageRole) | Message source      | USER\|ASSISTANT\|SYSTEM                         | Identifies sender          |
+| conversationId | String             | Parent conversation | Foreign Key → AiConversation.id, CASCADE DELETE | Links to conversation      |
+| tokensUsed     | Int                | Token count         | Default: 0, Min: 0                              | Prompt + completion tokens |
+| createdAt      | DateTime           | Message timestamp   | Auto-generated                                  | When message sent          |
 
 **Relationships:**
+
 - **Belongs To:** AiConversation (N:1, CASCADE DELETE)
 
 **Streaming Implementation:**
+
 - Messages created after stream completes
 - Full content and token count saved together
 
@@ -1381,26 +1471,28 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** AI-generated practice quizzes with configurable settings.
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| title | String | Quiz title | Required, Max: 200 chars | AI-generated or custom |
-| topic | String | Quiz subject | Required, Max: 200 chars | Student-provided |
-| difficulty | Enum (QuizDifficulty) | Difficulty level | EASY\|MEDIUM\|HARD | Student-selected |
-| totalQuestions | Int | Question count | Required, Min: 5, Max: 20 | Student-selected |
-| courseId | String? | Optional course context | Foreign Key → Course.id, SET_NULL | Selected course |
-| userId | String | Quiz creator | Foreign Key → User.id, CASCADE DELETE | Current user |
-| tokensUsed | Int | Generation cost | Default: 0, Min: 0 | Gemini 2.5 Pro tokens |
-| createdAt | DateTime | Generation timestamp | Auto-generated | When quiz created |
-| updatedAt | DateTime | Last update | Auto-updated | Updated on edits |
+| Attribute      | Datatype              | Description             | Constraints                           | Sprint 3 Usage         |
+| -------------- | --------------------- | ----------------------- | ------------------------------------- | ---------------------- |
+| id             | String (CUID)         | Unique identifier       | Primary Key                           | Auto-generated         |
+| title          | String                | Quiz title              | Required, Max: 200 chars              | AI-generated or custom |
+| topic          | String                | Quiz subject            | Required, Max: 200 chars              | Student-provided       |
+| difficulty     | Enum (QuizDifficulty) | Difficulty level        | EASY\|MEDIUM\|HARD                    | Student-selected       |
+| totalQuestions | Int                   | Question count          | Required, Min: 5, Max: 20             | Student-selected       |
+| courseId       | String?               | Optional course context | Foreign Key → Course.id, SET_NULL     | Selected course        |
+| userId         | String                | Quiz creator            | Foreign Key → User.id, CASCADE DELETE | Current user           |
+| tokensUsed     | Int                   | Generation cost         | Default: 0, Min: 0                    | Gemini 2.5 Pro tokens  |
+| createdAt      | DateTime              | Generation timestamp    | Auto-generated                        | When quiz created      |
+| updatedAt      | DateTime              | Last update             | Auto-updated                          | Updated on edits       |
 
 **Relationships:**
+
 - **Belongs To:** User (N:1, CASCADE DELETE)
 - **Belongs To:** Course (N:1, SET_NULL)
 - **Has Many:** AiQuizQuestion (1:N, CASCADE DELETE)
 - **Has Many:** AiQuizAttempt (1:N, CASCADE DELETE)
 
 **Generation Settings:**
+
 - Uses Gemini 2.5 Pro (higher quality than Flash)
 - Temperature: 0.3 (consistent output)
 - Typical token usage: 1500-2500 tokens per quiz
@@ -1411,22 +1503,24 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Individual questions within AI-generated quizzes.
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| question | String (text) | Question text | Required, Max: 1000 chars | AI-generated |
-| type | Enum (QuestionType) | Question format | MULTIPLE_CHOICE\|TRUE_FALSE\|SHORT_ANSWER\|ESSAY | AI-selected based on request |
-| options | Json? | Answer choices | Optional, Required for MC/TF | Array of strings for MC, ["True", "False"] for TF |
-| correctAnswer | String (text) | Correct response | Required, Max: 1000 chars | AI-provided |
-| explanation | String (text)? | Answer explanation | Optional, Max: 1000 chars | AI-generated reasoning |
-| order | Int | Question order | Required, Min: 0 | 0-19 for 20-question quiz |
-| quizId | String | Parent quiz | Foreign Key → AiQuiz.id, CASCADE DELETE | Links to quiz |
-| createdAt | DateTime | Creation timestamp | Auto-generated | Same as quiz creation |
+| Attribute     | Datatype            | Description        | Constraints                                      | Sprint 3 Usage                                    |
+| ------------- | ------------------- | ------------------ | ------------------------------------------------ | ------------------------------------------------- |
+| id            | String (CUID)       | Unique identifier  | Primary Key                                      | Auto-generated                                    |
+| question      | String (text)       | Question text      | Required, Max: 1000 chars                        | AI-generated                                      |
+| type          | Enum (QuestionType) | Question format    | MULTIPLE_CHOICE\|TRUE_FALSE\|SHORT_ANSWER\|ESSAY | AI-selected based on request                      |
+| options       | Json?               | Answer choices     | Optional, Required for MC/TF                     | Array of strings for MC, ["True", "False"] for TF |
+| correctAnswer | String (text)       | Correct response   | Required, Max: 1000 chars                        | AI-provided                                       |
+| explanation   | String (text)?      | Answer explanation | Optional, Max: 1000 chars                        | AI-generated reasoning                            |
+| order         | Int                 | Question order     | Required, Min: 0                                 | 0-19 for 20-question quiz                         |
+| quizId        | String              | Parent quiz        | Foreign Key → AiQuiz.id, CASCADE DELETE          | Links to quiz                                     |
+| createdAt     | DateTime            | Creation timestamp | Auto-generated                                   | Same as quiz creation                             |
 
 **Relationships:**
+
 - **Belongs To:** AiQuiz (N:1, CASCADE DELETE)
 
 **Question Type Details:**
+
 - **MULTIPLE_CHOICE:** options array has 4 items, correctAnswer is one of the options
 - **TRUE_FALSE:** options array is ["True", "False"], correctAnswer is "True" or "False"
 - **SHORT_ANSWER:** options is null, correctAnswer is expected response
@@ -1438,22 +1532,24 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Records of students attempting AI-generated quizzes with answers and scores.
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| quizId | String | Quiz being attempted | Foreign Key → AiQuiz.id, CASCADE DELETE | Selected quiz |
-| userId | String | Student attempting | Foreign Key → User.id, CASCADE DELETE | Current user |
-| answers | Json | User's answers | Required | Object mapping questionId to answer |
-| score | Float? | Percentage score | Optional, Min: 0, Max: 100 | Calculated after completion |
-| completedAt | DateTime? | Completion time | Optional | Set when quiz submitted |
-| createdAt | DateTime | Attempt start | Auto-generated | When quiz started |
-| updatedAt | DateTime | Last update | Auto-updated | Updated on answer changes |
+| Attribute   | Datatype      | Description          | Constraints                             | Sprint 3 Usage                      |
+| ----------- | ------------- | -------------------- | --------------------------------------- | ----------------------------------- |
+| id          | String (CUID) | Unique identifier    | Primary Key                             | Auto-generated                      |
+| quizId      | String        | Quiz being attempted | Foreign Key → AiQuiz.id, CASCADE DELETE | Selected quiz                       |
+| userId      | String        | Student attempting   | Foreign Key → User.id, CASCADE DELETE   | Current user                        |
+| answers     | Json          | User's answers       | Required                                | Object mapping questionId to answer |
+| score       | Float?        | Percentage score     | Optional, Min: 0, Max: 100              | Calculated after completion         |
+| completedAt | DateTime?     | Completion time      | Optional                                | Set when quiz submitted             |
+| createdAt   | DateTime      | Attempt start        | Auto-generated                          | When quiz started                   |
+| updatedAt   | DateTime      | Last update          | Auto-updated                            | Updated on answer changes           |
 
 **Relationships:**
+
 - **Belongs To:** AiQuiz (N:1, CASCADE DELETE)
 - **Belongs To:** User (N:1, CASCADE DELETE)
 
 **Answers Format:**
+
 ```json
 {
   "clxQuestion1": "B",
@@ -1463,6 +1559,7 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 ```
 
 **Scoring:**
+
 - Auto-graded for MC and T/F (compare with correctAnswer)
 - Manual review needed for Short Answer and Essay
 
@@ -1472,26 +1569,28 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** AI-generated personalized study plans with weekly breakdowns.
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| title | String | Plan title | Required, Max: 200 chars | Student-provided |
-| goal | String (text)? | Learning objective | Optional, Max: 1000 chars | Student-provided |
-| weekCount | Int | Number of weeks | Required, Min: 1, Max: 12 | Student-selected |
-| hoursPerWeek | Int | Study hours/week | Required, Min: 1, Max: 40 | Student-selected |
-| deadline | DateTime? | Target completion | Optional | Student-selected |
-| courseId | String? | Related course | Foreign Key → Course.id, SET_NULL | Optional context |
-| userId | String | Plan creator | Foreign Key → User.id, CASCADE DELETE | Current user |
-| tokensUsed | Int | Generation cost | Default: 0, Min: 0 | Gemini 2.5 Pro tokens |
-| createdAt | DateTime | Generation timestamp | Auto-generated | When plan created |
-| updatedAt | DateTime | Last update | Auto-updated | Updated on progress |
+| Attribute    | Datatype       | Description          | Constraints                           | Sprint 3 Usage        |
+| ------------ | -------------- | -------------------- | ------------------------------------- | --------------------- |
+| id           | String (CUID)  | Unique identifier    | Primary Key                           | Auto-generated        |
+| title        | String         | Plan title           | Required, Max: 200 chars              | Student-provided      |
+| goal         | String (text)? | Learning objective   | Optional, Max: 1000 chars             | Student-provided      |
+| weekCount    | Int            | Number of weeks      | Required, Min: 1, Max: 12             | Student-selected      |
+| hoursPerWeek | Int            | Study hours/week     | Required, Min: 1, Max: 40             | Student-selected      |
+| deadline     | DateTime?      | Target completion    | Optional                              | Student-selected      |
+| courseId     | String?        | Related course       | Foreign Key → Course.id, SET_NULL     | Optional context      |
+| userId       | String         | Plan creator         | Foreign Key → User.id, CASCADE DELETE | Current user          |
+| tokensUsed   | Int            | Generation cost      | Default: 0, Min: 0                    | Gemini 2.5 Pro tokens |
+| createdAt    | DateTime       | Generation timestamp | Auto-generated                        | When plan created     |
+| updatedAt    | DateTime       | Last update          | Auto-updated                          | Updated on progress   |
 
 **Relationships:**
+
 - **Belongs To:** User (N:1, CASCADE DELETE)
 - **Belongs To:** Course (N:1, SET_NULL)
 - **Has Many:** AiStudyPlanWeek (1:N, CASCADE DELETE)
 
 **Generation Settings:**
+
 - Uses Gemini 2.5 Pro
 - Temperature: 0.5 (balanced creativity and structure)
 - Typical token usage: 2000-3500 tokens
@@ -1502,15 +1601,16 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Individual weeks within AI study plans.
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| weekNumber | Int | Week sequence | Required, Min: 1, Max: 12 | 1-12 based on plan duration |
-| title | String | Week theme | Required, Max: 200 chars | AI-generated |
-| studyPlanId | String | Parent plan | Foreign Key → AiStudyPlan.id, CASCADE DELETE | Links to plan |
-| createdAt | DateTime | Creation timestamp | Auto-generated | Same as plan creation |
+| Attribute   | Datatype      | Description        | Constraints                                  | Sprint 3 Usage              |
+| ----------- | ------------- | ------------------ | -------------------------------------------- | --------------------------- |
+| id          | String (CUID) | Unique identifier  | Primary Key                                  | Auto-generated              |
+| weekNumber  | Int           | Week sequence      | Required, Min: 1, Max: 12                    | 1-12 based on plan duration |
+| title       | String        | Week theme         | Required, Max: 200 chars                     | AI-generated                |
+| studyPlanId | String        | Parent plan        | Foreign Key → AiStudyPlan.id, CASCADE DELETE | Links to plan               |
+| createdAt   | DateTime      | Creation timestamp | Auto-generated                               | Same as plan creation       |
 
 **Relationships:**
+
 - **Belongs To:** AiStudyPlan (N:1, CASCADE DELETE)
 - **Has Many:** AiStudyPlanTask (1:N, CASCADE DELETE)
 
@@ -1520,24 +1620,26 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Individual tasks within study plan weeks.
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| title | String | Task name | Required, Max: 200 chars | AI-generated |
-| description | String (text)? | Task details | Optional, Max: 1000 chars | AI-generated instructions |
-| estimatedHours | Int | Time needed | Required, Min: 1, Max: 40 | AI-estimated |
-| completed | Boolean | Completion status | Default: false | Student marks complete |
-| weekId | String | Parent week | Foreign Key → AiStudyPlanWeek.id, CASCADE DELETE | Links to week |
-| order | Int | Task sequence | Required, Min: 0 | Display order within week |
-| createdAt | DateTime | Creation timestamp | Auto-generated | Same as plan creation |
-| updatedAt | DateTime | Last update | Auto-updated | Updated when completed |
+| Attribute      | Datatype       | Description        | Constraints                                      | Sprint 3 Usage            |
+| -------------- | -------------- | ------------------ | ------------------------------------------------ | ------------------------- |
+| id             | String (CUID)  | Unique identifier  | Primary Key                                      | Auto-generated            |
+| title          | String         | Task name          | Required, Max: 200 chars                         | AI-generated              |
+| description    | String (text)? | Task details       | Optional, Max: 1000 chars                        | AI-generated instructions |
+| estimatedHours | Int            | Time needed        | Required, Min: 1, Max: 40                        | AI-estimated              |
+| completed      | Boolean        | Completion status  | Default: false                                   | Student marks complete    |
+| weekId         | String         | Parent week        | Foreign Key → AiStudyPlanWeek.id, CASCADE DELETE | Links to week             |
+| order          | Int            | Task sequence      | Required, Min: 0                                 | Display order within week |
+| createdAt      | DateTime       | Creation timestamp | Auto-generated                                   | Same as plan creation     |
+| updatedAt      | DateTime       | Last update        | Auto-updated                                     | Updated when completed    |
 
 **Relationships:**
+
 - **Belongs To:** AiStudyPlanWeek (N:1, CASCADE DELETE)
 
 **Progress Tracking:**
+
 - Students check completed checkbox
-- Progress percentage = (completed tasks / total tasks) * 100
+- Progress percentage = (completed tasks / total tasks) \* 100
 
 ---
 
@@ -1545,21 +1647,23 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** AI-enhanced notes with multiple generation types.
 
-| Attribute | Datatype | Description | Constraints | Sprint 3 Usage |
-|-----------|----------|-------------|-------------|----------------|
-| id | String (CUID) | Unique identifier | Primary Key | Auto-generated |
-| originalContent | String (text)? | Input content | Optional, Max: 10000 chars | Student-provided (null for GENERATE type) |
-| generatedContent | String (text) | AI output | Required, Max: 10000 chars | AI-generated |
-| prompt | String (text) | Enhancement request | Required, Max: 1000 chars | Student-provided instructions |
-| type | Enum (NoteGenerationType) | Generation mode | GENERATE\|IMPROVE\|SUMMARIZE\|EXPAND | Student-selected |
-| tokensUsed | Int | Generation cost | Default: 0, Min: 0 | Gemini tokens |
-| userId | String | Note owner | Foreign Key → User.id, CASCADE DELETE | Current user |
-| createdAt | DateTime | Generation timestamp | Auto-generated | When note created |
+| Attribute        | Datatype                  | Description          | Constraints                           | Sprint 3 Usage                            |
+| ---------------- | ------------------------- | -------------------- | ------------------------------------- | ----------------------------------------- |
+| id               | String (CUID)             | Unique identifier    | Primary Key                           | Auto-generated                            |
+| originalContent  | String (text)?            | Input content        | Optional, Max: 10000 chars            | Student-provided (null for GENERATE type) |
+| generatedContent | String (text)             | AI output            | Required, Max: 10000 chars            | AI-generated                              |
+| prompt           | String (text)             | Enhancement request  | Required, Max: 1000 chars             | Student-provided instructions             |
+| type             | Enum (NoteGenerationType) | Generation mode      | GENERATE\|IMPROVE\|SUMMARIZE\|EXPAND  | Student-selected                          |
+| tokensUsed       | Int                       | Generation cost      | Default: 0, Min: 0                    | Gemini tokens                             |
+| userId           | String                    | Note owner           | Foreign Key → User.id, CASCADE DELETE | Current user                              |
+| createdAt        | DateTime                  | Generation timestamp | Auto-generated                        | When note created                         |
 
 **Relationships:**
+
 - **Belongs To:** User (N:1, CASCADE DELETE)
 
 **Generation Types:**
+
 - **GENERATE:** originalContent is null, create notes from prompt
 - **IMPROVE:** originalContent provided, enhance quality
 - **SUMMARIZE:** originalContent provided, condense to key points
@@ -1571,13 +1675,13 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Categorizes resource cards within courses.
 
-| Value | Description | File Uploads Allowed | Default Behavior |
-|-------|-------------|---------------------|------------------|
-| ASSIGNMENT | Homework and projects | Yes (true) | Created automatically, order: 0 |
-| TASK | Text-based to-do items | No (false) | Created automatically, order: 1 |
-| CONTENT | Slides, readings, materials | Yes (true) | Created automatically, order: 2 |
-| NOTES | Links to collaborative notes | No (false) | Created automatically, order: 3 |
-| CUSTOM | User-defined cards | Configurable | Created manually by students |
+| Value      | Description                  | File Uploads Allowed | Default Behavior                |
+| ---------- | ---------------------------- | -------------------- | ------------------------------- |
+| ASSIGNMENT | Homework and projects        | Yes (true)           | Created automatically, order: 0 |
+| TASK       | Text-based to-do items       | No (false)           | Created automatically, order: 1 |
+| CONTENT    | Slides, readings, materials  | Yes (true)           | Created automatically, order: 2 |
+| NOTES      | Links to collaborative notes | No (false)           | Created automatically, order: 3 |
+| CUSTOM     | User-defined cards           | Configurable         | Created manually by students    |
 
 ---
 
@@ -1585,11 +1689,11 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Identifies the source of AI chat messages.
 
-| Value | Description | Usage |
-|-------|-------------|-------|
-| USER | Student's messages | Questions and prompts from student |
-| ASSISTANT | AI responses | Answers from Gemini 2.5 Flash |
-| SYSTEM | System instructions | Context and system prompts (not displayed in UI) |
+| Value     | Description         | Usage                                            |
+| --------- | ------------------- | ------------------------------------------------ |
+| USER      | Student's messages  | Questions and prompts from student               |
+| ASSISTANT | AI responses        | Answers from Gemini 2.5 Flash                    |
+| SYSTEM    | System instructions | Context and system prompts (not displayed in UI) |
 
 ---
 
@@ -1597,11 +1701,11 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Defines quiz complexity levels.
 
-| Value | Description | Question Characteristics |
-|-------|-------------|-------------------------|
-| EASY | Basic comprehension | Simple recall, definitions, basic concepts |
-| MEDIUM | Application and analysis | Problem-solving, comparisons, explanations |
-| HARD | Synthesis and evaluation | Critical thinking, complex scenarios, advanced concepts |
+| Value  | Description              | Question Characteristics                                |
+| ------ | ------------------------ | ------------------------------------------------------- |
+| EASY   | Basic comprehension      | Simple recall, definitions, basic concepts              |
+| MEDIUM | Application and analysis | Problem-solving, comparisons, explanations              |
+| HARD   | Synthesis and evaluation | Critical thinking, complex scenarios, advanced concepts |
 
 ---
 
@@ -1609,12 +1713,12 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Defines quiz question formats.
 
-| Value | Description | Answer Format | Auto-Gradable |
-|-------|-------------|---------------|--------------|
-| MULTIPLE_CHOICE | 4 options, one correct | Single letter (A-D) | Yes |
-| TRUE_FALSE | Boolean question | "True" or "False" | Yes |
-| SHORT_ANSWER | Brief text response | Text (1-2 sentences) | No (manual review) |
-| ESSAY | Extended written response | Text (paragraph+) | No (manual review) |
+| Value           | Description               | Answer Format        | Auto-Gradable      |
+| --------------- | ------------------------- | -------------------- | ------------------ |
+| MULTIPLE_CHOICE | 4 options, one correct    | Single letter (A-D)  | Yes                |
+| TRUE_FALSE      | Boolean question          | "True" or "False"    | Yes                |
+| SHORT_ANSWER    | Brief text response       | Text (1-2 sentences) | No (manual review) |
+| ESSAY           | Extended written response | Text (paragraph+)    | No (manual review) |
 
 ---
 
@@ -1622,18 +1726,19 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 **Description:** Types of AI note enhancements.
 
-| Value | Description | Original Content | Use Case |
-|-------|-------------|------------------|----------|
-| GENERATE | Create from topic | Not required (null) | "Generate notes about polymorphism" |
-| IMPROVE | Enhance existing | Required | "Improve my rough notes" |
-| SUMMARIZE | Condense content | Required | "Summarize this lecture transcript" |
-| EXPAND | Add detail | Required | "Expand on these bullet points" |
+| Value     | Description       | Original Content    | Use Case                            |
+| --------- | ----------------- | ------------------- | ----------------------------------- |
+| GENERATE  | Create from topic | Not required (null) | "Generate notes about polymorphism" |
+| IMPROVE   | Enhance existing  | Required            | "Improve my rough notes"            |
+| SUMMARIZE | Condense content  | Required            | "Summarize this lecture transcript" |
+| EXPAND    | Add detail        | Required            | "Expand on these bullet points"     |
 
 ---
 
 ## Sprint 3 Success Criteria
 
 ✅ **Course Management:**
+
 - [x] Course creation with title, description, code, semester, color, icon
 - [x] 4 default resource cards auto-created (Assignments, Tasks, Content, Notes)
 - [x] Custom resource card creation with configurable upload permissions
@@ -1643,6 +1748,7 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 - [x] tRPC integration for type-safe API calls
 
 ✅ **Resource Management:**
+
 - [x] File upload to resource cards via UploadThing (16MB max)
 - [x] Supported file types: Images, PDF, Word, PowerPoint
 - [x] Resource metadata tracking (fileType, fileSize, uploadedBy)
@@ -1651,12 +1757,14 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 - [x] Cascade delete on card deletion
 
 ✅ **Favorites System:**
+
 - [x] Favorite/unfavorite courses
 - [x] Unique constraint prevents duplicate favorites
 - [x] Cascade delete on user or course deletion
 - [x] Favorites filter in calendar (Sprint 5 integration)
 
 ✅ **AI Learning Assistant:**
+
 - [x] Conversation creation with optional course context
 - [x] Real-time streaming chat with Gemini 2.5 Flash
 - [x] Server-Sent Events (SSE) for word-by-word typing effect
@@ -1666,6 +1774,7 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 - [x] Vercel AI SDK integration
 
 ✅ **AI Quiz Generation:**
+
 - [x] Quiz generation with Gemini 2.5 Pro
 - [x] Configurable difficulty (Easy, Medium, Hard)
 - [x] Configurable question count (5-20)
@@ -1676,6 +1785,7 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 - [x] Auto-grading for MC and T/F questions
 
 ✅ **AI Study Plan Generation:**
+
 - [x] Study plan creation with weekly breakdown
 - [x] Configurable duration (1-12 weeks)
 - [x] Configurable hours per week (1-40)
@@ -1685,6 +1795,7 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 - [x] Nested structure: Plan → Week → Task
 
 ✅ **AI Note Enhancement:**
+
 - [x] Four generation types (GENERATE, IMPROVE, SUMMARIZE, EXPAND)
 - [x] Topic-based note generation
 - [x] Existing note improvement
@@ -1696,21 +1807,22 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 
 ## Technical Stack Summary
 
-| Category | Technology | Version | Purpose |
-|----------|-----------|---------|---------|
-| **Frontend Framework** | Next.js (App Router) | 15.1+ | React-based UI with server components |
-| **Language** | TypeScript | 5.0+ | Type-safe development |
-| **Database** | PostgreSQL (NeonDB) | 16+ | Course, resource, and AI data |
-| **ORM** | Prisma | 6.5+ | Type-safe database queries |
-| **API Layer** | tRPC | 11.0+ | End-to-end type safety |
-| **File Upload** | UploadThing | Latest | Resource file storage (S3 CDN) |
-| **AI Provider** | Google Gemini | 2.5 Flash & Pro | Chat and content generation |
-| **AI SDK** | Vercel AI SDK | 5.0.113 | Streaming AI responses |
-| **Streaming** | Server-Sent Events (SSE) | Native | Real-time AI chat streaming |
-| **Form Validation** | Zod | 3.22+ | Schema validation |
-| **Styling** | Tailwind CSS + Shadcn UI | Latest | Modern responsive UI |
+| Category               | Technology               | Version         | Purpose                               |
+| ---------------------- | ------------------------ | --------------- | ------------------------------------- |
+| **Frontend Framework** | Next.js (App Router)     | 15.1+           | React-based UI with server components |
+| **Language**           | TypeScript               | 5.0+            | Type-safe development                 |
+| **Database**           | PostgreSQL (NeonDB)      | 16+             | Course, resource, and AI data         |
+| **ORM**                | Prisma                   | 6.5+            | Type-safe database queries            |
+| **API Layer**          | tRPC                     | 11.0+           | End-to-end type safety                |
+| **File Upload**        | UploadThing              | Latest          | Resource file storage (S3 CDN)        |
+| **AI Provider**        | Google Gemini            | 2.5 Flash & Pro | Chat and content generation           |
+| **AI SDK**             | Vercel AI SDK            | 5.0.113         | Streaming AI responses                |
+| **Streaming**          | Server-Sent Events (SSE) | Native          | Real-time AI chat streaming           |
+| **Form Validation**    | Zod                      | 3.22+           | Schema validation                     |
+| **Styling**            | Tailwind CSS + Shadcn UI | Latest          | Modern responsive UI                  |
 
 **AI Model Selection:**
+
 - **Gemini 2.5 Flash:** Used for conversational chat (fast, cheap, good for real-time)
 - **Gemini 2.5 Pro:** Used for quiz generation, study plans, note enhancement (higher quality, better for structured output)
 
@@ -1721,6 +1833,7 @@ Gemini pricing (as of January 2026): Gemini 2.5 Flash is $0.075 per 1M input tok
 Sprint 4 will implement sharing and collaboration features:
 
 ### 1. Course Sharing System:
+
 - Faculty-restricted sharing (same faculty only)
 - Two permission levels:
   - **VIEWER:** Read-only access to resources
@@ -1730,6 +1843,7 @@ Sprint 4 will implement sharing and collaboration features:
 - "Shared with me" section in course list
 
 ### 2. Real-Time Collaborative Notes:
+
 - BlockNote 0.41+ editor integration
 - Liveblocks 3.9+ for real-time sync
 - Yjs CRDT 13.6+ for conflict-free editing
@@ -1739,6 +1853,7 @@ Sprint 4 will implement sharing and collaboration features:
 - Auto-save every 5 seconds
 
 ### 3. Public Articles System:
+
 - Article creation using BlockNote
 - Draft and publish workflow
 - Slug generation for URLs
@@ -1748,6 +1863,7 @@ Sprint 4 will implement sharing and collaboration features:
 - View counter and read time estimation
 
 ### 4. Notification System:
+
 - Course invitation notifications
 - Contributor added/removed notifications
 - Resource uploaded notifications
