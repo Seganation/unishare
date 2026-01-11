@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { toast } from "sonner";
+import { useUploadThing } from "~/lib/uploadthing";
 
 interface FileUploadModalProps {
   open: boolean;
@@ -49,6 +50,80 @@ export function FileUploadModal({
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
+  const { startUpload, isUploading: isUploadingHook } = useUploadThing(
+    "courseResourceUploader",
+    {
+      onClientUploadComplete: (res) => {
+        // Store file metadata as JSON strings (includes name, url, size)
+        const fileMetadata =
+          res?.map((file) =>
+            JSON.stringify({
+              name: file.name,
+              url: file.url,
+              size: file.size,
+              key: file.key,
+            }),
+          ) ?? [];
+
+        // Update files with uploaded URLs for UI display
+        let fileIndex = 0;
+        setFiles((prev) =>
+          prev.map((f) => {
+            if (f.status === "uploading") {
+              const metadata = res?.[fileIndex++];
+              return {
+                ...f,
+                status: "success" as const,
+                progress: 100,
+                url: metadata?.url,
+              };
+            }
+            return f;
+          }),
+        );
+
+        toast.success(
+          `Successfully uploaded ${res?.length ?? 0} file${(res?.length ?? 0) > 1 ? "s" : ""}!`,
+        );
+
+        // Pass file metadata (as JSON strings) to parent
+        if (onUploadComplete && fileMetadata.length > 0) {
+          onUploadComplete(fileMetadata);
+        }
+
+        // Close modal after a short delay
+        setTimeout(() => {
+          onOpenChange(false);
+          setFiles([]);
+        }, 1500);
+
+        setIsUploading(false);
+      },
+      onUploadError: (error) => {
+        console.error("Upload error:", error);
+
+        // Mark all uploading files as error
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.status === "uploading"
+              ? {
+                  ...f,
+                  status: "error" as const,
+                  error: error.message ?? "Upload failed",
+                }
+              : f,
+          ),
+        );
+
+        toast.error(`Failed to upload files: ${error.message}`);
+        setIsUploading(false);
+      },
+      onUploadBegin: (fileName) => {
+        console.log("Upload begin for file:", fileName);
+      },
+    },
+  );
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles: UploadFile[] = acceptedFiles.map((file) => ({
       file,
@@ -67,60 +142,30 @@ export function FileUploadModal({
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const uploadFiles = async () => {
+  const uploadFiles = () => {
+    // Get only pending files
+    const pendingFiles = files.filter((f) => f.status === "pending");
+    const filesToUpload = pendingFiles.map((f) => f.file);
+
+    if (filesToUpload.length === 0) {
+      toast.error("No files to upload");
+      return;
+    }
+
     setIsUploading(true);
 
-    // Simulate upload for each file
-    for (let i = 0; i < files.length; i++) {
-      if (files[i]?.status !== "pending") continue;
+    // Mark all pending files as uploading
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.status === "pending"
+          ? { ...f, status: "uploading" as const, progress: 50 }
+          : f,
+      ),
+    );
 
-      // Update status to uploading
-      setFiles((prev) =>
-        prev.map((f, idx) =>
-          idx === i ? { ...f, status: "uploading" as const } : f,
-        ),
-      );
-
-      // Simulate progress
-      for (let progress = 0; progress <= 100; progress += 10) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        setFiles((prev) =>
-          prev.map((f, idx) => (idx === i ? { ...f, progress } : f)),
-        );
-      }
-
-      // Mark as success (in real implementation, this would use UploadThing)
-      setFiles((prev) =>
-        prev.map((f, idx) =>
-          idx === i
-            ? {
-                ...f,
-                status: "success" as const,
-                progress: 100,
-                url: `https://utfs.io/f/example-${Date.now()}.pdf`,
-              }
-            : f,
-        ),
-      );
-    }
-
-    setIsUploading(false);
-    toast.success("All files uploaded successfully!");
-
-    // Get all successful URLs
-    const successUrls = files
-      .filter((f) => f.status === "success" && f.url)
-      .map((f) => f.url!);
-
-    if (onUploadComplete && successUrls.length > 0) {
-      onUploadComplete(successUrls);
-    }
-
-    // Close modal after a short delay
-    setTimeout(() => {
-      onOpenChange(false);
-      setFiles([]);
-    }, 1500);
+    // Upload files using UploadThing
+    // The callbacks will handle success/error
+    startUpload(filesToUpload);
   };
 
   const pendingCount = files.filter((f) => f.status === "pending").length;

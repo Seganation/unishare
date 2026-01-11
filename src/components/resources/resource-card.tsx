@@ -233,12 +233,26 @@ export function ResourceCard({
           <div className="space-y-3">
             {fileCount > 0 && (
               <div className="space-y-2">
-                {fileUrls.slice(0, 3).map((url, idx) => {
-                  const fileName = url.split("/").pop() ?? "File";
+                {fileUrls.slice(0, 3).map((fileData, idx) => {
+                  // Parse file metadata (handles both new JSON format and old URL-only format)
+                  let fileName = "File";
+                  let fileUrl = fileData;
+
+                  try {
+                    // Try to parse as JSON (new format)
+                    const metadata = JSON.parse(fileData);
+                    fileName = metadata.name ?? "File";
+                    fileUrl = metadata.url ?? fileData;
+                  } catch {
+                    // Fallback to old format (plain URL)
+                    fileName = fileData.split("/").pop() ?? "File";
+                    fileUrl = fileData;
+                  }
+
                   return (
                     <a
                       key={idx}
-                      href={url}
+                      href={fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={cn(

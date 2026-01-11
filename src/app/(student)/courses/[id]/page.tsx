@@ -8,6 +8,7 @@ import { Badge } from "~/components/ui/badge";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { ResourceCard } from "~/components/resources/resource-card";
 import { ResourceForm } from "~/components/resources/resource-form";
+import { FileUploadModal } from "~/components/resources/file-upload-modal";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { QuizList } from "~/components/ai/quiz-list";
@@ -55,6 +56,11 @@ export default function CourseDetailPage() {
   const router = useRouter();
   const courseId = params.id as string;
   const [showResourceForm, setShowResourceForm] = useState(false);
+  const [showFileUploadModal, setShowFileUploadModal] = useState(false);
+  const [selectedResource, setSelectedResource] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const [view, setView] = useState<View>("resources");
   const [activeTab, setActiveTab] = useState<
     "resources" | "quizzes" | "study-plans"
@@ -90,6 +96,16 @@ export default function CourseDetailPage() {
     },
     onError: (error) => {
       toast.error(error.message ?? "Failed to delete resource");
+    },
+  });
+
+  const addFile = api.resource.addFile.useMutation({
+    onSuccess: () => {
+      void utils.course.getById.invalidate({ id: courseId });
+      toast.success("Files added successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to add files");
     },
   });
 
@@ -340,8 +356,11 @@ export default function CourseDetailPage() {
                     userRole={userRole}
                     courseId={courseId}
                     onAddFile={() => {
-                      toast.info("File upload coming soon!");
-                      // TODO: Implement file upload modal
+                      setSelectedResource({
+                        id: resource.id,
+                        title: resource.title,
+                      });
+                      setShowFileUploadModal(true);
                     }}
                     onDelete={
                       isOwner && resource.type === "CUSTOM"
@@ -473,6 +492,22 @@ export default function CourseDetailPage() {
           open={showResourceForm}
           onOpenChange={setShowResourceForm}
         />
+
+        {/* File Upload Modal */}
+        {selectedResource && (
+          <FileUploadModal
+            open={showFileUploadModal}
+            onOpenChange={setShowFileUploadModal}
+            resourceId={selectedResource.id}
+            resourceTitle={selectedResource.title}
+            onUploadComplete={(urls) => {
+              addFile.mutate({
+                resourceId: selectedResource.id,
+                fileUrls: urls,
+              });
+            }}
+          />
+        )}
       </div>
     </div>
   );

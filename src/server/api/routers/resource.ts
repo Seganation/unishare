@@ -178,14 +178,15 @@ export const resourceRouter = createTRPCRouter({
     }),
 
   /**
-   * Add a file URL to a resource
-   * Files are uploaded via UploadThing, then URL is stored here
+   * Add file URLs to a resource
+   * Files are uploaded via UploadThing, then URLs are stored here
+   * Accepts single URL or array of URLs
    */
   addFile: protectedProcedure
     .input(
       z.object({
         resourceId: z.string(),
-        fileUrl: z.string().url(),
+        fileUrls: z.union([z.string().url(), z.array(z.string().url())]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -234,12 +235,17 @@ export const resourceRouter = createTRPCRouter({
         });
       }
 
-      // Add file URL to array
+      // Normalize input to array
+      const urlsToAdd = Array.isArray(input.fileUrls)
+        ? input.fileUrls
+        : [input.fileUrls];
+
+      // Add file URLs to array
       const updatedResource = await ctx.db.resource.update({
         where: { id: input.resourceId },
         data: {
           fileUrls: {
-            push: input.fileUrl,
+            push: urlsToAdd,
           },
         },
       });

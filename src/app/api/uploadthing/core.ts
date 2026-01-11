@@ -34,8 +34,8 @@ export const ourFileRouter = {
   /**
    * Course Resource Uploader
    * For assignments, content, and other course materials
-   * - Multiple file types supported
-   * - Max size: 16MB per file
+   * - Multiple file types supported: Images, PDFs, Office docs (Word, Excel, PowerPoint), ZIP
+   * - Max size: 16MB per file (64MB for videos)
    * - Requires authentication
    */
   courseResourceUploader: f({
@@ -43,6 +43,22 @@ export const ourFileRouter = {
     pdf: { maxFileSize: "16MB", maxFileCount: 10 },
     text: { maxFileSize: "16MB", maxFileCount: 10 },
     video: { maxFileSize: "64MB", maxFileCount: 5 },
+    // Word documents (.doc, .docx)
+    "application/msword": { maxFileSize: "16MB", maxFileCount: 10 },
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      { maxFileSize: "16MB", maxFileCount: 10 },
+    // Excel spreadsheets (.xls, .xlsx)
+    "application/vnd.ms-excel": { maxFileSize: "16MB", maxFileCount: 10 },
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+      maxFileSize: "16MB",
+      maxFileCount: 10,
+    },
+    // PowerPoint presentations (.ppt, .pptx)
+    "application/vnd.ms-powerpoint": { maxFileSize: "16MB", maxFileCount: 10 },
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+      { maxFileSize: "16MB", maxFileCount: 10 },
+    // ZIP files
+    "application/zip": { maxFileSize: "32MB", maxFileCount: 5 },
   })
     .middleware(async () => {
       const session = await auth();
