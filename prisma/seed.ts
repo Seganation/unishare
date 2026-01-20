@@ -1402,7 +1402,7 @@ async function main() {
         userId: sarah.id,
         prompt: 'Generate comprehensive notes on sorting algorithms',
         tokensUsed: 500,
-        contentBefore: null,
+        contentBefore: undefined,
         contentAfter: JSON.stringify({
           type: 'doc',
           content: [
