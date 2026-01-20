@@ -106,7 +106,7 @@ export function AIChatInterface({
       return {
         id: uiMessage.id || msg.id,
         role: uiMessage.role,
-        parts: uiMessage.parts,
+        parts: uiMessage.parts ?? [],
       };
     }) ?? [];
 
@@ -255,7 +255,7 @@ export function AIChatInterface({
                 )
                 .map((message) => (
                   <div key={message.id}>
-                    {message.parts.map((part, i) => {
+                    {(message.parts ?? []).map((part, i) => {
                       if (part.type === "text") {
                         return (
                           <Message
