@@ -1,0 +1,2522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite id="339" name="Karoz - Course, Resource &amp; Timetable Management (Iteration 3 UC1, Iteration 4 UC-S4-005)" >
+<node_order><![CDATA[0]]></node_order>
+<details><![CDATA[<p><b>Tester:</b> Karoz<br/><b>Software under test:</b> UniShare (github.com/Seganation/unishare)<br/><b>Test basis:</b> UniShare_Iteration_3.md Use Case 1 (UC-S3-001) and UniShare_Iteration_4.md UC-S4-005, and the code that implements them: tRPC routers course.ts, resource.ts, timetable.ts; src/components/courses/course-form.tsx, src/components/resources/*, src/components/timetable/*, src/app/(student)/courses/*, src/app/(student)/timetable/page.tsx, src/app/api/uploadthing/core.ts, src/app/api/cron/class-reminders/route.ts, middleware.ts.<br/><b>Techniques:</b> Equivalence Partitioning (EP), Boundary Value Analysis (BVA), Decision Table (DT), State Transition (ST), Use Case / scenario testing (UC), Error Guessing (EG).</p><p><b>Common test data</b> (prisma/seed.ts, all seeded passwords are <i>admin123</i>)<br/>Student A - Sarah Ahmed (sarah@student.utm.my), APPROVED, Faculty of Computing. Owns "Data Structures &amp; Algorithms" (John = accepted CONTRIBUTOR) and "Web Development"; accepted VIEWER of "Machine Learning" (owner John); favourites: Data Structures &amp; Algorithms, Web Development, Machine Learning; default timetable "Fall 2024 Schedule" (John = accepted VIEWER, David = PENDING).<br/>Student B - John Doe (john@student.utm.my), APPROVED. Owns "Machine Learning" and "Database Systems"; own timetable "Fall 2024 Schedule" on which Sarah is an accepted CONTRIBUTOR and Lisa has a PENDING invitation.<br/>Student C - Michael Chen (michael@student.utm.my), APPROVED, Faculty of Engineering, no access to Sarah's courses.<br/>Student D - Alice Wong (alice@student.utm.my), role PENDING (not approved).<br/>Other approved students: David Kim, Lisa Martinez, Emily Rodriguez.<br/>Fresh data used in the cases (created by the tester): course "SECJ3343 Software Quality Assurance" owned by Sarah; empty timetable "SQA Week" owned by Sarah; course colours = the 8 swatches of src/lib/course-colors.ts (Purple #a855f7, Blue #3b82f6, Green #10b981, Orange #f97316, Red #ef4444, Pink #ec4899, Teal #14b8a6, Indigo #6366f1).<br/>API checks can be done with the browser DevTools console or a tRPC client logged in as the stated student (procedures course.*, resource.*, timetable.*).</p>]]></details> 
+<testsuite id="340" name="TS-K1 Create Course (UC-S3-001)" >
+<node_order><![CDATA[1]]></node_order>
+<details><![CDATA[<p>Create-course form and API. Techniques: UC, BVA (title 100, description 500), EP (colour), DT, EG.</p>]]></details> 
+
+<testcase internalid="341" name="Create a course with title, description and colour (main flow)">
+	<node_order><![CDATA[1]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Create a course with title, description and colour (main flow).</p><p><b>Test design technique:</b> Use case (main flow), EP valid classes</p><p><b>Requirements:</b> REQ-CRS-01, REQ-CRS-02, REQ-CRS-03, REQ-CRS-05</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A (sarah@student.utm.my / admin123) logged in, role APPROVED, on /courses.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Click &#x27;Create New Course&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Page &#x27;Create New Course&#x27; opens at /courses/new with the form and the tip about 4 predefined resource cards.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Enter title &#x27;SECJ3343 Software Quality Assurance&#x27; and description &#x27;Test design techniques and TestLink&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both texts accepted; character counters update.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Leave the colour unchanged.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Purple is preselected (&#x27;Selected Color: Purple&#x27;).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Click the create button.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Toast &#x27;Course created successfully!&#x27;; redirect to /courses; the course is listed under &#x27;My Courses&#x27; with a purple header.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-01]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Course title validation]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-02]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Course description validation]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-03]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Course colour]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-05]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Successful creation]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="347" name="Title length boundaries (0, 1, 100, 101 characters)">
+	<node_order><![CDATA[2]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Title length boundaries (0, 1, 100, 101 characters).</p><p><b>Test design technique:</b> BVA</p><p><b>Requirements:</b> REQ-CRS-01</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A on /courses/new, description empty, colour Purple.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Leave title empty and submit.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Not created; toast &#x27;Please enter a course title&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Enter 1 character &#x27;A&#x27; and submit.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Course &#x27;A&#x27; created (minimum length 1 accepted) - &#x27;Course created successfully!&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Open /courses/new, enter a 100-character title and submit.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Created; full 100-character title shown in the list.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Open /courses/new and type/paste a 101-character title.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Input stops at 100 characters (maxLength); counter shows 100/100.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Call course.create via API with a 101-character title.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Rejected by validation (too_big, max 100); no course created.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-01]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Course title validation]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="354" name="Whitespace-only and padded title">
+	<node_order><![CDATA[3]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Whitespace-only and padded title.</p><p><b>Test design technique:</b> Error guessing</p><p><b>Requirements:</b> REQ-CRS-01</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A on /courses/new.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Enter 5 spaces as title and submit.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Toast &#x27;Please enter a course title&#x27;; nothing created (title is trimmed).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Enter &#x27;  Networks  &#x27; (leading/trailing spaces) and submit.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Course created with title &#x27;Networks&#x27; (trimmed).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Create a course titled &#x27;C++ &amp; &lt;b&gt;Java&lt;/b&gt; &quot;quotes&quot;&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Created; the title is displayed as plain text exactly as typed (no HTML rendering).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-01]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Course title validation]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="359" name="Description length boundaries (empty, 500, 501 characters)">
+	<node_order><![CDATA[4]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Description length boundaries (empty, 500, 501 characters).</p><p><b>Test design technique:</b> BVA</p><p><b>Requirements:</b> REQ-CRS-02</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A on /courses/new, valid title entered.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Leave description empty and submit.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Course created without description.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Create another course with a 500-character description.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Created; description saved completely.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Type/paste a 501-character description.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Textarea stops at 500 characters (counter 500/500).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Call course.create via API with a 501-character description.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Rejected by validation (max 500); nothing created.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-02]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Course description validation]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="365" name="Colour selection - each swatch">
+	<node_order><![CDATA[5]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Colour selection - each swatch.</p><p><b>Test design technique:</b> EP (8 swatches, default)</p><p><b>Requirements:</b> REQ-CRS-03</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A on /courses/new with title &#x27;Colour test&#x27;.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Look at the colour section.</p>]]></actions>
+	<expectedresults><![CDATA[<p>8 swatches: Purple, Blue, Green, Orange, Red, Pink, Teal, Indigo; Purple selected.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Click &#x27;Select Teal color&#x27;, submit.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Course created; course card header/colour is teal (#14b8a6).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Repeat for Blue (#3b82f6) and Indigo (#6366f1).</p>]]></actions>
+	<expectedresults><![CDATA[<p>Each course shows the chosen colour; &#x27;Selected Color&#x27; label matched the swatch before submit.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-03]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Course colour]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="370" name="Colour format validation in the API">
+	<node_order><![CDATA[6]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Colour format validation in the API.</p><p><b>Test design technique:</b> EP / BVA (valid and invalid hex strings)</p><p><b>Requirements:</b> REQ-CRS-03</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A logged in; course.create callable from the browser console or a tRPC client.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Call course.create with color &#x27;#3B82F6&#x27; (upper-case).</p>]]></actions>
+	<expectedresults><![CDATA[<p>Accepted (case-insensitive).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Call with color &#x27;#3b82f6&#x27; (lower-case).</p>]]></actions>
+	<expectedresults><![CDATA[<p>Accepted.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Call with &#x27;#3B82F&#x27; (5 digits) and &#x27;#3B82F6A&#x27; (7 digits).</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both rejected: &#x27;Invalid color format&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Call with &#x27;3B82F6&#x27; (no #), &#x27;#GGGGGG&#x27; and &#x27;&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>All rejected: &#x27;Invalid color format&#x27;; no course created.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-03]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Course colour]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="376" name="Four default resource cards are created">
+	<node_order><![CDATA[7]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Four default resource cards are created.</p><p><b>Test design technique:</b> Decision table (card x file-upload flag), use case</p><p><b>Requirements:</b> REQ-CRS-04, REQ-CRS-05</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A just created course &#x27;SECJ3343 Software Quality Assurance&#x27;.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Open the course from &#x27;My Courses&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Course page opens with role badge OWNER and the Resources tab.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Count the resource cards.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Exactly 4 cards: Assignments, Tasks, Content, Notes (in this order of creation).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Check the file buttons.</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;Add Files&#x27; is shown on Assignments and Content only; Tasks and Notes have no file upload.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Inspect each card.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Cards without files show &#x27;No files uploaded yet&#x27; / empty state; no delete button on any default card.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-04]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Four default resource cards]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-05]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Successful creation]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="382" name="Duplicate course titles are allowed">
+	<node_order><![CDATA[8]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Duplicate course titles are allowed.</p><p><b>Test design technique:</b> Error guessing</p><p><b>Requirements:</b> REQ-CRS-05</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A already owns &#x27;SECJ3343 Software Quality Assurance&#x27;.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[1]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Create a second course with exactly the same title.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Created (&#x27;Course created successfully!&#x27;).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Open /courses.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Two separate cards with the same title under &#x27;My Courses&#x27;, each with its own 4 resource cards.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-05]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Successful creation]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="386" name="Course creation blocked for visitors and PENDING students">
+	<node_order><![CDATA[9]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Course creation blocked for visitors and PENDING students.</p><p><b>Test design technique:</b> Decision table (login state x role)</p><p><b>Requirements:</b> REQ-CRS-06</p>]]></summary>
+	<preconditions><![CDATA[<p>Browser logged out. Student D (alice@student.utm.my / admin123) has role PENDING.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Logged out, open /courses/new.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Redirected to /login.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Log in as Student D and open /courses/new.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Redirected to /waiting-approval; the form is not shown.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Logged in as Student D open /courses and /timetable.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both redirect to /waiting-approval.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Log in as Student A and open /courses/new.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Form is shown (APPROVED allowed).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-06]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Only approved, logged-in students can create courses]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="392" name="course.create called without a session or with a PENDING session">
+	<node_order><![CDATA[10]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>course.create called without a session or with a PENDING session.</p><p><b>Test design technique:</b> Error guessing (API bypass)</p><p><b>Requirements:</b> REQ-CRS-06</p>]]></summary>
+	<preconditions><![CDATA[<p>Student D (PENDING) logged in; separately a logged-out client.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Logged-out client calls course.create with a valid payload.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Rejected with UNAUTHORIZED; nothing created.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>As Student D call course.create with a valid payload.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Expected per Iteration 3 A3: 403 FORBIDDEN &#x27;Your account is pending approval&#x27;; no course created. (Code only checks the session, so the course is created - defect to report.)</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S3-001 Create Course with Default Resources]]></req_spec_title>
+			<doc_id><![CDATA[REQ-CRS-06]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Only approved, logged-in students can create courses]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+</testsuite><testsuite id="396" name="TS-K2 Manage Courses" >
+<node_order><![CDATA[2]]></node_order>
+<details><![CDATA[<p>List, open, edit, delete and favourite a course. Techniques: DT (role x action), EP, ST, EG.</p>]]></details> 
+
+<testcase internalid="397" name="Course list shows owned and shared courses only">
+	<node_order><![CDATA[1]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Course list shows owned and shared courses only.</p><p><b>Test design technique:</b> EP (owned / accepted shared / pending / other)</p><p><b>Requirements:</b> REQ-MAN-01</p>]]></summary>
+	<preconditions><![CDATA[<p>Seed data. Student A owns Data Structures &amp; Algorithms and Web Development and is accepted VIEWER of Machine Learning (owner John).</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Log in as Student A and open /courses.</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;My Courses&#x27; contains Data Structures &amp; Algorithms and Web Development.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Look at &#x27;Shared With Me&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Contains Machine Learning (owned by John). Database Systems / Operating Systems are not listed.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Log in as an approved student E who has no courses and open /courses.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Message &#x27;No courses yet&#x27; with the create-course call to action.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Course management (list, open, edit, delete, favourite)]]></req_spec_title>
+			<doc_id><![CDATA[REQ-MAN-01]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Course list: owned and shared]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="402" name="Course access by role">
+	<node_order><![CDATA[2]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Course access by role.</p><p><b>Test design technique:</b> Decision table (owner / contributor / viewer / outsider / unknown id)</p><p><b>Requirements:</b> REQ-MAN-02</p>]]></summary>
+	<preconditions><![CDATA[<p>Course &#x27;Data Structures &amp; Algorithms&#x27; (owner Sarah, John accepted CONTRIBUTOR). Michael has no relation to it.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Sarah opens the course.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Opens; badge OWNER; &#x27;Add Custom Resource&#x27; and the three-dots menu (Course Settings, Manage Collaborators) visible.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>John opens the course.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Opens; badge CONTRIBUTOR; &#x27;Add Custom Resource&#x27; visible; no owner menu.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Sarah opens Machine Learning (she is VIEWER).</p>]]></actions>
+	<expectedresults><![CDATA[<p>Opens; badge VIEWER; no &#x27;Add Custom Resource&#x27; button.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Michael opens the Data Structures course URL.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Access refused: &#x27;You don&#x27;t have access to this course&#x27; (no course content shown).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Open /courses/does-not-exist as Sarah.</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;Course Not Found&#x27; page with a &#x27;Back to Courses&#x27; button (API: &#x27;Course not found&#x27;).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Course management (list, open, edit, delete, favourite)]]></req_spec_title>
+			<doc_id><![CDATA[REQ-MAN-02]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Course access control]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="409" name="Owner edits title, description and colour">
+	<node_order><![CDATA[3]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Owner edits title, description and colour.</p><p><b>Test design technique:</b> Use case, EP</p><p><b>Requirements:</b> REQ-MAN-03</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A owns &#x27;SECJ3343 Software Quality Assurance&#x27; (Purple).</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Course page &gt; three-dots &gt; Course Settings.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Settings page with tabs General and Danger Zone.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Change title to &#x27;SECJ3343 SQA&#x27;, description to &#x27;Updated&#x27;, colour to Green; save.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Toast &#x27;Course updated successfully!&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Return to /courses.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Card shows the new title and the green colour; resource cards unchanged (still 4).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Set title to 101 characters via API (course.update).</p>]]></actions>
+	<expectedresults><![CDATA[<p>Rejected (max 100); course keeps its title.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Course management (list, open, edit, delete, favourite)]]></req_spec_title>
+			<doc_id><![CDATA[REQ-MAN-03]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Edit course (owner only)]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="415" name="Non-owner cannot edit or open settings">
+	<node_order><![CDATA[4]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Non-owner cannot edit or open settings.</p><p><b>Test design technique:</b> Decision table (role x action), negative</p><p><b>Requirements:</b> REQ-MAN-03</p>]]></summary>
+	<preconditions><![CDATA[<p>John is CONTRIBUTOR and Sarah is VIEWER of other courses (seed); Michael has no access.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>John opens /courses/&lt;DSA id&gt;/settings.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Page shows &#x27;Access Denied&#x27; and &#x27;Only the course owner can access settings.&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>John calls course.update on the DSA course.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;Only the course owner can update course details&#x27;; data unchanged.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Sarah (VIEWER of Machine Learning) calls course.update on it.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN with the same message.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Call course.update with an unknown id.</p>]]></actions>
+	<expectedresults><![CDATA[<p>NOT_FOUND &#x27;Course not found&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Course management (list, open, edit, delete, favourite)]]></req_spec_title>
+			<doc_id><![CDATA[REQ-MAN-03]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Edit course (owner only)]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="421" name="Clearing the description when editing a course">
+	<node_order><![CDATA[5]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Clearing the description when editing a course.</p><p><b>Test design technique:</b> Error guessing</p><p><b>Requirements:</b> REQ-MAN-03</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A&#x27;s course &#x27;SECJ3343 SQA&#x27; has description &#x27;Updated&#x27;.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Open Course Settings &gt; General, delete the whole description text and save.</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;Course updated successfully!&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Reload the course/list.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Description is empty/removed. (Code sends undefined for an empty description, so the old text may remain - defect to report.)</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Course management (list, open, edit, delete, favourite)]]></req_spec_title>
+			<doc_id><![CDATA[REQ-MAN-03]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Edit course (owner only)]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="425" name="Delete course - confirm and cancel">
+	<node_order><![CDATA[6]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Delete course - confirm and cancel.</p><p><b>Test design technique:</b> State transition (exists -&gt; deleted), use case</p><p><b>Requirements:</b> REQ-MAN-04</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A owns course &#x27;To delete&#x27; with 1 custom resource; John is an accepted collaborator; Student A favourited it.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Course Settings &gt; Danger Zone &gt; &#x27;Delete Course Permanently&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Browser confirm: &#x27;Are you sure you want to delete &quot;To delete&quot;? This action cannot be undone and will delete all resources and collaborator access.&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Click Cancel.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Course still exists; nothing changed.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Repeat and click OK.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Toast &#x27;Course deleted successfully&#x27;; redirected away; course no longer in &#x27;My Courses&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Log in as John.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Course no longer under &#x27;Shared With Me&#x27;; opening its old URL shows &#x27;Course Not Found&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Open Sarah&#x27;s favourites / timetable course dropdown.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Deleted course not listed (favourite removed with the course).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Course management (list, open, edit, delete, favourite)]]></req_spec_title>
+			<doc_id><![CDATA[REQ-MAN-04]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Delete course (owner only)]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="432" name="Non-owner cannot delete a course">
+	<node_order><![CDATA[7]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Non-owner cannot delete a course.</p><p><b>Test design technique:</b> Decision table, negative</p><p><b>Requirements:</b> REQ-MAN-04</p>]]></summary>
+	<preconditions><![CDATA[<p>John is CONTRIBUTOR of Sarah&#x27;s &#x27;Data Structures &amp; Algorithms&#x27;.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>John calls course.delete with the course id.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;Only the course owner can delete the course&#x27;; course still exists.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>John opens the course page.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No settings/delete entry point is offered.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Course management (list, open, edit, delete, favourite)]]></req_spec_title>
+			<doc_id><![CDATA[REQ-MAN-04]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Delete course (owner only)]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="436" name="Toggle favourite on and off">
+	<node_order><![CDATA[8]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Toggle favourite on and off.</p><p><b>Test design technique:</b> State transition (not favourite &lt;-&gt; favourite)</p><p><b>Requirements:</b> REQ-MAN-05</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A has not favourited the new SQA course.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Click the star on the course page.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Toast &#x27;Added to favorites&#x27;; star filled yellow.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Open Timetable &gt; Add Class.</p>]]></actions>
+	<expectedresults><![CDATA[<p>The course now appears in the course dropdown.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Click the star again.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Toast &#x27;Removed from favorites&#x27;; star empty; course no longer in the Add Class dropdown.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Student B opens the same course (if shared) and checks the star.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Student B&#x27;s star is independent of Student A&#x27;s.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Course management (list, open, edit, delete, favourite)]]></req_spec_title>
+			<doc_id><![CDATA[REQ-MAN-05]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Favourite toggle]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+</testsuite><testsuite id="442" name="TS-K3 Resources &amp; Files" >
+<node_order><![CDATA[3]]></node_order>
+<details><![CDATA[<p>Custom resource cards, permissions, deadlines and file uploads. Techniques: BVA, DT, EP, EG.</p>]]></details> 
+
+<testcase internalid="443" name="Owner creates a custom resource card">
+	<node_order><![CDATA[1]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Owner creates a custom resource card.</p><p><b>Test design technique:</b> Use case (main flow)</p><p><b>Requirements:</b> REQ-RES-01, REQ-RES-02</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A owns SECJ3343 SQA course (4 default cards).</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Click &#x27;Add Custom Resource&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Dialog &#x27;Create Custom Resource&#x27; opens; &#x27;Allow File Uploads&#x27; is ON, &#x27;Set a Deadline&#x27; OFF.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Enter title &#x27;Midterm Exam Study Guide&#x27; and description &#x27;Chapters 1-5&#x27;; click create.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Toast &#x27;Resource created successfully!&#x27;; dialog closes.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Look at the grid.</p>]]></actions>
+	<expectedresults><![CDATA[<p>5 cards; the new card &#x27;Midterm Exam Study Guide&#x27; with a delete button and &#x27;Add Files&#x27; button.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Resource cards and files]]></req_spec_title>
+			<doc_id><![CDATA[REQ-RES-01]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Create custom resource card]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[Resource cards and files]]></req_spec_title>
+			<doc_id><![CDATA[REQ-RES-02]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Who may create or update resources]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="448" name="Resource title and description boundaries">
+	<node_order><![CDATA[2]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Resource title and description boundaries.</p><p><b>Test design technique:</b> BVA (title 0/1/100/101; description 500/501)</p><p><b>Requirements:</b> REQ-RES-01</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A in the &#x27;Create Custom Resource&#x27; dialog.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Leave title empty and submit.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Not created (required field / toast &#x27;Please enter a title&#x27;).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Create resource with a 1-character title and one with a 100-character title.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both created.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Type a 101-character title.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Field stops at 100 characters.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Call resource.create with a 101-character title and with a 501-character description.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both rejected by validation; nothing created.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Create a resource with a 500-character description.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Created.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Resource cards and files]]></req_spec_title>
+			<doc_id><![CDATA[REQ-RES-01]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Create custom resource card]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="455" name="Deadline states: future, within 3 days, overdue">
+	<node_order><![CDATA[3]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Deadline states: future, within 3 days, overdue.</p><p><b>Test design technique:</b> BVA/EP (deadline = +4 days, +2 days, -1 day)</p><p><b>Requirements:</b> REQ-RES-07, REQ-RES-01</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A owns the SQA course; today&#x27;s date known.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Create resource &#x27;D1&#x27; with &#x27;Set a Deadline&#x27; = today + 4 days.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Card shows &#x27;Due: &lt;date&gt; at &lt;time&gt;&#x27; in neutral colour, no &#x27;Soon&#x27; badge.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Create resource &#x27;D2&#x27; with deadline today + 2 days.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Card shows &#x27;Due: ...&#x27; with amber style and badge &#x27;Soon&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Update &#x27;D3&#x27; via resource.update with a deadline yesterday.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Card shows &#x27;Overdue: &lt;date&gt;&#x27; in red, no &#x27;Soon&#x27; badge.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Create a resource without a deadline.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No deadline badge.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Resource cards and files]]></req_spec_title>
+			<doc_id><![CDATA[REQ-RES-01]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Create custom resource card]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[Resource cards and files]]></req_spec_title>
+			<doc_id><![CDATA[REQ-RES-07]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Deadline display]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="461" name="Create/update permission matrix">
+	<node_order><![CDATA[4]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Create/update permission matrix.</p><p><b>Test design technique:</b> Decision table (role x action)</p><p><b>Requirements:</b> REQ-RES-02</p>]]></summary>
+	<preconditions><![CDATA[<p>Course DSA: owner Sarah, John accepted CONTRIBUTOR. Course Machine Learning: owner John, Sarah accepted VIEWER. Michael unrelated.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>John (CONTRIBUTOR) creates a custom resource in DSA.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Allowed - &#x27;Resource created successfully!&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>John updates the title of a resource in DSA.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Allowed.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Sarah (VIEWER) opens Machine Learning.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No &#x27;Add Custom Resource&#x27; button.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Sarah calls resource.create for Machine Learning.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;Only course owner and contributors can create resources&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Sarah calls resource.update on a Machine Learning resource.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;Only course owner and contributors can update resources&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[6]]></step_number>
+	<actions><![CDATA[<p>Michael calls resource.create for DSA; call resource.create with an unknown courseId.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN (same message); &#x27;Course not found&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Resource cards and files]]></req_spec_title>
+			<doc_id><![CDATA[REQ-RES-02]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Who may create or update resources]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="469" name="Delete resource - owner only, custom cards only in the UI">
+	<node_order><![CDATA[5]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Delete resource - owner only, custom cards only in the UI.</p><p><b>Test design technique:</b> Decision table (role x card type)</p><p><b>Requirements:</b> REQ-RES-03</p>]]></summary>
+	<preconditions><![CDATA[<p>Course DSA: owner Sarah, John CONTRIBUTOR; it has a CUSTOM card &#x27;Extra&#x27; and the 4 default cards.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Sarah looks at the default cards (Assignments, Tasks, Content, Notes).</p>]]></actions>
+	<expectedresults><![CDATA[<p>No delete button on them.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Sarah clicks delete on &#x27;Extra&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Confirm &#x27;Are you sure you want to delete this resource?&#x27;; Cancel keeps the card.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Click delete again and confirm.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Toast &#x27;Resource deleted successfully&#x27;; card removed.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>John (CONTRIBUTOR) opens the course.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No delete button on any card.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>John calls resource.delete for a resource of DSA.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;Only the course owner can delete resources&#x27;; resource still exists.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[6]]></step_number>
+	<actions><![CDATA[<p>Call resource.delete with an unknown id.</p>]]></actions>
+	<expectedresults><![CDATA[<p>NOT_FOUND &#x27;Resource not found&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Resource cards and files]]></req_spec_title>
+			<doc_id><![CDATA[REQ-RES-03]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Delete resource (owner only)]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="477" name="Attach files to a card that allows uploads">
+	<node_order><![CDATA[6]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Attach files to a card that allows uploads.</p><p><b>Test design technique:</b> Use case, DT (allowFiles x role)</p><p><b>Requirements:</b> REQ-RES-04</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A owns the SQA course; Assignments card allows files. File week1.pdf (1 MB) available. John is CONTRIBUTOR of DSA.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Click &#x27;Add Files&#x27; on Assignments, drop week1.pdf and upload.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Progress shown; toast &#x27;Successfully uploaded 1 file!&#x27; then &#x27;Files added successfully&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Look at the card.</p>]]></actions>
+	<expectedresults><![CDATA[<p>week1.pdf listed as a file link; the button now reads &#x27;Add More Files&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>John uploads a file to a DSA card that allows files.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Allowed; file listed.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>A VIEWER (Sarah in Machine Learning) looks at a card.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No &#x27;Add Files&#x27; button; existing files can be opened/downloaded.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Sarah calls resource.addFile for a Machine Learning resource.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;You don&#x27;t have permission to add files to this resource&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Resource cards and files]]></req_spec_title>
+			<doc_id><![CDATA[REQ-RES-04]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Attach files to a card]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="484" name="File upload refused for cards without uploads and invalid URLs">
+	<node_order><![CDATA[7]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>File upload refused for cards without uploads and invalid URLs.</p><p><b>Test design technique:</b> EP (allowFiles false / invalid URL), error guessing</p><p><b>Requirements:</b> REQ-RES-04</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A owns the SQA course; Tasks card has allowFiles = false; Assignments allows files.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Open the Tasks card.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No &#x27;Add Files&#x27; button is offered.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Call resource.addFile on the Tasks card.</p>]]></actions>
+	<expectedresults><![CDATA[<p>BAD_REQUEST &#x27;This resource does not allow file uploads&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Call resource.addFile on Assignments with fileUrls &#x27;not-a-url&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Rejected by validation (invalid url); no file stored.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Call resource.addFile with an array of two valid URLs.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both URLs added; card lists 2 files.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Resource cards and files]]></req_spec_title>
+			<doc_id><![CDATA[REQ-RES-04]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Attach files to a card]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="490" name="Upload limits: size, type and count">
+	<node_order><![CDATA[8]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Upload limits: size, type and count.</p><p><b>Test design technique:</b> BVA (16MB-1, 16MB, 16MB+1; 10/11 files; video 64MB; zip 32MB) and EP (types)</p><p><b>Requirements:</b> REQ-RES-05</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A on &#x27;Add Files&#x27; of an upload-enabled card. Test files prepared: pdf 15.9MB, pdf 16MB, pdf 16.1MB, mp4 64MB, mp4 65MB, zip 32MB, zip 33MB, .exe 1MB, 10 and 11 small PDFs.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Upload the 15.9MB and the 16MB PDF.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both accepted.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Upload the 16.1MB PDF.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Rejected: toast &#x27;Failed to upload files: ...&#x27; (file too large); file marked error.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Upload the 64MB mp4, then the 65MB mp4.</p>]]></actions>
+	<expectedresults><![CDATA[<p>64MB accepted; 65MB rejected.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Upload the 32MB zip, then the 33MB zip.</p>]]></actions>
+	<expectedresults><![CDATA[<p>32MB accepted; 33MB rejected.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Upload the .exe file.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Rejected (type not allowed).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[6]]></step_number>
+	<actions><![CDATA[<p>Upload 10 small PDFs together, then 11.</p>]]></actions>
+	<expectedresults><![CDATA[<p>10 accepted; 11 rejected (max file count).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[7]]></step_number>
+	<actions><![CDATA[<p>Log out and call the upload endpoint courseResourceUploader.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Rejected &#x27;Unauthorized&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Resource cards and files]]></req_spec_title>
+			<doc_id><![CDATA[REQ-RES-05]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Upload size, type and count limits]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="499" name="Remove a file from a card">
+	<node_order><![CDATA[9]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Remove a file from a card.</p><p><b>Test design technique:</b> DT (role x action)</p><p><b>Requirements:</b> REQ-RES-06</p>]]></summary>
+	<preconditions><![CDATA[<p>Assignments card of the SQA course holds files A and B; John is not a collaborator; Sarah (course DSA) is not CONTRIBUTOR of SQA.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Owner calls resource.removeFile with the URL of file A.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Card now lists only file B; A is gone.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>A VIEWER or outsider calls resource.removeFile for file B.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;You don&#x27;t have permission to remove files from this resource&#x27;; B stays.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Owner calls removeFile with a valid URL that is not on the card.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No change, no error; list unchanged.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[Resource cards and files]]></req_spec_title>
+			<doc_id><![CDATA[REQ-RES-06]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Remove a file]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+</testsuite><testsuite id="504" name="TS-K4 Timetable (UC-S4-005)" >
+<node_order><![CDATA[4]]></node_order>
+<details><![CDATA[<p>Timetables and weekly classes. Techniques: UC, BVA (time ranges, 3 per day, names), DT (roles), ST (invitation).</p>]]></details> 
+
+<testcase internalid="505" name="Create a timetable (first-time and name boundaries)">
+	<node_order><![CDATA[1]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Create a timetable (first-time and name boundaries).</p><p><b>Test design technique:</b> Use case + BVA (name 0/1/100/101, description 500/501)</p><p><b>Requirements:</b> REQ-TT-01</p>]]></summary>
+	<preconditions><![CDATA[<p>Approved student E without any timetable (or Student A for the boundary steps).</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Student E opens /timetable.</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;No Timetables Yet&#x27; and button &#x27;Create Your First Timetable&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Create timetable &#x27;SQA Week&#x27; with description &#x27;Semester 1&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Timetable created and listed under &#x27;My Timetables&#x27;; calendar week view shown (Monday-Sunday columns).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>As Student A open Create Timetable and submit an empty name.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Not submitted (required field); API &#x27;Name is required&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Create timetables named with 1 and with 100 characters.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both created.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Type 101 characters in the name; call timetable.create with a 501-character description.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Name field stops at 100; API rejects the 501-character description.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-01]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Create timetable]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="512" name="Set, keep and lose the default timetable">
+	<node_order><![CDATA[2]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Set, keep and lose the default timetable.</p><p><b>Test design technique:</b> State transition (not default -&gt; default -&gt; cleared)</p><p><b>Requirements:</b> REQ-TT-02</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A has default &#x27;Fall 2024 Schedule&#x27; and the new owned timetable &#x27;SQA Week&#x27;.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Open /timetable.</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;Fall 2024 Schedule&#x27; is selected first and has the &#x27;Default&#x27; badge.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Select &#x27;SQA Week&#x27; &gt; Timetable Settings &gt; &#x27;Set as Default&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Button becomes &#x27;Currently Default&#x27; (disabled); badge &#x27;Default&#x27; moves to &#x27;SQA Week&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Reload /timetable.</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;SQA Week&#x27; opens first.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Delete &#x27;SQA Week&#x27; (Delete Timetable, confirm).</p>]]></actions>
+	<expectedresults><![CDATA[<p>Default is cleared; /timetable falls back to the first owned timetable.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Student C calls timetable.setDefaultTimetable with Sarah&#x27;s timetable id.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;You don&#x27;t have access to this timetable&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-02]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Default timetable]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="519" name="Add a weekly class to the timetable (main flow)">
+	<node_order><![CDATA[3]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Add a weekly class to the timetable (main flow).</p><p><b>Test design technique:</b> Use case, EP valid classes</p><p><b>Requirements:</b> REQ-TT-03, REQ-TT-04</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A owns empty timetable &#x27;SQA Week&#x27; (selected); favourites include Data Structures &amp; Algorithms.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Click &#x27;Add Class&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Modal &#x27;Add Class&#x27; with Course, Title, Day of Week, Start Time, End Time, Location (Optional).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Open the Course dropdown.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Only favourites listed (Data Structures &amp; Algorithms, Web Development, Machine Learning); hint &#x27;Only your favorited courses are shown&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Select Data Structures &amp; Algorithms, title &#x27;Application Development Lecture&#x27;, Monday, 08:00-10:00, location &#x27;Room 301&#x27;; click &#x27;Add Class&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Modal closes without error.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Look at the week view.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Class shown on Monday 08:00-10:00 in the course colour (blue); clicking it opens &#x27;Class Details&#x27; with Course, Day Monday, Time 08:00 - 10:00, Location Room 301.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Move to the next week.</p>]]></actions>
+	<expectedresults><![CDATA[<p>The same class appears again on Monday (weekly recurring).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-03]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Only favourite courses can be scheduled]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-04]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Class event data]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="526" name="Add Class with no favourite courses">
+	<node_order><![CDATA[4]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Add Class with no favourite courses.</p><p><b>Test design technique:</b> EP (no favourites)</p><p><b>Requirements:</b> REQ-TT-03</p>]]></summary>
+	<preconditions><![CDATA[<p>Student E owns a timetable but has no favourite courses.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Click &#x27;Add Class&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Notice &#x27;No Favorite Courses&#x27; / &#x27;You need to favorite courses before adding them to your timetable&#x27;; no form.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Click &#x27;Go to Courses&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Modal closes.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-03]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Only favourite courses can be scheduled]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="530" name="API refuses classes for non-favourite courses">
+	<node_order><![CDATA[5]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>API refuses classes for non-favourite courses.</p><p><b>Test design technique:</b> Error guessing (API bypass)</p><p><b>Requirements:</b> REQ-TT-03</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A owns &#x27;SQA Week&#x27;; course &#x27;SECJ3343 SQA&#x27; is NOT a favourite of A.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Call timetable.createEvent for &#x27;SQA Week&#x27; with that course, Monday 13:00-14:00.</p>]]></actions>
+	<expectedresults><![CDATA[<p>BAD_REQUEST &#x27;You can only add favorited courses to your timetable&#x27;; no event.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Favourite the course (star) and repeat the call.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Event created.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-03]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Only favourite courses can be scheduled]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="534" name="Class title and location length boundaries">
+	<node_order><![CDATA[6]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Class title and location length boundaries.</p><p><b>Test design technique:</b> BVA (title 0/1/100/101, location 100/101)</p><p><b>Requirements:</b> REQ-TT-04</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A, &#x27;SQA Week&#x27; selected, favourite course available.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Leave Title empty.</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;Add Class&#x27; stays disabled (title required).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Add classes with a 1-character title and with a 100-character title on different days.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both added.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Type 101 characters into Title and Location.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both inputs stop at 100 characters.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Call timetable.createEvent with a 101-character title, then with a 101-character location.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both rejected by validation.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Call timetable.createEvent with dayOfWeek -1 and 7.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Both rejected (valid range 0-6); dayOfWeek 0 (Sunday) and 6 (Saturday) accepted.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[6]]></step_number>
+	<actions><![CDATA[<p>Call timetable.createEvent with startTime &#x27;9:00&#x27; and &#x27;0900&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Rejected &#x27;Invalid time format (HH:MM)&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-04]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Class event data]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="542" name="End time must be after start time">
+	<node_order><![CDATA[7]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>End time must be after start time.</p><p><b>Test design technique:</b> BVA (end = start-1min, = start, = start+1min) and error guessing</p><p><b>Requirements:</b> REQ-TT-05</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A in &#x27;Add Class&#x27; with course and title filled, Tuesday, start 10:00.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Set end time 09:59.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Red message &#x27;End time must be after start time&#x27;; &#x27;Add Class&#x27; disabled.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Set end time 10:00.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Same message and disabled (equal times invalid).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Set end time 10:01.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No message; &#x27;Add Class&#x27; enabled; class (10:00-10:01) can be added.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Call timetable.createEvent with startTime &#x27;10:00&#x27;, endTime &#x27;09:00&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Expected: rejected. (API has no check and stores it - defect to report.)</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Call timetable.createEvent with startTime &#x27;99:99&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Expected: rejected as invalid time. (Only the regexp ^\d{2}:\d{2}$ is checked - defect to report.)</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-05]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[End time must be after start time]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="549" name="Time conflict detection boundaries">
+	<node_order><![CDATA[8]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Time conflict detection boundaries.</p><p><b>Test design technique:</b> BVA (overlap by 1 minute, back-to-back, other day)</p><p><b>Requirements:</b> REQ-TT-06</p>]]></summary>
+	<preconditions><![CDATA[<p>&#x27;SQA Week&#x27; has &#x27;App Dev Lecture&#x27; Monday 08:00-10:00 (course DSA).</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Add class Monday 09:00-11:00 (Web Development).</p>]]></actions>
+	<expectedresults><![CDATA[<p>Message &#x27;Time conflict detected&#x27; and &#x27;Overlaps with App Dev Lecture (08:00 - 10:00)&#x27;; &#x27;Add Class&#x27; disabled.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Change to Monday 09:59-11:00.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Still a conflict (1-minute overlap).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Change to Monday 10:00-12:00.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No conflict (back-to-back allowed); class can be added.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Change to Monday 06:00-08:00.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No conflict (ends exactly at 08:00).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Change the day to Tuesday 08:00-10:00.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No conflict on another weekday; can be added.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[6]]></step_number>
+	<actions><![CDATA[<p>Add a class fully inside 08:30-09:00 on Monday.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Conflict reported (contained interval).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-06]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Time conflict detection]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="557" name="Maximum 3 classes per course per day">
+	<node_order><![CDATA[9]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Maximum 3 classes per course per day.</p><p><b>Test design technique:</b> BVA (0, 1, 2, 3 existing classes)</p><p><b>Requirements:</b> REQ-TT-07, REQ-TT-06</p>]]></summary>
+	<preconditions><![CDATA[<p>&#x27;SQA Week&#x27; empty; favourite course Web Development.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Add Web Development class Wednesday 08:00-09:00.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Added (0 existing).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Open Add Class again, pick Web Development, Wednesday.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Info &#x27;This course has 1 class on this day. You can add 2 more.&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Add Wednesday 09:00-10:00; then open the form again.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Info &#x27;This course has 2 classes on this day. You can add 1 more.&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Add Wednesday 10:00-11:00 (the 3rd).</p>]]></actions>
+	<expectedresults><![CDATA[<p>Added.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Open the form for Web Development, Wednesday, 12:00-13:00.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Orange message &#x27;Maximum 3 classes per course per day. This course already has 3 classes on this day.&#x27;; &#x27;Add Class&#x27; disabled.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[6]]></step_number>
+	<actions><![CDATA[<p>Select Thursday for the same course.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Message disappears; class can be added.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-06]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Time conflict detection]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-07]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Maximum 3 classes per course per day]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="565" name="Edit a class in the details dialog">
+	<node_order><![CDATA[10]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Edit a class in the details dialog.</p><p><b>Test design technique:</b> Use case (alternative flow A1), BVA</p><p><b>Requirements:</b> REQ-TT-08, REQ-TT-05, REQ-TT-06</p>]]></summary>
+	<preconditions><![CDATA[<p>&#x27;SQA Week&#x27; has &#x27;App Dev Lecture&#x27; Monday 08:00-10:00 and &#x27;Lab&#x27; Monday 10:00-12:00.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Click &#x27;App Dev Lecture&#x27; &gt; Edit Class.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Dialog &#x27;Edit Class&#x27; with current values.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Change location to &#x27;Room 302&#x27; and Save Changes.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Saved; Class Details shows Room 302.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Change end time to 10:01 (overlaps &#x27;Lab&#x27;).</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;Time conflict detected&#x27; / &#x27;Overlaps with Lab (10:00 - 12:00)&#x27;; Save Changes disabled.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Change end time to 10:00 again.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No conflict (the class itself is ignored; back-to-back OK); Save works.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Change end time before start time.</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;End time must be after start time&#x27;; Save disabled.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-05]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[End time must be after start time]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-06]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Time conflict detection]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-08]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Edit and move a class]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="572" name="Drag and resize a class in the calendar">
+	<node_order><![CDATA[11]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Drag and resize a class in the calendar.</p><p><b>Test design technique:</b> Error guessing (UI gestures)</p><p><b>Requirements:</b> REQ-TT-08</p>]]></summary>
+	<preconditions><![CDATA[<p>&#x27;SQA Week&#x27; has Monday 08:00-10:00 &#x27;App Dev Lecture&#x27; and Tuesday 08:00-10:00 &#x27;Lab&#x27;.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Drag &#x27;App Dev Lecture&#x27; to Wednesday 08:00.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Moved; class now on Wednesday 08:00-10:00.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Drag &#x27;Lab&#x27; to overlap the lecture on Wednesday.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Alert &#x27;Cannot move event: Time conflict with another class&#x27;; Lab stays on Tuesday.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Resize the lecture so it overlaps another class on its day.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Alert &#x27;Cannot resize event: Time conflict with another class&#x27;; unchanged.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Resize it to 08:00-11:00 where free.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Saved; Class Details shows 08:00 - 11:00.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>As a VIEWER try to drag a class.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Not draggable / no change.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-08]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Edit and move a class]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="579" name="Delete a class">
+	<node_order><![CDATA[12]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Delete a class.</p><p><b>Test design technique:</b> Use case (alternative flow A2), state transition</p><p><b>Requirements:</b> REQ-TT-09</p>]]></summary>
+	<preconditions><![CDATA[<p>&#x27;SQA Week&#x27; has class &#x27;Lab&#x27; on Tuesday.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Click &#x27;Lab&#x27; &gt; Delete.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Confirmation &#x27;Delete this class?&#x27; with &#x27;Yes, Delete&#x27; and &#x27;Cancel&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Click Cancel.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Class still on the calendar.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Delete again and click &#x27;Yes, Delete&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Class disappears from this and all other weeks.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Call timetable.deleteEvent with the deleted id.</p>]]></actions>
+	<expectedresults><![CDATA[<p>NOT_FOUND &#x27;Event not found&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-09]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Delete a class]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="585" name="Timetable role matrix (owner, contributor, viewer, outsider)">
+	<node_order><![CDATA[13]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Timetable role matrix (owner, contributor, viewer, outsider).</p><p><b>Test design technique:</b> Decision table (role x action)</p><p><b>Requirements:</b> REQ-TT-10, REQ-TT-08, REQ-TT-09</p>]]></summary>
+	<preconditions><![CDATA[<p>Seed: John&#x27;s &#x27;Fall 2024 Schedule&#x27; - Sarah CONTRIBUTOR (accepted). Sarah&#x27;s &#x27;Fall 2024 Schedule&#x27; - John VIEWER (accepted). Michael has no access to either.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Sarah opens John&#x27;s timetable under &#x27;Shared with Me&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Role shown as Contributor; &#x27;Add Class&#x27; available; she can add, edit and delete a class.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>John opens Sarah&#x27;s timetable under &#x27;Shared with Me&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Role shown as Viewer; no &#x27;Add Class&#x27;; classes only viewable.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>John calls timetable.createEvent / updateEvent / deleteEvent on Sarah&#x27;s timetable.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;You don&#x27;t have permission to add events to this timetable&#x27; / &#x27;... update this event&#x27; / &#x27;... delete this event&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Michael calls timetable.getById for Sarah&#x27;s timetable.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;You don&#x27;t have access to this timetable&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Call timetable.getById with an unknown id.</p>]]></actions>
+	<expectedresults><![CDATA[<p>NOT_FOUND &#x27;Timetable not found&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-08]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Edit and move a class]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-09]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Delete a class]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-10]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Timetable permissions]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="592" name="Invite a student to a timetable (search length, role, duplicates)">
+	<node_order><![CDATA[14]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Invite a student to a timetable (search length, role, duplicates).</p><p><b>Test design technique:</b> BVA (query 2/3 chars), EP (roles), error guessing</p><p><b>Requirements:</b> REQ-TT-11</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A owns &#x27;SQA Week&#x27;. Alice (PENDING) and Emily are in the database; David already has a PENDING invitation to Sarah&#x27;s &#x27;Fall 2024 Schedule&#x27;.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Select &#x27;SQA Week&#x27; &gt; Share.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Dialog with &#x27;Invite as&#x27; Viewer/Contributor and &#x27;Search for students&#x27; (min 3 characters).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Type &#x27;em&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No search is run; hint &#x27;Type at least 3 characters to search&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Type &#x27;ema&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Results include Emily Rodriguez; Student A herself is not listed.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Search &#x27;ali&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Alice Wong (PENDING, not approved) is not listed.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Choose Contributor and click Invite for Emily.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Invitation created (PENDING); Emily gets notification &#x27;New timetable invitation: Sarah Ahmed invited you to collaborate on SQA Week&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[6]]></step_number>
+	<actions><![CDATA[<p>Call timetable.inviteCollaborator again for Emily.</p>]]></actions>
+	<expectedresults><![CDATA[<p>BAD_REQUEST &#x27;User already invited&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[7]]></step_number>
+	<actions><![CDATA[<p>Call inviteCollaborator with Sarah&#x27;s own user id.</p>]]></actions>
+	<expectedresults><![CDATA[<p>BAD_REQUEST &#x27;You can&#x27;t invite yourself&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[8]]></step_number>
+	<actions><![CDATA[<p>John (not owner) calls inviteCollaborator for &#x27;SQA Week&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;Only the owner can invite collaborators&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[9]]></step_number>
+	<actions><![CDATA[<p>Call timetable.searchUsers with query &#x27;ab&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Rejected &#x27;Search query must be at least 3 characters&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-11]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Invite students to a timetable]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="603" name="Timetable invitation lifecycle: accept, reject, leave">
+	<node_order><![CDATA[15]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Timetable invitation lifecycle: accept, reject, leave.</p><p><b>Test design technique:</b> State transition (PENDING -&gt; ACCEPTED/REJECTED; ACCEPTED -&gt; left)</p><p><b>Requirements:</b> REQ-TT-12, REQ-TT-02</p>]]></summary>
+	<preconditions><![CDATA[<p>Sarah&#x27;s timetable has a PENDING invitation for David (seed); Lisa has a PENDING invitation on John&#x27;s timetable; Emily was invited to &#x27;SQA Week&#x27; as Contributor.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>David opens /courses.</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;Timetable Invitations&#x27; lists Sarah&#x27;s &#x27;Fall 2024 Schedule&#x27; with Accept and Reject.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>David clicks Accept.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Timetable appears under &#x27;Shared with Me&#x27; in /timetable; Sarah gets &#x27;Invitation accepted: David Kim accepted your invitation to Fall 2024 Schedule&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Lisa clicks Reject.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Invitation disappears; John gets &#x27;Invitation declined&#x27;; timetable not shared with Lisa.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>David sets the shared timetable as default and then Timetable Settings &gt; Leave Timetable &gt; Confirm Leave.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Timetable removed from &#x27;Shared with Me&#x27; and the default is cleared.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Sarah (owner) calls timetable.leaveTimetable on her own timetable.</p>]]></actions>
+	<expectedresults><![CDATA[<p>BAD_REQUEST &#x27;You cannot leave a timetable you own. Delete it instead.&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[6]]></step_number>
+	<actions><![CDATA[<p>David calls acceptInvitation again for the already handled invitation.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Fails (no PENDING invitation); status is not changed.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-02]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Default timetable]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-12]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Accept, reject and leave a shared timetable]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="611" name="Class reminder is created at the configured time">
+	<node_order><![CDATA[16]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Class reminder is created at the configured time.</p><p><b>Test design technique:</b> EP / BVA (minutes until class = reminder time -2, -1, 0, +1, +2), use case</p><p><b>Requirements:</b> REQ-TT-13</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A has a class today starting at HH:MM = now + 10 min on &#x27;SQA Week&#x27; (default timetable), reminder timing at its default of 10 minutes. CRON_SECRET known.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>GET /api/cron/class-reminders without Authorization header.</p>]]></actions>
+	<expectedresults><![CDATA[<p>401 &#x27;Unauthorized&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>GET it with &#x27;Authorization: Bearer &lt;CRON_SECRET&gt;&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>JSON success; message &#x27;Sent 1 reminder(s)&#x27; (or more).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Student A opens the notification bell.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Notification &#x27;Class starting in 10 minutes&#x27; with message &#x27;&lt;course&gt; at &lt;HH:MM&gt;&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Call the endpoint again in the same minute.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No duplicate notification is created for the same class that day.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Change the class to start in 13 minutes (3 min off) and call the endpoint.</p>]]></actions>
+	<expectedresults><![CDATA[<p>No reminder (outside +-1 minute of the 10-minute setting).</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[6]]></step_number>
+	<actions><![CDATA[<p>Set reminder timing to 5 minutes (Settings) with the class 5 minutes away and call again.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Reminder &#x27;Class starting in 5 minutes&#x27; created.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-13]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Class reminders]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+
+<testcase internalid="619" name="Rename and delete a timetable (owner only)">
+	<node_order><![CDATA[17]]></node_order>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<p>Rename and delete a timetable (owner only).</p><p><b>Test design technique:</b> Decision table (role x action), state transition</p><p><b>Requirements:</b> REQ-TT-14, REQ-TT-02</p>]]></summary>
+	<preconditions><![CDATA[<p>Student A owns &#x27;SQA Week&#x27; with 2 classes and Emily as accepted Contributor; &#x27;SQA Week&#x27; is A&#x27;s default and also Emily&#x27;s default.</p>]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[3]]></importance>
+	<estimated_exec_duration></estimated_exec_duration>
+	<status>1</status>
+	<is_open>1</is_open>
+	<active>1</active>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>Emily calls timetable.update (new name) on &#x27;SQA Week&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;Only the owner can update this timetable&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Emily calls timetable.delete on &#x27;SQA Week&#x27;.</p>]]></actions>
+	<expectedresults><![CDATA[<p>FORBIDDEN &#x27;Only the owner can delete this timetable&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Student A renames the timetable via timetable.update to &#x27;SQA Week 2&#x27; (101 characters is rejected).</p>]]></actions>
+	<expectedresults><![CDATA[<p>Name changed; 101-character name rejected.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Student A: Timetable Settings &gt; Delete Timetable and confirm.</p>]]></actions>
+	<expectedresults><![CDATA[<p>Timetable is deleted with its 2 classes.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[5]]></step_number>
+	<actions><![CDATA[<p>Student A and Emily open /timetable.</p>]]></actions>
+	<expectedresults><![CDATA[<p>&#x27;SQA Week 2&#x27; is gone for both; neither has it as default; Emily no longer sees it under &#x27;Shared with Me&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[6]]></step_number>
+	<actions><![CDATA[<p>Call timetable.delete with an unknown id.</p>]]></actions>
+	<expectedresults><![CDATA[<p>NOT_FOUND &#x27;Timetable not found&#x27;.</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<platforms/>
+
+	<requirements>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-02]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Default timetable]]></title>
+		</requirement>
+		<requirement>
+			<req_spec_title><![CDATA[UC-S4-005 Weekly Timetable with Events]]></req_spec_title>
+			<doc_id><![CDATA[REQ-TT-14]]></doc_id>
+			<version><![CDATA[1]]></version>
+			<title><![CDATA[Update and delete timetable (owner only)]]></title>
+		</requirement>
+	</requirements>
+</testcase>
+</testsuite></testsuite>

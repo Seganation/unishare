@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<requirement-specification>
+<req_spec title="UC-S3-001 Create Course with Default Resources" doc_id="SRS-K-CRS">
+<type><![CDATA[2]]></type><node_order><![CDATA[1]]></node_order>
+<total_req><![CDATA[6]]></total_req>
+<scope><![CDATA[<p>An approved student creates a course (title, description, colour); the system creates four default resource cards. Source: UniShare_Iteration_3.md Use Case 1 (UC-S3-001) and Sequence 1; src/server/api/routers/course.ts (create); src/components/courses/course-form.tsx; src/app/(student)/courses/new/page.tsx; middleware.ts; src/app/(student)/layout.tsx. Differences from the document: code has no course code / semester / icon fields; minimum title length is 1 (document: 2); an invalid colour is rejected, not defaulted; after creation the student is redirected to /courses (document: /courses/&lt;id&gt;).</p>]]></scope>
+<requirement>
+<docid><![CDATA[REQ-CRS-01]]></docid><title><![CDATA[Course title validation]]></title>
+<version>1</version><revision>1</revision><node_order>1</node_order>
+<description><![CDATA[<p>Title is mandatory, 1 to 100 characters (input has maxLength 100; API z.string().min(1,&#x27;Title is required&#x27;).max(100)). The form trims the title; an empty or whitespace-only title is not submitted and shows the message &#x27;Please enter a course title&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-CRS-02]]></docid><title><![CDATA[Course description validation]]></title>
+<version>1</version><revision>1</revision><node_order>2</node_order>
+<description><![CDATA[<p>Description is optional, maximum 500 characters (textarea maxLength 500, API max(500)). An empty description is stored as no description.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-CRS-03]]></docid><title><![CDATA[Course colour]]></title>
+<version>1</version><revision>1</revision><node_order>3</node_order>
+<description><![CDATA[<p>Colour is mandatory and chosen from 8 swatches (Purple, Blue, Green, Orange, Red, Pink, Teal, Indigo); the first (Purple #a855f7) is preselected. The API accepts only &#x27;#&#x27; followed by exactly 6 hex digits (case-insensitive) and otherwise returns &#x27;Invalid color format&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-CRS-04]]></docid><title><![CDATA[Four default resource cards]]></title>
+<version>1</version><revision>1</revision><node_order>4</node_order>
+<description><![CDATA[<p>Creating a course automatically creates exactly 4 resource cards: Assignments (type ASSIGNMENT, files allowed), Tasks (TASK, no files), Content (CONTENT, files allowed), Notes (NOTES, no files).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-CRS-05]]></docid><title><![CDATA[Successful creation]]></title>
+<version>1</version><revision>1</revision><node_order>5</node_order>
+<description><![CDATA[<p>After a valid submission the system shows &#x27;Course created successfully!&#x27;, redirects to /courses and the course appears under &#x27;My Courses&#x27; with the creator as owner (role OWNER, createdBy = current user). Duplicate titles are allowed.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-CRS-06]]></docid><title><![CDATA[Only approved, logged-in students can create courses]]></title>
+<version>1</version><revision>1</revision><node_order>6</node_order>
+<description><![CDATA[<p>Visitors who are not logged in are redirected to /login; users with role PENDING are redirected to /waiting-approval and cannot use /courses/new. The API requires a session (UNAUTHORIZED otherwise). Iteration 3 alternative flow A3 additionally requires a 403 &#x27;Your account is pending approval&#x27; from the server.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+</req_spec>
+<req_spec title="Course management (list, open, edit, delete, favourite)" doc_id="SRS-K-MAN">
+<type><![CDATA[2]]></type><node_order><![CDATA[2]]></node_order>
+<total_req><![CDATA[5]]></total_req>
+<scope><![CDATA[<p>Owner and collaborator handling of an existing course. Source: UniShare_Iteration_3.md Use Case 1 postconditions and Data Dictionary (Course, Favorite); src/server/api/routers/course.ts (getAll, getUserCourses, getById, update, delete, toggleFavorite); src/app/(student)/courses/page.tsx, courses/[id]/page.tsx, courses/[id]/settings/page.tsx; src/components/courses/*.</p>]]></scope>
+<requirement>
+<docid><![CDATA[REQ-MAN-01]]></docid><title><![CDATA[Course list: owned and shared]]></title>
+<version>1</version><revision>1</revision><node_order>1</node_order>
+<description><![CDATA[<p>/courses lists the student&#x27;s own courses under &#x27;My Courses&#x27; and courses where the student is an ACCEPTED collaborator under &#x27;Shared With Me&#x27;. PENDING or REJECTED invitations and other students&#x27; courses are not listed. A student without courses sees &#x27;No courses yet&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-MAN-02]]></docid><title><![CDATA[Course access control]]></title>
+<version>1</version><revision>1</revision><node_order>2</node_order>
+<description><![CDATA[<p>A course can be opened only by its owner or an ACCEPTED collaborator; the page shows the role badge OWNER / CONTRIBUTOR / VIEWER. Others get &#x27;You don&#x27;t have access to this course&#x27;; an unknown id gives &#x27;Course not found&#x27; (page &#x27;Course Not Found&#x27;).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-MAN-03]]></docid><title><![CDATA[Edit course (owner only)]]></title>
+<version>1</version><revision>1</revision><node_order>3</node_order>
+<description><![CDATA[<p>The owner can change title, description and colour in Course Settings &gt; General (same validation as creation) and sees &#x27;Course updated successfully!&#x27;. Any other user gets &#x27;Only the course owner can update course details&#x27;; the settings page shows &#x27;Access Denied - Only the course owner can access settings.&#x27; to non-owners. Clearing the description must remove it.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-MAN-04]]></docid><title><![CDATA[Delete course (owner only)]]></title>
+<version>1</version><revision>1</revision><node_order>4</node_order>
+<description><![CDATA[<p>Course Settings &gt; Danger Zone asks &#x27;Are you sure you want to delete &quot;&lt;title&gt;&quot;? This action cannot be undone and will delete all resources and collaborator access.&#x27;. OK deletes the course with its resources, collaborators and favourites and shows &#x27;Course deleted successfully&#x27;; Cancel changes nothing. Non-owners get &#x27;Only the course owner can delete the course&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-MAN-05]]></docid><title><![CDATA[Favourite toggle]]></title>
+<version>1</version><revision>1</revision><node_order>5</node_order>
+<description><![CDATA[<p>The star on the course page toggles the favourite flag of the current student only (unique per student and course): &#x27;Added to favorites&#x27; / &#x27;Removed from favorites&#x27;. Favourites feed the timetable course list.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+</req_spec>
+<req_spec title="Resource cards and files" doc_id="SRS-K-RES">
+<type><![CDATA[2]]></type><node_order><![CDATA[3]]></node_order>
+<total_req><![CDATA[7]]></total_req>
+<scope><![CDATA[<p>Custom resource cards, deadlines and file attachments inside a course. Source: UniShare_Iteration_3.md Use Case 1 step 26 + Data Dictionary (ResourceCard, Resource); src/server/api/routers/resource.ts; src/components/resources/resource-form.tsx, resource-card.tsx, file-upload-modal.tsx; src/app/api/uploadthing/core.ts (courseResourceUploader); src/app/(student)/courses/[id]/page.tsx.</p>]]></scope>
+<requirement>
+<docid><![CDATA[REQ-RES-01]]></docid><title><![CDATA[Create custom resource card]]></title>
+<version>1</version><revision>1</revision><node_order>1</node_order>
+<description><![CDATA[<p>&#x27;Add Custom Resource&#x27; opens &#x27;Create Custom Resource&#x27;. Title is mandatory 1-100 characters (empty shows &#x27;Please enter a title&#x27;), description optional max 500, &#x27;Allow File Uploads&#x27; toggle (default ON), optional deadline (&#x27;Set a Deadline&#x27;). The card is stored with type CUSTOM and &#x27;Resource created successfully!&#x27; is shown.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-RES-02]]></docid><title><![CDATA[Who may create or update resources]]></title>
+<version>1</version><revision>1</revision><node_order>2</node_order>
+<description><![CDATA[<p>Only the course owner and ACCEPTED CONTRIBUTORs can create/update resources and see &#x27;Add Custom Resource&#x27;. VIEWERs and outsiders get &#x27;Only course owner and contributors can create resources&#x27; / &#x27;Only course owner and contributors can update resources&#x27;; unknown course/resource gives &#x27;Course not found&#x27; / &#x27;Resource not found&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-RES-03]]></docid><title><![CDATA[Delete resource (owner only)]]></title>
+<version>1</version><revision>1</revision><node_order>3</node_order>
+<description><![CDATA[<p>Only the owner can delete resources: the API returns &#x27;Only the course owner can delete resources&#x27; to everybody else. In the UI the delete button exists only for CUSTOM cards, asks &#x27;Are you sure you want to delete this resource?&#x27; and shows &#x27;Resource deleted successfully&#x27;. The 4 default cards have no delete button.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-RES-04]]></docid><title><![CDATA[Attach files to a card]]></title>
+<version>1</version><revision>1</revision><node_order>4</node_order>
+<description><![CDATA[<p>Files can be added (button &#x27;Add Files&#x27; / &#x27;Add More Files&#x27;) only to cards with allowFiles = true and only by the owner or a CONTRIBUTOR. Otherwise the API returns &#x27;This resource does not allow file uploads&#x27; or &#x27;You don&#x27;t have permission to add files to this resource&#x27;. File URLs must be valid URLs. Success shows &#x27;Files added successfully&#x27;. Cards without files show &#x27;No files uploaded yet&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-RES-05]]></docid><title><![CDATA[Upload size, type and count limits]]></title>
+<version>1</version><revision>1</revision><node_order>5</node_order>
+<description><![CDATA[<p>courseResourceUploader accepts images, PDF and text up to 16MB (max 10 files), Word/Excel/PowerPoint up to 16MB (max 10 files), video up to 64MB (max 5 files), ZIP up to 32MB (max 5 files); anything else, any larger file or more files is rejected (&#x27;Failed to upload files: ...&#x27;). Upload requires a logged-in user (&#x27;Unauthorized&#x27;).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-RES-06]]></docid><title><![CDATA[Remove a file]]></title>
+<version>1</version><revision>1</revision><node_order>6</node_order>
+<description><![CDATA[<p>Owner and CONTRIBUTOR can remove a file URL from a card; others get &#x27;You don&#x27;t have permission to remove files from this resource&#x27;. Only the chosen file is removed.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-RES-07]]></docid><title><![CDATA[Deadline display]]></title>
+<version>1</version><revision>1</revision><node_order>7</node_order>
+<description><![CDATA[<p>A card with a deadline shows &#x27;Due: &lt;MMM dd, yyyy &#x27;at&#x27; h:mm a&gt;&#x27;. Within the next 3 days it additionally shows the badge &#x27;Soon&#x27; (amber); after the deadline it shows &#x27;Overdue: &lt;date&gt;&#x27; (red) and no &#x27;Soon&#x27; badge.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+</req_spec>
+<req_spec title="UC-S4-005 Weekly Timetable with Events" doc_id="SRS-K-TT">
+<type><![CDATA[2]]></type><node_order><![CDATA[4]]></node_order>
+<total_req><![CDATA[14]]></total_req>
+<scope><![CDATA[<p>Student creates timetables, adds weekly class events for favourite courses, detects conflicts, shares the timetable and receives class reminders. Source: UniShare_Iteration_4.md Use Case 5 (UC-S4-005); src/server/api/routers/timetable.ts; src/components/timetable/*; src/app/(student)/timetable/page.tsx; src/app/api/cron/class-reminders/route.ts. Differences from the document: events are weekly recurring by day-of-week (no recurrence rule JSON, end date or multiple days per event); the conflict message is &#x27;Time conflict detected / Overlaps with &lt;title&gt; (start - end)&#x27;; reminders use the user&#x27;s reminder timing (5-30 min, default 10) not a fixed 1 hour; the check &#x27;start before end&#x27; and the conflict check are done only in the browser, not in the API.</p>]]></scope>
+<requirement>
+<docid><![CDATA[REQ-TT-01]]></docid><title><![CDATA[Create timetable]]></title>
+<version>1</version><revision>1</revision><node_order>1</node_order>
+<description><![CDATA[<p>&#x27;Create Timetable&#x27; (or &#x27;Create Your First Timetable&#x27; when the student has none: &#x27;No Timetables Yet&#x27;) needs a Name of 1-100 characters (API message &#x27;Name is required&#x27;) and an optional Description of max 500. The new timetable is listed under &#x27;My Timetables&#x27; and the creator is the owner.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-02]]></docid><title><![CDATA[Default timetable]]></title>
+<version>1</version><revision>1</revision><node_order>2</node_order>
+<description><![CDATA[<p>Timetable Settings &gt; &#x27;Set as Default&#x27; makes the timetable the student&#x27;s default (button changes to &#x27;Currently Default&#x27;, badge &#x27;Default&#x27;); /timetable opens the default timetable first. Only owner or accepted collaborator may set it (&#x27;You don&#x27;t have access to this timetable&#x27;). Deleting or leaving the timetable clears the default.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-03]]></docid><title><![CDATA[Only favourite courses can be scheduled]]></title>
+<version>1</version><revision>1</revision><node_order>3</node_order>
+<description><![CDATA[<p>&#x27;Add Class&#x27; lists only the student&#x27;s favourite courses (&#x27;Only your favorited courses are shown&#x27;). Without favourites the modal shows &#x27;No Favorite Courses - You need to favorite courses before adding them to your timetable&#x27;. The API returns &#x27;You can only add favorited courses to your timetable&#x27; for other courses.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-04]]></docid><title><![CDATA[Class event data]]></title>
+<version>1</version><revision>1</revision><node_order>4</node_order>
+<description><![CDATA[<p>A class has Course (required), Title (required, 1-100), Day of Week (Sunday=0 ... Saturday=6), Start Time and End Time (HH:MM) and optional Location (max 100). It is stored as weekly recurring and appears in the week view on that weekday in the course colour. API: dayOfWeek 0-6, times must match ^\d{2}:\d{2}$ (&#x27;Invalid time format (HH:MM)&#x27;).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-05]]></docid><title><![CDATA[End time must be after start time]]></title>
+<version>1</version><revision>1</revision><node_order>5</node_order>
+<description><![CDATA[<p>If End Time is not later than Start Time the form shows &#x27;End time must be after start time&#x27; and &#x27;Add Class&#x27; is disabled; the equal-times case is also invalid. Dragging/resizing to an invalid range shows &#x27;Invalid time range&#x27;. The API must also reject such events.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-06]]></docid><title><![CDATA[Time conflict detection]]></title>
+<version>1</version><revision>1</revision><node_order>6</node_order>
+<description><![CDATA[<p>Two classes on the same weekday must not overlap (A.start &lt; B.end and B.start &lt; A.end). The form shows &#x27;Time conflict detected&#x27; and &#x27;Overlaps with &lt;title&gt; (&lt;start&gt; - &lt;end&gt;)&#x27; and disables &#x27;Add Class&#x27;. Back-to-back classes (end = next start) and the same time on another weekday are allowed.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-07]]></docid><title><![CDATA[Maximum 3 classes per course per day]]></title>
+<version>1</version><revision>1</revision><node_order>7</node_order>
+<description><![CDATA[<p>A course can have at most 3 classes on one weekday. With 3 existing the form shows &#x27;Maximum 3 classes per course per day. This course already has 3 classes on this day.&#x27; and blocks submit; with 1 or 2 it shows &#x27;This course has N class(es) on this day. You can add M more.&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-08]]></docid><title><![CDATA[Edit and move a class]]></title>
+<version>1</version><revision>1</revision><node_order>8</node_order>
+<description><![CDATA[<p>Owner and CONTRIBUTORs can edit a class (Class Details &gt; Edit Class &gt; &#x27;Save Changes&#x27;) or drag/resize it in the calendar. The same time-range and conflict rules apply, ignoring the class itself. Conflict while dragging shows &#x27;Cannot move event: Time conflict with another class&#x27; / &#x27;Cannot resize event: Time conflict with another class&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-09]]></docid><title><![CDATA[Delete a class]]></title>
+<version>1</version><revision>1</revision><node_order>9</node_order>
+<description><![CDATA[<p>Owner and CONTRIBUTORs can delete a class: &#x27;Delete this class?&#x27; with &#x27;Yes, Delete&#x27; / &#x27;Cancel&#x27;. Yes removes the class from every week; Cancel keeps it.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-10]]></docid><title><![CDATA[Timetable permissions]]></title>
+<version>1</version><revision>1</revision><node_order>10</node_order>
+<description><![CDATA[<p>Owner: everything. CONTRIBUTOR: add/edit/delete classes. VIEWER: read only, no &#x27;Add Class&#x27;. Users without an accepted role cannot open the timetable (&#x27;You don&#x27;t have access to this timetable&#x27;). API messages: &#x27;You don&#x27;t have permission to add events to this timetable&#x27; / &#x27;... update this event&#x27; / &#x27;... delete this event&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-11]]></docid><title><![CDATA[Invite students to a timetable]]></title>
+<version>1</version><revision>1</revision><node_order>11</node_order>
+<description><![CDATA[<p>Only the owner can invite (&#x27;Only the owner can invite collaborators&#x27;) through Share &gt; &#x27;Search for students&#x27;: the query needs at least 3 characters (&#x27;Search query must be at least 3 characters&#x27;), only APPROVED users are found (max 10), the owner and already invited users are excluded, role Viewer or Contributor. Inviting yourself (&#x27;You can&#x27;t invite yourself&#x27;) or an invited user (&#x27;User already invited&#x27;) is rejected. A TIMETABLE_INVITATION notification &#x27;New timetable invitation&#x27; is sent.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-12]]></docid><title><![CDATA[Accept, reject and leave a shared timetable]]></title>
+<version>1</version><revision>1</revision><node_order>12</node_order>
+<description><![CDATA[<p>A PENDING invitation appears under &#x27;Timetable Invitations&#x27; with Accept / Reject. Accept -&gt; ACCEPTED and the timetable shows under &#x27;Shared with Me&#x27;; Reject -&gt; REJECTED. The owner is notified (&#x27;Invitation accepted&#x27; / &#x27;Invitation declined&#x27;). A collaborator can &#x27;Leave Timetable&#x27; (Confirm Leave); the owner cannot (&#x27;You cannot leave a timetable you own. Delete it instead.&#x27;).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-13]]></docid><title><![CDATA[Class reminders]]></title>
+<version>1</version><revision>1</revision><node_order>13</node_order>
+<description><![CDATA[<p>The cron endpoint /api/cron/class-reminders (Authorization: Bearer CRON_SECRET, else 401) creates a CLASS_REMINDER notification &#x27;Class starting in &lt;N&gt; minutes&#x27; / &#x27;&lt;course&gt; at &lt;HH:MM&gt;&#x27; for owners and accepted collaborators when the class starts in N minutes (+-1), N = the user&#x27;s reminder timing (default 10). At most one reminder per class and day.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-TT-14]]></docid><title><![CDATA[Update and delete timetable (owner only)]]></title>
+<version>1</version><revision>1</revision><node_order>14</node_order>
+<description><![CDATA[<p>Only the owner can rename/describe (&#x27;Only the owner can update this timetable&#x27;) and delete (&#x27;Only the owner can delete this timetable&#x27;) a timetable. Deleting removes its classes and collaborators and clears the default for every user who had it.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+</req_spec>
+</requirement-specification>
