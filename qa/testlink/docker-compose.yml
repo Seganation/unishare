@@ -1,0 +1,24 @@
+name: testlink
+services:
+  db:
+    image: mariadb:10.6
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: testlink
+      MARIADB_USER: testlink
+      MARIADB_PASSWORD: testlink
+    volumes:
+      - db:/var/lib/mysql
+      # loaded only when the volume is created: UniShare project, users, Rawa's suites
+      - ./seed:/docker-entrypoint-initdb.d:ro
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on: [db]
+    ports:
+      - "8090:80"
+    volumes:
+      - ./app:/var/www/html
+volumes:
+  db:

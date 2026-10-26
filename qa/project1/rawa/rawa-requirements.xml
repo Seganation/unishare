@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<requirement-specification>
+<req_spec title="UC-S4-001 Course Sharing &amp; Permissions" doc_id="SRS-R-SHR">
+<type><![CDATA[2]]></type><node_order><![CDATA[1]]></node_order>
+<total_req><![CDATA[8]]></total_req>
+<scope><![CDATA[<p>Course owner shares a course with other students as VIEWER or CONTRIBUTOR. Source: UniShare_Iteration_4.md Use Case Diagram 1 + Use Case 1; src/server/api/routers/course.ts (inviteCollaborator, acceptInvitation, rejectInvitation, getPendingInvitations); resource.ts.</p>]]></scope>
+<requirement>
+<docid><![CDATA[REQ-SHR-01]]></docid><title><![CDATA[Only the course owner can invite collaborators]]></title>
+<version>1</version><revision>1</revision><node_order>1</node_order>
+<description><![CDATA[<p>The system shall allow only the student who created a course to invite collaborators. Any other user shall receive &#x27;Only the owner can invite collaborators&#x27;. Inviting to a non-existent course shall return &#x27;Course not found&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-SHR-02]]></docid><title><![CDATA[Invalid invitations are rejected]]></title>
+<version>1</version><revision>1</revision><node_order>2</node_order>
+<description><![CDATA[<p>The system shall reject an invitation to the owner himself (&#x27;You can&#x27;t invite yourself&#x27;) and a second invitation to a user already invited to the same course (&#x27;User already invited&#x27;).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-SHR-03]]></docid><title><![CDATA[Invitation carries a permission level]]></title>
+<version>1</version><revision>1</revision><node_order>3</node_order>
+<description><![CDATA[<p>The owner shall choose exactly one permission level, VIEWER or CONTRIBUTOR. A new invitation is stored with status PENDING and the invitee receives a COURSE_INVITATION notification &#x27;&lt;owner&gt; invited you to collaborate on &lt;course&gt;&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-SHR-04]]></docid><title><![CDATA[Invitee accepts or declines a pending invitation]]></title>
+<version>1</version><revision>1</revision><node_order>4</node_order>
+<description><![CDATA[<p>The invitee shall see pending invitations under Settings &gt; Pending Invitations and can Accept or Decline. Accept sets status ACCEPTED and joinedAt and the course appears in the invitee&#x27;s course list; Decline sets REJECTED. The owner receives &#x27;Invitation accepted&#x27; / &#x27;Invitation declined&#x27;. Only PENDING invitations can be answered.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-SHR-05]]></docid><title><![CDATA[VIEWER has read-only access]]></title>
+<version>1</version><revision>1</revision><node_order>5</node_order>
+<description><![CDATA[<p>A VIEWER collaborator can open the shared course, view all resource cards and download files but cannot add, edit or delete resources or upload files.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-SHR-06]]></docid><title><![CDATA[CONTRIBUTOR can add but not delete]]></title>
+<version>1</version><revision>1</revision><node_order>6</node_order>
+<description><![CDATA[<p>A CONTRIBUTOR can add/update resources and upload files to cards that allow uploads, but cannot delete resources (&#x27;Only the course owner can delete resources&#x27;) or delete the course.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-SHR-07]]></docid><title><![CDATA[Owner manages collaborators]]></title>
+<version>1</version><revision>1</revision><node_order>7</node_order>
+<description><![CDATA[<p>On Courses &gt; &lt;course&gt; &gt; Collaborators the owner can invite by email, change a collaborator&#x27;s permission (VIEWER &lt;-&gt; CONTRIBUTOR) and remove a collaborator.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-SHR-08]]></docid><title><![CDATA[Faculty-restricted sharing]]></title>
+<version>1</version><revision>1</revision><node_order>8</node_order>
+<description><![CDATA[<p>The system shall validate that the invited student belongs to the same faculty as the owner (Iteration 4: &#x27;System validates student is in same faculty&#x27;).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+</req_spec>
+<req_spec title="UC-S4-003 Public Articles" doc_id="SRS-R-ART">
+<type><![CDATA[2]]></type><node_order><![CDATA[2]]></node_order>
+<total_req><![CDATA[10]]></total_req>
+<scope><![CDATA[<p>Students write articles that move DRAFT -&gt; PUBLISHED -&gt; ARCHIVED and are readable publicly. Source: UniShare_Iteration_4.md Use Case Diagram 3 + Use Case 3; src/server/api/routers/article.ts; src/app/(student)/my-articles, src/app/articles.</p>]]></scope>
+<requirement>
+<docid><![CDATA[REQ-ART-01]]></docid><title><![CDATA[Article input validation]]></title>
+<version>1</version><revision>1</revision><node_order>1</node_order>
+<description><![CDATA[<p>Title is mandatory, 1 to 200 characters; Excerpt optional, max 500 characters; Cover image optional and must be a valid URL; Tags optional, comma-separated. Empty title shows &#x27;Please enter a title for your article&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-ART-02]]></docid><title><![CDATA[New article starts as DRAFT]]></title>
+<version>1</version><revision>1</revision><node_order>2</node_order>
+<description><![CDATA[<p>Saving a new article stores it with status DRAFT, the author as current user, an estimated read time (words/200, rounded up) and shows &#x27;Article saved as draft&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-ART-03]]></docid><title><![CDATA[Unique URL slug]]></title>
+<version>1</version><revision>1</revision><node_order>3</node_order>
+<description><![CDATA[<p>The slug is generated from the title (lower-case, punctuation removed, spaces -&gt; &#x27;-&#x27;). If the slug exists the system appends -1, -2, ... On title change the slug is regenerated.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-ART-04]]></docid><title><![CDATA[Publish workflow]]></title>
+<version>1</version><revision>1</revision><node_order>4</node_order>
+<description><![CDATA[<p>Only the author can publish, and only a DRAFT article can be published (&#x27;Only draft articles can be published&#x27;). Publishing sets PUBLISHED and publishedAt and shows &#x27;Article published!&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-ART-05]]></docid><title><![CDATA[Archive and delete own article]]></title>
+<version>1</version><revision>1</revision><node_order>5</node_order>
+<description><![CDATA[<p>Only the author can archive (&#x27;Article archived&#x27;) or delete (&#x27;Article deleted successfully&#x27;) an article; other users get &#x27;You can only archive/delete your own articles&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-ART-06]]></docid><title><![CDATA[Edit own article]]></title>
+<version>1</version><revision>1</revision><node_order>6</node_order>
+<description><![CDATA[<p>Only the author can edit an article (&#x27;You can only edit your own articles&#x27;). Saving shows &#x27;Changes saved&#x27;. Tags supplied on edit replace the previous tags.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-ART-07]]></docid><title><![CDATA[Public article listing]]></title>
+<version>1</version><revision>1</revision><node_order>7</node_order>
+<description><![CDATA[<p>The /articles page lists only PUBLISHED articles, newest publishedAt first, 12 per page by default (page size 1-50). Search matches title or excerpt case-insensitively; filter by tag; the tag list shows only tags having at least one published article.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-ART-08]]></docid><title><![CDATA[Article access control]]></title>
+<version>1</version><revision>1</revision><node_order>8</node_order>
+<description><![CDATA[<p>A PUBLISHED article is readable by anyone, including visitors not logged in. DRAFT and ARCHIVED articles are readable only by the author; others get &#x27;This article is not published&#x27;. Unknown slug gives &#x27;Article not found&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-ART-09]]></docid><title><![CDATA[View counter]]></title>
+<version>1</version><revision>1</revision><node_order>9</node_order>
+<description><![CDATA[<p>Opening a PUBLISHED article increments its view count by 1; DRAFT/ARCHIVED articles are not counted.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-ART-10]]></docid><title><![CDATA[My Articles]]></title>
+<version>1</version><revision>1</revision><node_order>10</node_order>
+<description><![CDATA[<p>My Articles lists all of the author&#x27;s articles (any status), most recently updated first, filterable by DRAFT / PUBLISHED / ARCHIVED.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+</req_spec>
+<req_spec title="UC-S4-004 Notifications" doc_id="SRS-R-NOT">
+<type><![CDATA[2]]></type><node_order><![CDATA[3]]></node_order>
+<total_req><![CDATA[9]]></total_req>
+<scope><![CDATA[<p>In-app notifications with unread badge and user preferences. Source: UniShare_Iteration_4.md Use Case Diagram 4 + Use Case 4; src/server/api/routers/notification.ts; src/components/notification-bell.tsx; src/app/(student)/settings/page.tsx.</p>]]></scope>
+<requirement>
+<docid><![CDATA[REQ-NOT-01]]></docid><title><![CDATA[Event notifications]]></title>
+<version>1</version><revision>1</revision><node_order>1</node_order>
+<description><![CDATA[<p>The system shall create a notification for the recipient when a course invitation is sent (COURSE_INVITATION), accepted (INVITATION_ACCEPTED) or declined (INVITATION_REJECTED).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-NOT-02]]></docid><title><![CDATA[Unread badge]]></title>
+<version>1</version><revision>1</revision><node_order>2</node_order>
+<description><![CDATA[<p>The bell icon shows the number of unread notifications; no badge at 0; values above 9 show &#x27;9+&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-NOT-03]]></docid><title><![CDATA[Recent notifications dropdown]]></title>
+<version>1</version><revision>1</revision><node_order>3</node_order>
+<description><![CDATA[<p>Opening the bell lists the user&#x27;s 20 most recent notifications, newest first; with none it shows &#x27;No notifications yet&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-NOT-04]]></docid><title><![CDATA[Mark one as read]]></title>
+<version>1</version><revision>1</revision><node_order>4</node_order>
+<description><![CDATA[<p>Clicking a notification marks it read and decreases the badge by 1. A course/timetable invitation notification opens Settings &gt; Pending Invitations (/settings?tab=invitations).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-NOT-05]]></docid><title><![CDATA[Mark all as read]]></title>
+<version>1</version><revision>1</revision><node_order>5</node_order>
+<description><![CDATA[<p>&#x27;Mark all as read&#x27; sets every unread notification of the user to read; badge disappears.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-NOT-06]]></docid><title><![CDATA[Notification privacy]]></title>
+<version>1</version><revision>1</revision><node_order>6</node_order>
+<description><![CDATA[<p>A user can only list, count and mark his own notifications; another user&#x27;s notification id gives &#x27;Notification not found&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-NOT-07]]></docid><title><![CDATA[Notification preferences]]></title>
+<version>1</version><revision>1</revision><node_order>7</node_order>
+<description><![CDATA[<p>Settings &gt; Notification Preferences lets the user switch in-app and email notifications on/off for Class reminders, Collaboration invites, Audit log alerts and System notifications. Defaults are created on first visit; saved values persist after reload.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-NOT-08]]></docid><title><![CDATA[Reminder timing range]]></title>
+<version>1</version><revision>1</revision><node_order>8</node_order>
+<description><![CDATA[<p>Class reminder timing accepts 5 to 30 minutes before class; the UI offers 5, 10, 15 and 30.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-NOT-09]]></docid><title><![CDATA[Full notification history]]></title>
+<version>1</version><revision>1</revision><node_order>9</node_order>
+<description><![CDATA[<p>&#x27;View all&#x27; opens the full notification list, paginated (page size 1-100, default 20).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+</req_spec>
+</requirement-specification>
