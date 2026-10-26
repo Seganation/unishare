@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<requirement-specification>
+<req_spec title="UC-S2-001 Student Registration (detailed Use Case 1)" doc_id="SRS-A-REG">
+<type><![CDATA[2]]></type><node_order><![CDATA[1]]></node_order>
+<total_req><![CDATA[17]]></total_req>
+<scope><![CDATA[<p>Unauthenticated applicant supplies identity, academic details, password and student ID. Source: assignment/UniShare Iteration 2.md, detailed Use Case 1 and diagram UC-S2-001..007. Current UI is /signup (the document says /register), then /login after 3000 ms; src/app/(auth)/signup/page.tsx, src/server/api/routers/user.ts, src/app/api/uploadthing/core.ts, src/lib/email.ts, prisma/schema.prisma. REG-04 and REG-12 preserve document requirements absent from current server validation.</p>]]></scope>
+<requirement>
+<docid><![CDATA[REQ-A-REG-01]]></docid><title><![CDATA[Public registration form and required fields]]></title>
+<version>1</version><revision>1</revision><node_order>1</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 steps 1-3, 23; src/app/(auth)/signup/page.tsx. /signup displays &#x27;Join UNIShare&#x27;, &#x27;Full Name&#x27;, &#x27;University Email&#x27;, &#x27;Password&#x27;, &#x27;Confirm Password&#x27;, &#x27;University&#x27;, &#x27;Faculty&#x27;, &#x27;Student ID Photo&#x27; and &#x27;Create Account&#x27;. The six text/select inputs are HTML required; missing input blocks form submission.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-02]]></docid><title><![CDATA[University and faculty selection]]></title>
+<version>1</version><revision>1</revision><node_order>2</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 steps 6-13; user.ts getUniversities; signup/page.tsx. Universities and their faculties are sorted ascending by name. Faculty is disabled until a university is selected, contains only its faculties and resets to &#x27;Select faculty&#x27; when university changes. Placeholders are &#x27;Select university&#x27; and &#x27;Select faculty&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-03]]></docid><title><![CDATA[Minimum name length]]></title>
+<version>1</version><revision>1</revision><node_order>3</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 step 23; user.ts register name schema. A name shorter than 2 characters is rejected with &#x27;Name must be at least 2 characters&#x27;; 2 and 3 characters pass this constraint.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-04]]></docid><title><![CDATA[Maximum name length of 100 (document-only gap)]]></title>
+<version>1</version><revision>1</revision><node_order>4</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 step 23 specifies 2-100 characters; user.ts register and signup/page.tsx have no maximum. Business expectation: 99 and 100 accepted, 101 rejected without creating a user. Current code will accept 101; no maximum-length message exists. Record this as a document/code discrepancy when executed.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-05]]></docid><title><![CDATA[Email syntax]]></title>
+<version>1</version><revision>1</revision><node_order>5</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 step 23; user.ts register email schema; signup/page.tsx. API rejects malformed/empty email with &#x27;Invalid email address&#x27;. UI uses required type=email. No university-domain allowlist is implemented; syntactically valid example.com is accepted.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-06]]></docid><title><![CDATA[Unique registration email and error recovery]]></title>
+<version>1</version><revision>1</revision><node_order>6</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 steps 27-28, A1; user.ts register; prisma/schema.prisma User.email. An existing exact email is rejected with &#x27;User with this email already exists&#x27;; no extra record is created. UI displays server error, clears its loading state and allows correction.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-07]]></docid><title><![CDATA[Password minimum length]]></title>
+<version>1</version><revision>1</revision><node_order>7</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 step 23; user.ts register; signup/page.tsx handleSubmit. Password minimum is 8 characters; failure text &#x27;Password must be at least 8 characters&#x27;. There is no explicit application maximum; test 7, 8 and 9 characters with valid complexity.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-08]]></docid><title><![CDATA[Password character classes]]></title>
+<version>1</version><revision>1</revision><node_order>8</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 secure-password description; user.ts register regex. New passwords require uppercase, lowercase and a digit. Missing any class returns &#x27;Password must contain at least one uppercase letter, one lowercase letter, and one number&#x27;. Symbols are optional; seeded admin123 remains usable for login.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-09]]></docid><title><![CDATA[Password confirmation]]></title>
+<version>1</version><revision>1</revision><node_order>9</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 client validation; signup/page.tsx handleSubmit. Unequal password and confirmation show &#x27;Passwords do not match&#x27; before the mutation; the form becomes editable again. Confirmation is a UI check, not an API field.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-10]]></docid><title><![CDATA[Required uploaded ID and URL validation]]></title>
+<version>1</version><revision>1</revision><node_order>10</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 steps 14-23; signup/page.tsx and user.ts register. Create Account is disabled without an uploaded URL. The handler guard says &#x27;Please upload your student ID&#x27;. API studentIdUrl must be a URL or returns &#x27;Invalid student ID URL&#x27;; the schema does not restrict the URL host.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-11]]></docid><title><![CDATA[Required academic selections]]></title>
+<version>1</version><revision>1</revision><node_order>11</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 step 23; user.ts register universityId/facultyId. Empty universityId and facultyId return &#x27;University is required&#x27; and &#x27;Faculty is required&#x27;. These are nonempty-string checks; existing seeded IDs are used for valid cases.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-12]]></docid><title><![CDATA[Faculty must belong to selected university (document-only gap)]]></title>
+<version>1</version><revision>1</revision><node_order>12</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 step 23 and A5; user.ts register; prisma/schema.prisma User/Faculty relations. Business expectation: reject a tampered request pairing UTM with a Universiti Malaya faculty, documented text &#x27;Invalid faculty selection&#x27;. Current router only validates nonempty IDs and independent foreign keys, so does not enforce this relation.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-13]]></docid><title><![CDATA[Public upload accepts one image]]></title>
+<version>1</version><revision>1</revision><node_order>13</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 steps 16-17, A4; api/uploadthing/core.ts studentIdUploader. Unauthenticated uploads accept image files, maximum file count 1; PDFs and a two-image batch are rejected. Completion returns uploadedBy=&#x27;registration&#x27; and the file URL; UI shows &#x27;Student ID uploaded&#x27;. Library-generated error wording is not fixed by app code.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-14]]></docid><title><![CDATA[Student ID file size maximum]]></title>
+<version>1</version><revision>1</revision><node_order>14</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 step 17, A3; api/uploadthing/core.ts studentIdUploader. Image maxFileSize=&#x27;4MB&#x27; (4194304 bytes); 4194303 and 4194304 are accepted, 4194305 rejected. The app formats uploader callback errors as &#x27;Upload failed: &lt;message&gt;&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-15]]></docid><title><![CDATA[Upload removal and recovery]]></title>
+<version>1</version><revision>1</revision><node_order>15</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 A2 and review step 21; signup/page.tsx upload callbacks. &#x27;Remove&#x27; clears the selected URL, restores the uploader and disables Create Account. Upload failure displays &#x27;Upload failed: &lt;message&gt;&#x27; and no successful ID state; retry can succeed.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-16]]></docid><title><![CDATA[Persist pending applicant with bcrypt and success UI]]></title>
+<version>1</version><revision>1</revision><node_order>16</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 steps 29-32, 37-38; user.ts register; signup/page.tsx; prisma/schema.prisma. Successful registration stores role PENDING, null approvedAt, selected IDs, ID URL and bcrypt hash using 12 rounds. Response success=true with userId and &#x27;Registration successful! Please wait for admin approval. You&#x27;ll receive an email once approved.&#x27;. UI shows &#x27;Registration Successful!&#x27;, &#x27;Your account has been created and is pending admin approval.&#x27; and &#x27;Redirecting to login...&#x27;, then /login after 3000 ms (document instead says /waiting-approval).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-REG-17]]></docid><title><![CDATA[Welcome email is best effort]]></title>
+<version>1</version><revision>1</revision><node_order>17</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 1 steps 33-36, A6; user.ts register; src/lib/email.ts sendWelcomeEmail. Attempt welcome email to the applicant with subject &#x27;Welcome to UNIShare - Registration Received&#x27;. SMTP failure logs &#x27;Failed to send welcome email:&#x27; but registration still returns success and leaves the applicant PENDING; retry must not create a duplicate.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+</req_spec>
+<req_spec title="UC-S2-002 Admin Approval (detailed Use Case 2)" doc_id="SRS-A-ADM">
+<type><![CDATA[2]]></type><node_order><![CDATA[2]]></node_order>
+<total_req><![CDATA[10]]></total_req>
+<scope><![CDATA[<p>Admin reviews and approves/rejects applicants. Source: assignment/UniShare Iteration 2.md detailed Use Case 2 and diagram UC-S2-010..015; src/server/api/routers/admin.ts; src/app/(admin)/layout.tsx, admin/page.tsx, admin/approvals/page.tsx; src/lib/email.ts; prisma/schema.prisma. Search and interactive sorting are document-only gaps; bulk approval is future scope.</p>]]></scope>
+<requirement>
+<docid><![CDATA[REQ-A-ADM-01]]></docid><title><![CDATA[Admin route and API authorization]]></title>
+<version>1</version><revision>1</revision><node_order>1</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 2 preconditions and steps 1-3; admin.ts adminProcedure; src/server/api/trpc.ts protectedProcedure; src/app/(admin)/layout.tsx; middleware.ts. Only ADMIN accesses admin procedures. Anonymous API requests return UNAUTHORIZED; authenticated APPROVED/PENDING users return FORBIDDEN &#x27;Only administrators can perform this action&#x27;. Anonymous admin pages redirect /login; non-admins redirect through /courses (PENDING ends at /waiting-approval).</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-ADM-02]]></docid><title><![CDATA[Pending list and safe user data]]></title>
+<version>1</version><revision>1</revision><node_order>2</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 2 steps 7-8; admin.ts getPendingUsers/getAllUsers. Pending list includes only role PENDING, newest createdAt first, with academic details and without password. getAllUsers also excludes password. Empty UI: &#x27;All caught up!&#x27; and &#x27;There are no pending approvals at the moment.&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-ADM-03]]></docid><title><![CDATA[Review identity details and full-size student ID]]></title>
+<version>1</version><revision>1</revision><node_order>3</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 2 steps 10-15; admin/approvals/page.tsx. The current page uses cards with name, email, &#x27;University:&#x27;, &#x27;Faculty:&#x27;, &#x27;Registered:&#x27;, &#x27;Student ID&#x27;, &#x27;View full size →&#x27;, &#x27;Approve&#x27; and &#x27;Reject&#x27;. Clicking ID or full-size link opens the exact stored studentIdUrl in a new tab; no separate student-detail route is implemented.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-ADM-04]]></docid><title><![CDATA[Dashboard totals refresh after decisions]]></title>
+<version>1</version><revision>1</revision><node_order>4</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 2 steps 5, 23-25; admin.ts getDashboardStats; approvals/page.tsx. Cards &#x27;Pending Approvals&#x27;, &#x27;Approved Users&#x27;, &#x27;Total Users&#x27;, &#x27;Administrators&#x27; reflect role counts. Approve decreases pending and increases approved, leaving total/admin unchanged; reject decreases pending and total. Successful mutations invalidate pending list and statistics.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-ADM-05]]></docid><title><![CDATA[Search/filter and sorting (document-only gap)]]></title>
+<version>1</version><revision>1</revision><node_order>5</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 2 step 8, diagram UC-S2-015; admin/approvals/page.tsx and admin.ts getPendingUsers. Business expectation: filter pending applicants by name/email and sort by date/name/university. Current cards expose no search/filter/sort controls; preserve as a gap rather than inventing labels or claiming these controls work.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-ADM-06]]></docid><title><![CDATA[Approval confirmation and valid transition]]></title>
+<version>1</version><revision>1</revision><node_order>6</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 2 steps 16-17; admin.ts approveUser; approvals/page.tsx. &#x27;Are you sure you want to approve this user?&#x27; must be confirmed; cancel sends no mutation. Only PENDING transitions to APPROVED, setting approvedAt. Response success=true and &#x27;&lt;name&gt; has been approved successfully&#x27;; card disappears. While a decision is pending both action buttons are disabled and selected approval says &#x27;Approving...&#x27;. No success toast is implemented.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-ADM-07]]></docid><title><![CDATA[Missing and nonpending targets rejected]]></title>
+<version>1</version><revision>1</revision><node_order>7</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 2 A2/A3 and rejection alternative; admin.ts approveUser/rejectUser. Unknown userId returns NOT_FOUND &#x27;User not found&#x27;. APPROVED/ADMIN targets return BAD_REQUEST &#x27;User is not pending approval&#x27; for either operation; record and approvedAt stay unchanged. Sequential replay of approval is rejected; atomic concurrent safety is not claimed.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-ADM-08]]></docid><title><![CDATA[Approval email failure does not undo approval]]></title>
+<version>1</version><revision>1</revision><node_order>8</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 2 steps 18-21, A1; admin.ts approveUser; email.ts sendApprovalEmail. Attempt subject &#x27;Your UNIShare Account Has Been Approved!&#x27; preceded by U+1F389 (party popper) and a space to applicant with dashboard URL NEXT_PUBLIC_APP_URL + &#x27;/courses&#x27;. Failure logs &#x27;Failed to send approval email:&#x27; but response still succeeds and applicant remains APPROVED; the document&#x27;s warning toast is not implemented.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-ADM-09]]></docid><title><![CDATA[Rejection confirmation, optional reason and deletion]]></title>
+<version>1</version><revision>1</revision><node_order>9</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 2 rejection alternative; admin.ts rejectUser; approvals/page.tsx; schema.prisma Role. UI prompts &#x27;Enter rejection reason (optional):&#x27;, then &#x27;Are you sure you want to reject this user?&#x27;. Final cancel makes no change. Confirm deletes a PENDING applicant; there is no REJECTED enum or retain-account option. Response success=true and &#x27;Registration for &lt;name&gt; has been rejected&#x27;. While pending, buttons disable and selected rejection says &#x27;Rejecting...&#x27;. Deleted applicant cannot login and may register again.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-ADM-10]]></docid><title><![CDATA[Rejection email is best effort]]></title>
+<version>1</version><revision>1</revision><node_order>10</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 2 rejection alternative and email-failure principle; admin.ts rejectUser; email.ts sendRejectionEmail. Attempt email before deletion, subject &#x27;UNIShare Registration Update&#x27;; nonempty reason appears under &#x27;Reason:&#x27;, omitted/empty reason omits that section. SMTP failure logs &#x27;Failed to send rejection email:&#x27; and deletion still completes.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+</req_spec>
+<req_spec title="UC-S2-003 Student Login (detailed Use Case 3)" doc_id="SRS-A-LOG">
+<type><![CDATA[2]]></type><node_order><![CDATA[3]]></node_order>
+<total_req><![CDATA[6]]></total_req>
+<scope><![CDATA[<p>Credential authentication, role routing and sessions, including Admin login. Source: assignment/UniShare Iteration 2.md detailed Use Case 3 and diagram UC-S2-007..010; src/server/auth/config.ts; src/app/(auth)/login/page.tsx, waiting-approval/page.tsx; middleware.ts; src/app/(student)/layout.tsx; src/app/(admin)/layout.tsx. Implementation uses JWT sessions, not inserted Session rows or a Remember me control.</p>]]></scope>
+<requirement>
+<docid><![CDATA[REQ-A-LOG-01]]></docid><title><![CDATA[Valid credentials route by current role]]></title>
+<version>1</version><revision>1</revision><node_order>1</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 3 steps 14-31; auth/config.ts authorize; login/page.tsx; middleware.ts; student/layout.tsx; admin/page.tsx. Password checked with bcrypt. APPROVED reaches /courses, PENDING /waiting-approval, ADMIN /admin/approvals via /courses. Successful UI shows &#x27;Welcome Back!&#x27; and &#x27;Taking you to your dashboard...&#x27;; PENDING page heading is &#x27;Account Pending Approval&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-LOG-02]]></docid><title><![CDATA[Generic invalid-credentials errors]]></title>
+<version>1</version><revision>1</revision><node_order>2</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 3 A1/A2; auth/config.ts authorize; login/page.tsx. Unknown email and wrong password show identical &#x27;Invalid email or password&#x27;, keep user on /login, and restore editable fields/&#x27;Sign In&#x27;. No authenticated session is issued.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-LOG-03]]></docid><title><![CDATA[Required login fields]]></title>
+<version>1</version><revision>1</revision><node_order>3</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 3 steps 7-8; login/page.tsx; auth/config.ts authorize. UI &#x27;Email Address&#x27; is required type=email; &#x27;Password&#x27; is required type=password. Missing values prevent browser submission. Direct authorize without credentials throws &#x27;Missing email or password&#x27;; external UI errors are mapped to &#x27;Invalid email or password&#x27;.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-LOG-04]]></docid><title><![CDATA[Session persistence and authenticated-page redirects]]></title>
+<version>1</version><revision>1</revision><node_order>4</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 3 steps 21-27 and postconditions; auth/config.ts callbacks; middleware.ts; login/page.tsx; user.ts getCurrentSession. JWT-backed sessions persist across reload/new same-profile tabs, expose user id/role/universityId/facultyId without password, and existing-session /login or /signup returns to the role-appropriate destination.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-LOG-05]]></docid><title><![CDATA[Fresh approval status without a new login]]></title>
+<version>1</version><revision>1</revision><node_order>5</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 3 role check/A3 and diagram UC-S2-009; auth/config.ts session callback; student/layout.tsx. Session reload reads current database role, so an Alice session issued while PENDING can reach /courses after admin approval without a new credentials submission.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+<requirement>
+<docid><![CDATA[REQ-A-LOG-06]]></docid><title><![CDATA[Pending access restrictions and sign out]]></title>
+<version>1</version><revision>1</revision><node_order>6</node_order>
+<description><![CDATA[<p>Source: Iteration 2 Use Case 3 A3; waiting-approval/page.tsx; student/layout.tsx; middleware.ts; user.ts getCurrentSession. PENDING is routed away from student features to &#x27;Account Pending Approval&#x27;. &#x27;Sign Out&#x27; clears the session and returns /login; subsequent /courses redirects /login and getCurrentSession returns null.</p>]]></description>
+<status><![CDATA[V]]></status><type><![CDATA[3]]></type>
+<expected_coverage><![CDATA[1]]></expected_coverage>
+</requirement>
+</req_spec>
+</requirement-specification>
